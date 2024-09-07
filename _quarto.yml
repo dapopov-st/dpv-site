@@ -4,8 +4,8 @@ resources:
   - CNAME
 
 website:
-  #title: "Dmitriy Popov-Velasco"
-  title: "dpv-site"
+  title: "Dmitriy Popov-Velasco"
+  #title: "dpv-site"
   navbar:
     left:
       - href: index.qmd

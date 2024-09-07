@@ -5,8 +5,8 @@
 }
 
 :root {
-    --quarto-dark-code-bg: #444242; /* Background color variable */
-    --quarto-light-code-bg: #ece5e5;
+    --quarto-dark-code-bg: #3a3636; /* Background color variable */
+    --quarto-light-code-bg: #e0d1d1;
 }
 
 div[data-style="clean"] {
@@ -98,7 +98,7 @@ div[data-style="clean"] {
 
 .quarto-light .cell-output {
     margin-left: 20px;
-    border-left: 2px solid salmon;
+    border-left: 2px solid rgb(224, 115, 102);
 }
 
 .quarto-dark blockquote p {
