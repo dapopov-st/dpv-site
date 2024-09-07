@@ -6,12 +6,12 @@ resources:
 website:
   title: "Dmitriy Popov-Velasco"
   #title: "dpv-site"
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
-      - href: about.qmd
-        text: About
+  # navbar:
+  #   left:
+  #     - href: index.qmd
+  #       text: Home
+  #     - href: about.qmd
+  #       text: About
 
   navbar:
     title: false
