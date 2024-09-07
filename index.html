@@ -32,7 +32,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
@@ -76,68 +75,48 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+  <ul>
+  <li><a href="#about-me" id="toc-about-me" class="nav-link active" data-scroll-target="#about-me">About me</a>
+  <ul class="collapse">
+  <li><a href="#bio" id="toc-bio" class="nav-link" data-scroll-target="#bio">Bio</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
-
+<div class="quarto-about-trestles">
+  <div class="about-entity">
+    <img src="imgs/me-about-victoria.jpg" class="about-image
+  rounded " style="width: 20em;">
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Dmitriy Popov-Velasco</h1>
 </div>
-
-
-
 <div class="quarto-title-meta">
-
-    
-  
-    
   </div>
-  
-
-
 </header>
+  </div>
+  <div class="about-contents"><main class="content" id="quarto-document-content">
 
-
-<div>
-
-</div>
-<div class="profile-header quarto-layout-panel" data-layout="[21,79]">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 21.0%;justify-content: center;">
-<p><img src="imgs/me-about-victoria.jpg" class="profile-pic img-fluid"></p>
-</div>
-<section id="about-me" class="level1 quarto-layout-cell" style="flex-basis: 79.0%;justify-content: flex-start;">
+<section id="about-me" class="level1">
 <h1>About me</h1>
 <p>I’m a data scientist/machine learning engineer experienced with Python, GCP, and LLMs. I love to build with code and LLMs.</p>
-</section>
-</div>
-<div class="quarto-layout-row">
-<section id="bio" class="level2 quarto-layout-cell" style="flex-basis: 21.0%;justify-content: flex-start;">
-<h2 class="anchored" data-anchor-id="bio">Bio</h2>
+<section id="bio" class="level2">
+<h2 data-anchor-id="bio">Bio</h2>
 <p>I hold graduate degress in math and economics,and I’m passionate about machine learning, programming, and LLMs. Currenly, I’m working on number of machine learning projects. From November 2022 to August 2024, I have worked as a Data Analyst at LS Direct, where I performed data analytics and data engineering tasks for some of the company’s largest clients, helping the company quintuple the original budgets in some cases. I have developed both internal and client-facing automations using Python, SQL, and GCP, saving our team hours of time weekly. Whenever possible, I deeply favor programmatic solutions that streamline daily processes.</p>
-</section>
-<div class="quarto-layout-cell" style="flex-basis: 79.0%;justify-content: flex-start;">
 <p>Previously, I worked at Lake Mary High School as an AP Computer Science teacher for two years, restarting the school’s AP Computer Science A program (object-oriented and algorithmic programming with Java) and being the founding advisor for LMHS AI Club, introducing advanced students to deep learning with PyTorch and Linux. Prior to that, I taught algebra to disadvantaged communities at Vanden High School.</p>
-</div>
-</div>
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 21.0%;justify-content: flex-start;">
 <p>Before that, I’ve completed an undergrad in math and three graduate programs, one in math and yes, two in economics (applied and mathematical), the latest from UC Davis. As a graduate student, I got to work on computer vision applications and to teach statistical methods, econometrics, and graduate economic theory. I have always been drawn to linguistic and computational aspects of the world, and in the past, I’ve learned numerous languages (being reasonably fluent at roughly 7 at one point). Since then I have shifted my passion to deep learning and computer languages, especially LLMs and Python.</p>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 79.0%;justify-content: flex-start;">
 <p>When I’m not at work, I’m either working away at LLMs, reading arXiv papers, following along with the fastai community, climbing, or hiking.</p>
-</div>
-</div>
-<div class="quarto-layout-row">
 
 
+</section>
+</section>
+</main></div>
 </div>
-</div>
-
-</main> <!-- /main -->
+ <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -158,13 +137,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
   const isCodeAnnotation = (el) => {
     for (const clz of el.classList) {
       if (clz.startsWith('code-annotation-')) {                     
