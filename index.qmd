@@ -1,7 +1,7 @@
 ---
 title: "Dmitriy Popov-Velasco"
 about:
-    template: tressles
+    template: trestles
     image: imgs/me-about-victoria.jpg
 ---
 
