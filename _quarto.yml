@@ -11,11 +11,11 @@ website:
         text: Home
       - about.qmd
 
-format:
-  html:
-    theme: cosmo
-    css: styles.css
-    toc: true
+# format:
+#   html:
+#     theme: cosmo
+#     css: styles.css
+#     toc: true
 
 format:
   html:
