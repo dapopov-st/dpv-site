@@ -15,10 +15,12 @@ website:
 
 navbar:
   title: false
-  background: dark
+  background: light
   pinned: false
   collapse: false
   left:
+  - text: "About me"
+    href: "index.qdm"
   - text: "Blogs"
     href: blog/index.qmd
   - text: "Projects"
