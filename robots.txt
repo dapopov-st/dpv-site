@@ -1,1 +1,1 @@
-Sitemap: https://dapopov-st.github.io/dpv-site/sitemap.xml
+Sitemap: https://dpopovvelasco.dev/sitemap.xml
