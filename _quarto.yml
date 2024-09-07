@@ -31,23 +31,23 @@ navbar:
     href: dpopovvelasco@gmail.com
     target: _blank
 
-format:
-  html:
-    theme: cosmo
-    #css: styles.css
-    toc: true
-
 # format:
 #   html:
-#     reference-location: document
-#     theme: 
-#       dark: [solar, custom.scss]
-#       light: [flatly, custom-light.scss]
-#     css:
-#       - styles.css
+#     theme: cosmo
+#     #css: styles.css
 #     toc: true
-#     # syntax-definitions: 
-#     # - fomo.xml
+
+format:
+  html:
+    reference-location: document
+    theme: 
+      dark: [solar, custom.scss]
+      light: [flatly, custom-light.scss]
+    css:
+      - styles.css
+    toc: true
+    # syntax-definitions: 
+    # - fomo.xml
 
 execute: 
   freeze: auto
