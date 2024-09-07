@@ -4,7 +4,8 @@ project:
 #   - CNAME
 
 website:
-  title: "Dmitriy Popov-Velasco"
+  #title: "Dmitriy Popov-Velasco"
+  title: "dpv-site"
   navbar:
     left:
       - href: index.qmd
