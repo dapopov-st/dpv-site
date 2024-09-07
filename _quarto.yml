@@ -13,21 +13,21 @@ website:
   #     - href: about.qmd
   #       text: About
 
-  navbar:
-    title: false
-    background: dark
-    pinned: false
-    collapse: false
-    left:
-    - text: "Blogs"
-      href: blog/blogs.qmd
-    - text: "Projects"
-      file: projects/projects.qmd
-    - text: Notes
-      file: notes/notes.qmd
-    - text: Contact Me
-      href: dpopovvelasco@gmail.com
-      target: _blank
+navbar:
+  title: false
+  background: dark
+  pinned: false
+  collapse: false
+  left:
+  - text: "Blogs"
+    href: blog/index.qmd
+  - text: "Projects"
+    file: projects/index.qmd
+  - text: Notes
+    file: notes/index.qmd
+  - text: Contact Me
+    href: dpopovvelasco@gmail.com
+    target: _blank
 
 # format:
 #   html:

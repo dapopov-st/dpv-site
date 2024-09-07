@@ -2,7 +2,7 @@
 title: "Dmitriy Popov-Velasco"
 ---
 ::: {layout="[21,79]" .profile-header}
-![](imgs/dpv-transparent.jpeg){.profile-pic}
+![](imgs/me-about-victoria.jpg){.profile-pic}
 
 # About me
 
