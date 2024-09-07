@@ -1,8 +1,10 @@
 ---
 title: "Dmitriy Popov-Velasco"
+about:
+    template: tressles
+    image: imgs/me-about-victoria.jpg
 ---
-::: {layout="[21,79]" .profile-header}
-![](imgs/me-about-victoria.jpg){.profile-pic}
+
 
 # About me
 

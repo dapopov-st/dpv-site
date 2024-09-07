@@ -15,7 +15,7 @@ website:
 
 navbar:
   title: false
-  background: light
+  background: dark
   pinned: false
   collapse: false
   left:
