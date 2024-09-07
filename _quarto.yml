@@ -1,8 +1,10 @@
 project:
   type: website
+resources:
+  - CNAME
 
 website:
-  title: "dpv-site"
+  title: "Dmitriy Popov-Velasco"
   navbar:
     left:
       - href: index.qmd
@@ -15,7 +17,17 @@ format:
     css: styles.css
     toc: true
 
-
+format:
+  html:
+    reference-location: document
+    theme: 
+      dark: [solar, custom.scss]
+      light: [flatly, custom-light.scss]
+    css:
+      - styles.css
+    toc: true
+    syntax-definitions: 
+    - fomo.xml
 
 execute: 
   freeze: auto
