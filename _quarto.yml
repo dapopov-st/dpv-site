@@ -26,8 +26,8 @@ format:
     css:
       - styles.css
     toc: true
-    syntax-definitions: 
-    - fomo.xml
+    # syntax-definitions: 
+    # - fomo.xml
 
 execute: 
   freeze: auto
