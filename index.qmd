@@ -6,8 +6,7 @@ about:
 
 # Dmitriy Popov-Velasco
 
-<div class="image-container">
-    <img src="imgs/me-about-victoria.jpg" alt="Your Image">
-</div>
+![profile-pic](imgs/me-about-victoria.jpg){.image-container}
+
 
 I'm a data scientist/machine learning engineer experienced with Python, GCP, and LLMs. I love to build with code and LLMs.
