@@ -19,14 +19,14 @@ website:
     pinned: false
     collapse: false
     left:
-    - text: "About me"
+    - text: "About"
       href: "index.qdm"
     - text: "Blogs"
-      href: posts.qmd
+      href: posts.html
     - text: "Projects"
-      file: projects/index.qmd
+      file: projects.html
     - text: Notes
-      file: notes/index.qmd
+      file: notes.html
     - text: Contact Me
       href: dpopovvelasco@gmail.com
       target: _blank
@@ -36,7 +36,12 @@ format:
     theme: cosmo
     #css: styles.css
     toc: true
-
+files:
+  - posts.qmd
+  - projects.qmd
+  - notes.qmd
+  - index.qmd
+  - about.qmd
 # format:
 #   html:
 #     reference-location: document
