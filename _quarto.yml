@@ -20,7 +20,7 @@ website:
     collapse: false
     left:
     - text: "About"
-      href: "index.qdm"
+      href: "index.qmd"
     - text: "Blogs"
       href: posts.html
     - text: "Projects"
