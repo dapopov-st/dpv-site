@@ -31,11 +31,11 @@ website:
       href: dpopovvelasco@gmail.com
       target: _blank
 
-format:
-  html:
-    theme: cosmo
-    #css: styles.css
-    toc: true
+# format:
+#   html:
+#     theme: cosmo
+#     #css: styles.css
+#     toc: true
 files:
   - posts.qmd
   - projects.qmd
