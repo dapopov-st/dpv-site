@@ -22,7 +22,7 @@ website:
     - text: "About me"
       href: "index.qdm"
     - text: "Blogs"
-      href: blog/index.qmd
+      href: posts.qmd
     - text: "Projects"
       file: projects/index.qmd
     - text: Notes
