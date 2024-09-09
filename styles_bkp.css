@@ -1,0 +1,90 @@
+/* Colors */
+:root {
+    --white: #ffffff;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #868e96;
+    --gray-700: #495057;
+    --gray-800: #373a3c;
+    --gray-900: #212529;
+    --black: #000000;
+    --blue: #2780e3;
+    --indigo: #6610f2;
+    --purple: #170C3A;
+    --pink: #A52C60;
+    --red: #CF4446;
+    --orange: #EE6A24;
+    --light-orange: #FB9E07;
+    --yellow: #F6D645;
+    --green: #118230;
+    --teal: #068194;
+    --cyan: #3093CF;
+}
+
+/* Links */
+a {
+    color: var(--teal);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--red);
+    text-decoration: underline;
+}
+
+/* Footer */
+.nav-footer {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    border: 0 !important;
+    min-height: 3em;
+}
+
+.nav-footer a {
+    color: var(--teal);
+}
+
+.nav-footer .faux-block {
+    display: block;
+    padding-bottom: 0.4em;
+}
+
+.nav-footer .nav-footer-center {
+    text-align: center;
+    position: inherit;
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    .nav-footer .nav-footer-center {
+        margin-top: 0.5em;
+        margin-bottom: 1.5em;
+    }
+}
+
+.nav-footer .nav-footer-left,
+.nav-footer .nav-footer-right,
+.nav-footer .nav-footer-center {
+    text-align: center;
+    width: 100%;
+    min-height: 2em;
+}
+
+@media (min-width: 768px) {
+    .nav-footer .nav-footer-left {
+        text-align: left;
+    }
+
+    .nav-footer .nav-footer-right {
+        text-align: right;
+    }
+
+    .nav-footer .nav-footer-left,
+    .nav-footer .nav-footer-right,
+    .nav-footer .nav-footer-center {
+        flex: 1 1 33%;
+    }
+}

@@ -1,8 +1,6 @@
 ---
-# title: "About me"
+title: "About me"
 ---
-
-# About me
 
 I hold graduate degress in math and economics,and I'm passionate about machine learning, programming, and LLMs. Currenly, I'm working on number of machine learning projects.  From November 2022 to August 2024, I worked as a Data Analyst at LS Direct, where I performed data analytics and data engineering tasks for some of the company's largest clients, helping the company quintuple the original budgets in some cases. I have developed both internal and client-facing automations using Python, SQL, and GCP, saving our team hours of time weekly. Whenever possible, I deeply favor programmatic solutions that streamline daily processes.
 
