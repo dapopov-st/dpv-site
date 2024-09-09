@@ -53,6 +53,10 @@ files:
 #     toc: true
 #     # syntax-definitions: 
 #     # - fomo.xml
-
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
 execute: 
   freeze: auto
