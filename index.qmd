@@ -2,11 +2,12 @@
 title: "Dmitriy Popov-Velasco"
 about:
     template: trestles
-    image: imgs/me-about-victoria.jpg
 ---
 
+# Dmitriy Popov-Velasco
 
-# About me
+<div class="image-container">
+    <img src="imgs/me-about-victoria.jpg" alt="Your Image">
+</div>
 
 I'm a data scientist/machine learning engineer experienced with Python, GCP, and LLMs. I love to build with code and LLMs.
-
