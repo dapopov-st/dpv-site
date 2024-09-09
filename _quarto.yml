@@ -20,15 +20,15 @@ website:
     collapse: false
     left:
     - text: "About"
-      href: about.html
+      href: index.html
     - text: "Blogs"
       href: posts.html
     - text: "Projects"
       file: projects.html
     - text: Notes
       file: notes.html
-    - text: Contact Me
-      href: dpopovvelasco@gmail.com
+    - text: Contact
+      href: contact.html
       target: _blank
 
 # format:
@@ -41,7 +41,7 @@ files:
   - projects.qmd
   - notes.qmd
   - index.qmd
-  - about.qmd
+  #- about.qmd
 # format:
 #   html:
 #     reference-location: document
