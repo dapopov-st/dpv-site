@@ -3,12 +3,12 @@ body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
+    background-color: #333;
+    color: #f4f4f9;
 }
 
 a {
-    color: #007acc;
+    color: #f4f4f9;
     text-decoration: none;
 }
 
@@ -49,49 +49,4 @@ nav a:hover {
 /* Main Content Styles */
 main {
     padding: 2rem;
-    max-width: 1200px;
-    margin: auto;
-}
-
-section {
-    margin-bottom: 2rem;
-}
-
-section h2 {
-    font-size: 2rem;
-    border-bottom: 2px solid #007acc;
-    padding-bottom: 0.5rem;
-}
-
-/* Project Cards */
-.project-card {
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.project-card h3 {
-    margin-top: 0;
-}
-
-.project-card p {
-    margin: 0.5rem 0;
-}
-
-/* Footer Styles */
-footer {
-    background-color: #007acc;
-    color: white;
-    text-align: center;
-    padding: 1rem 0;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-}
-
-footer p {
-    margin: 0;
 }
