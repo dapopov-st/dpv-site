@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="description" content="A list of all blog posts.">
 
-<title>About me – Dmitriy Popov-Velasco</title>
+<title>Dmitriy’s Blog – Dmitriy Popov-Velasco</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -30,6 +31,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-listing/list.min.js"></script>
+<script src="site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -66,7 +69,65 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script>
 
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-listing .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: ["listing-categories"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -82,7 +143,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./posts.html"> 
+    <a class="nav-link active" href="./posts.html" aria-current="page"> 
 <span class="menu-text">Blogs</span></a>
   </li>  
   <li class="nav-item">
@@ -113,18 +174,23 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#about-me" id="toc-about-me" class="nav-link active" data-scroll-target="#about-me">About me</a></li>
+  <li><a href="#blog" id="toc-blog" class="nav-link active" data-scroll-target="#blog">Blog</a></li>
   </ul>
 </nav>
-    </div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(0)</span></div></div></div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">About me</h1>
+<h1 class="title">Dmitriy’s Blog</h1>
 </div>
 
+<div>
+  <div class="description">
+    A list of all blog posts.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
@@ -139,17 +205,27 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="about-me" class="level1">
-<h1>About me</h1>
-<p>I hold graduate degress in math and economics,and I’m passionate about machine learning, programming, and LLMs. Currenly, I’m working on number of machine learning projects. From November 2022 to August 2024, I worked as a Data Analyst at LS Direct, where I performed data analytics and data engineering tasks for some of the company’s largest clients, helping the company quintuple the original budgets in some cases. I have developed both internal and client-facing automations using Python, SQL, and GCP, saving our team hours of time weekly. Whenever possible, I deeply favor programmatic solutions that streamline daily processes.</p>
-<p>Previously, I worked at Lake Mary High School as an AP Computer Science teacher for two years, restarting the school’s AP Computer Science A program (object-oriented and algorithmic programming with Java) and being the founding advisor for LMHS AI Club, introducing advanced students to deep learning with PyTorch and Linux. Prior to that, I taught algebra to disadvantaged communities at Vanden High School.</p>
-<p>Before that, I’ve completed an undergrad in math and three graduate programs, one in math and yes, two in economics (applied and mathematical), the latest from UC Davis. As a graduate student, I got to work on computer vision applications and to teach statistical methods, econometrics, and graduate economic theory. I have always been drawn to linguistic and computational aspects of the world, and in the past, I’ve learned numerous languages (being reasonably fluent at roughly 7 at one point). Since then I have shifted my passion to deep learning and computer languages, especially LLMs and Python.</p>
-<p>When I’m not at work, I’m either working away at LLMs, reading arXiv papers, following along with the fastai community, climbing, or hiking.</p>
+<section id="blog" class="level1">
+<h1>Blog</h1>
+<p>Here are all of my blog posts:</p>
+<ul>
+<li><a href="my-first-post.html">My First Post</a></li>
+<li><a href="my-second-post.html">My Second Post</a></li>
+<li><a href="my-third-post.html">My Third Post</a></li>
+</ul>
+
 
 
 </section>
 
-</main> <!-- /main -->
+<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
+<div class="list grid quarto-listing-cols-3">
+
+</div>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
