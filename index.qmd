@@ -3,7 +3,9 @@
 
 <div class="bio-container">
 
-![](imgs/me-about-victoria.jpg){.bio-image}
+<div class="bio-image">
+![](imgs/me-about-victoria.jpg)
+</div>
 
 <div class="bio-text">
 
