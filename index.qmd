@@ -1,9 +1,11 @@
 
 # Dmitriy Popov-Velasco
 
-![](imgs/me-about-victoria.jpg){.image-container}
+<div class="bio-container">
 
-I'm a data scientist/machine learning engineer experienced with Python, GCP, and LLMs. I love to build with code and LLMs.
+![](imgs/me-about-victoria.jpg){.bio-image}
+
+<div class="bio-text">
 
 ## Bio
 
@@ -14,3 +16,8 @@ Previously, I worked at Lake Mary High School as an AP Computer Science teacher 
 Before that, I've completed an undergrad in math and three graduate programs, one in math and yes, two in economics (applied and mathematical), the latest from UC Davis. As a graduate student, I got to work on computer vision applications and to teach statistical methods, econometrics, and graduate economic theory. I have always been drawn to linguistic and computational aspects of the world, and in the past, I've learned numerous languages (being reasonably fluent at roughly 7 at one point). Since then I have shifted my passion to deep learning and computer languages, especially LLMs and Python.
 
 When I'm not at work, I'm either working away at LLMs, reading arXiv papers, following along with the fastai community, climbing, or hiking. 
+
+</div>
+
+</div>
+
