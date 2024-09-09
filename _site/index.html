@@ -33,6 +33,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
@@ -111,6 +112,7 @@ ul.task-list li input[type="checkbox"] {
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
+   
   <ul>
   <li><a href="#dmitriy-popov-velasco" id="toc-dmitriy-popov-velasco" class="nav-link active" data-scroll-target="#dmitriy-popov-velasco">Dmitriy Popov-Velasco</a>
   <ul class="collapse">
@@ -120,24 +122,17 @@ ul.task-list li input[type="checkbox"] {
 </nav>
     </div>
 <!-- main -->
-<div class="quarto-about-trestles">
-  <div class="about-entity">
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Dmitriy Popov-Velasco</h1>
-</div>
-<div class="quarto-title-meta">
-  </div>
-</header>
-  </div>
-  <div class="about-contents"><main class="content" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
+
+
+
 
 <section id="dmitriy-popov-velasco" class="level1">
 <h1>Dmitriy Popov-Velasco</h1>
 <p><img src="imgs/me-about-victoria.jpg" class="image-container img-fluid"></p>
 <p>I’m a data scientist/machine learning engineer experienced with Python, GCP, and LLMs. I love to build with code and LLMs.</p>
 <section id="bio" class="level2">
-<h2 data-anchor-id="bio">Bio</h2>
+<h2 class="anchored" data-anchor-id="bio">Bio</h2>
 <p>I hold graduate degress in math and economics,and I’m passionate about machine learning, programming, and LLMs. Currenly, I’m working on number of machine learning projects. From November 2022 to August 2024, I worked as a Data Analyst at LS Direct, where I performed data analytics and data engineering tasks for some of the company’s largest clients, helping the company quintuple the original budgets in some cases. I have developed both internal and client-facing automations using Python, SQL, and GCP, saving our team hours of time weekly. Whenever possible, I deeply favor programmatic solutions that streamline daily processes.</p>
 <p>Previously, I worked at Lake Mary High School as an AP Computer Science teacher for two years, restarting the school’s AP Computer Science A program (object-oriented and algorithmic programming with Java) and being the founding advisor for LMHS AI Club, introducing advanced students to deep learning with PyTorch and Linux. Prior to that, I taught algebra to disadvantaged communities at Vanden High School.</p>
 <p>Before that, I’ve completed an undergrad in math and three graduate programs, one in math and yes, two in economics (applied and mathematical), the latest from UC Davis. As a graduate student, I got to work on computer vision applications and to teach statistical methods, econometrics, and graduate economic theory. I have always been drawn to linguistic and computational aspects of the world, and in the past, I’ve learned numerous languages (being reasonably fluent at roughly 7 at one point). Since then I have shifted my passion to deep learning and computer languages, especially LLMs and Python.</p>
@@ -146,9 +141,8 @@ ul.task-list li input[type="checkbox"] {
 
 </section>
 </section>
-</main></div>
-</div>
- <!-- /main -->
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -169,6 +163,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
   const isCodeAnnotation = (el) => {
     for (const clz of el.classList) {
       if (clz.startsWith('code-annotation-')) {                     
