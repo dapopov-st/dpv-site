@@ -20,7 +20,7 @@ website:
     collapse: false
     left:
     - text: "About"
-      href: "index.qmd"
+      href: about.html
     - text: "Blogs"
       href: posts.html
     - text: "Projects"
