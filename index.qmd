@@ -8,6 +8,8 @@
 </div>
 
 <div class="bio-text">
+## About me
+I'm a data scientist/machine learning engineer experienced with Python, GCP, and LLMs. I love to build with code and LLMs.
 
 ## Bio
 
