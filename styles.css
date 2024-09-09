@@ -95,3 +95,9 @@ a:hover {
         flex: 1 1 33%;
     }
 }
+
+.image-container img {
+    display: block;
+    margin-left: auto;
+    margin-right: 50%; /* Adjust this value to move the image more to the left */
+}
