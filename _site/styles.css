@@ -3,7 +3,7 @@ body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f2eecb; /* Light tan background */
+    background-color: #f7f2c6; /* Light tan background */
     color: #333; /* Dark text color */
 }
 
@@ -42,9 +42,9 @@ nav a {
     font-weight: bold;
 }
 
-nav a:hover {
+/* nav a:hover {
     background-color: #00004c;
-}
+} */
 
 /* Main Content Styles */
 main {
