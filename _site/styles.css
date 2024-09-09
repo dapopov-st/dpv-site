@@ -18,8 +18,8 @@ a:hover {
 
 /* Header Styles */
 header {
-    background-color: #007acc;
-    color: white;
+    /*background-color: #007acc;*/
+    color: #004c73;
     padding: .1rem 0;
     text-align: center;
 }
@@ -33,11 +33,11 @@ header h1 {
 nav {
     display: flex;
     justify-content: center;
-    background-color: #00004c;
+    /*background-color: #00004c;*/
 }
 
 nav a {
-    padding: .1rem;
+    padding: .05rem;
     color: white;
     font-weight: bold;
 }
