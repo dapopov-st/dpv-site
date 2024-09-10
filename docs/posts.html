@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="A list of all blog posts.">
+<meta name="description" content="A collection of my blogs.">
 
 <title>Dmitriy’s Blog – Dmitriy Popov-Velasco</title>
 <style>
@@ -70,20 +70,20 @@ ul.task-list li input[type="checkbox"] {
 <script>
 
   window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
+    const listingTargetEl = window.document.querySelector('#listing-blog-listings .list');
     if (!listingTargetEl) {
       // No listing discovered, do not attach.
       return; 
     }
 
     const options = {
-      valueNames: ['listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-date','listing-title',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-categories"],
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description","listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
+    window['quarto-listings']['listing-blog-listings'] = new List('listing-blog-listings', options);
 
     if (window['quarto-listing-loaded']) {
       window['quarto-listing-loaded']();
@@ -186,7 +186,7 @@ window.Quarto = {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(0)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(3)</span></div><div class="category" data-category="Machine Learning">Machine Learning <span class="quarto-category-count">(2)</span></div></div></div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -197,7 +197,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    A list of all blog posts.
+    A collection of my blogs.
   </div>
 </div>
 
@@ -227,9 +227,51 @@ window.Quarto = {
 
 </section>
 
-<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
+<div class="quarto-listing quarto-listing-container-grid" id="listing-blog-listings">
 <div class="list grid quarto-listing-cols-3">
-
+<div class="g-col-1" data-index="0" data-listing-file-modified-sort="1725998002656" data-listing-reading-time-sort="11" data-listing-word-count-sort="2045">
+<a href="./blog/posts/gpt2_from_from_scratch_to_tiny_stories/Part 2: Build GPT2.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Build GPT2
+</h5>
+</div>
+</div>
+</a>
+</div>
+<div class="g-col-1" data-index="1" data-categories="Machine Learning" data-listing-date-sort="1666065600000">
+<a href="https://nycdatascience.com/blog/student-works/detecting-anomalies-in-a-statewide-housing-market-with-alternative-data/" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Detecting anomalies in a statewide housing market with alternative data
+</h5>
+<div class="card-attribution card-text-small end">
+<div class="listing-date">
+Oct 18, 2022
+</div>
+</div>
+</div>
+</div>
+</a>
+</div>
+<div class="g-col-1" data-index="2" data-categories="Machine Learning" data-listing-date-sort="1661745600000">
+<a href="https://nycdatascience.com/blog/meetup/investing-in-student-housing-in-ames-iowa/" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Investing in student housing
+</h5>
+<div class="card-attribution card-text-small end">
+<div class="listing-date">
+Aug 29, 2022
+</div>
+</div>
+</div>
+</div>
+</a>
+</div>
 </div>
 <div class="listing-no-matching d-none">
 No matching items

@@ -1,0 +1,13 @@
+- title: "Detecting anomalies in a statewide housing market with alternative data"
+  path: https://nycdatascience.com/blog/student-works/detecting-anomalies-in-a-statewide-housing-market-with-alternative-data/
+  date: 2022-10-18
+  categories: [Machine Learning]
+  description: |
+    Developing novel anomaly detection methods for the real estate market.
+
+- title: "Investing in student housing"
+  path: https://nycdatascience.com/blog/meetup/investing-in-student-housing-in-ames-iowa/
+  date: 2022-08-29
+  categories: [Machine Learning]
+  description: |
+    Kaggle-style supervised learning
