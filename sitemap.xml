@@ -2,26 +2,34 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://dpopovvelasco.dev/posts.html</loc>
-    <lastmod>2024-09-10T20:08:32.460Z</lastmod>
+    <lastmod>2024-09-10T20:13:13.671Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/projects.html</loc>
-    <lastmod>2024-09-10T20:08:32.460Z</lastmod>
+    <lastmod>2024-09-10T20:13:13.671Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Build GPT2.html</loc>
-    <lastmod>2024-09-10T20:08:32.440Z</lastmod>
+    <lastmod>2024-09-10T20:13:13.655Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html</loc>
+    <lastmod>2024-09-10T20:13:13.659Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes.html</loc>
-    <lastmod>2024-09-10T20:08:32.460Z</lastmod>
+    <lastmod>2024-09-10T20:13:13.671Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html</loc>
+    <lastmod>2024-09-10T20:13:13.655Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/index.html</loc>
-    <lastmod>2024-09-10T20:08:32.460Z</lastmod>
+    <lastmod>2024-09-10T20:13:13.671Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/contact.html</loc>
-    <lastmod>2024-09-10T20:08:32.448Z</lastmod>
+    <lastmod>2024-09-10T20:13:13.659Z</lastmod>
   </url>
 </urlset>
