@@ -126,6 +126,20 @@
     "text": "References\nPress, O., & Wolf, L. (2017). Using the output embedding to improve language models. arXiv preprint arXiv:1608.05859v3.\nVaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2017). Attention Is All You Need. arXiv preprint arXiv:1706.03762 .\nXiong, R., Yang, Y., He, D., Zheng, K., Zheng, S., Xing, C., Zhang, H., Lan, Y., Wang, L., & Liu, T. (2020). On Layer Normalization in the Transformer Architecture. arXiv preprint arXiv:2002.04745."
   },
   {
+    "objectID": "blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
+    "href": "blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
+    "title": "How to pass GCP PDE exam on the first attempt: Write up in progress",
+    "section": "",
+    "text": "---\nTitle: How to pass GCP PDE exam on the first attempt\ndate: 2024-08-31\ndescription: How to pass GCP PDE exam on the first attempt\ncategories: [GCP]\n---"
+  },
+  {
+    "objectID": "blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
+    "href": "blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
+    "title": "arXiv LLMs Assistant: Write up in progress",
+    "section": "",
+    "text": "---\nTitle: arXiv LLMs Assistant\ndate: 2024-05-31\ndescription: arXiv LLMs Assistant\ncategories: [LLMs]\n---"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Dmitriy Popov-Velasco",
