@@ -1,3 +1,4 @@
+
 # Dmitriy Popov-Velasco
 
 <div class="bio-container">
@@ -7,6 +8,8 @@
 </div>
 
 <div class="bio-text">
+## About me
+I'm a data scientist/machine learning engineer experienced with Python, GCP, and LLMs. I love to build with code and LLMs.
 
 ## Bio
 
@@ -21,3 +24,4 @@ When I'm not at work, I'm either working away at LLMs, reading arXiv papers, fol
 </div>
 
 </div>
+
