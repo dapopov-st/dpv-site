@@ -14,22 +14,29 @@ website:
   #       text: About
 
   navbar:
-    title: false
+    pinned: true
     background: dark
     pinned: false
     collapse: false
     left:
-    - text: "About"
-      href: index.html
-    - text: "Blogs"
-      href: posts.html
-    - text: "Projects"
-      file: projects.html
-    - text: Notes
-      file: notes.html
-    - text: Contact
-      href: contact.html
-      target: _blank
+      - text: "About"
+        href: index.html
+      - text: "Blogs"
+        href: posts.html
+      - text: "Projects"
+        file: projects.html
+      - text: Notes
+        file: notes.html
+      - text: Contact
+        href: contact.html
+        target: _blank
+    right:
+      - icon: linkedin 
+        href: https://www.linkedin.com/in/dapvelasco
+      - icon: envelope
+        aria-label: email
+        href: "mailto:dpopovvelasco@gmail.com"
+
 
 # format:
 #   html:
@@ -53,10 +60,42 @@ files:
 #     toc: true
 #     # syntax-definitions: 
 #     # - fomo.xml
+# format:
+#   html:
+#     theme: cosmo
+#     css: styles.scss
+#     toc: true
+# execute: 
+#   freeze: auto
+
+# Try with scss
+  search: 
+    location: navbar
+    type: textbox
+  
+
+project:
+  type: website
+  output-dir: docs
+
+  preview: 
+    port: 22222
+    browser: true
+    watch-inputs: true
+    navigate: true
+
+execute:
+  freeze: true
+
 format:
   html:
-    theme: cosmo
-    css: styles.scss
-    toc: true
-execute: 
-  freeze: auto
+    fontsize: 1.1em
+    theme: 
+      - pulse
+      - styles.scss
+    toc: false
+    code-link: true
+    anchor-sections: true
+    fig-cap-location: margin
+    reference-location: margin
+    footnotes-hover: true
