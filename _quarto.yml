@@ -25,9 +25,7 @@ website:
         file: projects.html
       - text: Notes
         file: notes.html
-      - text: Contact
-        href: contact.html
-        target: _blank
+
     right:
       - icon: linkedin 
         href: https://www.linkedin.com/in/dapvelasco
