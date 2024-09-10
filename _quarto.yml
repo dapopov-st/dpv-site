@@ -15,9 +15,7 @@ website:
 
   navbar:
     pinned: true
-    background: dark
-    pinned: false
-    collapse: false
+
     left:
       - text: "About"
         href: index.html
