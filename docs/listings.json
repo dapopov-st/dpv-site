@@ -2,9 +2,9 @@
   {
     "listing": "/posts.html",
     "items": [
+      "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Build GPT2.html",
       "/blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
-      "/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
-      "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Build GPT2.html"
+      "/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html"
     ]
   }
 ]
