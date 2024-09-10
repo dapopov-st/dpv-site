@@ -4,7 +4,7 @@
     "href": "posts.html",
     "title": "Dmitriy’s Blog",
     "section": "",
-    "text": "Order By\n       Default\n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Title\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\nDate\n\n\nTitle\n\n\n\n\n\n\n \n\n\nHow to pass GCP PDE exam on the first attempt: Write up in progress\n\n\n\n\n \n\n\narXiv LLMs Assistant: Write up in progress\n\n\n\n\nSep 5, 2024\n\n\nBuilding the GPT-2 transformer in PyTorch\n\n\n\n\nOct 18, 2022\n\n\nDetecting anomalies in a statewide housing market with alternative data\n\n\n\n\nAug 29, 2022\n\n\nInvesting in student housing\n\n\n\n\n\nNo matching items"
+    "text": "Order By\n       Default\n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Title\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\nDate\n\n\nTitle\n\n\n\n\n\n\nSep 5, 2024\n\n\nBuilding the GPT-2 transformer in PyTorch\n\n\n\n\nAug 31, 2024\n\n\nHow to pass GCP PDE exam on the first attempt: Write up in progress\n\n\n\n\nMay 31, 2024\n\n\narXiv LLMs Assistant: Write up in progress\n\n\n\n\nOct 18, 2022\n\n\nDetecting anomalies in a statewide housing market with alternative data\n\n\n\n\nAug 29, 2022\n\n\nInvesting in student housing\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Build GPT2.html",
@@ -124,20 +124,6 @@
     "title": "Building the GPT-2 transformer in PyTorch",
     "section": "References",
     "text": "References\nPress, O., & Wolf, L. (2017). Using the output embedding to improve language models. arXiv preprint arXiv:1608.05859v3.\nVaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2017). Attention Is All You Need. arXiv preprint arXiv:1706.03762 .\nXiong, R., Yang, Y., He, D., Zheng, K., Zheng, S., Xing, C., Zhang, H., Lan, Y., Wang, L., & Liu, T. (2020). On Layer Normalization in the Transformer Architecture. arXiv preprint arXiv:2002.04745."
-  },
-  {
-    "objectID": "blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
-    "href": "blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
-    "title": "How to pass GCP PDE exam on the first attempt: Write up in progress",
-    "section": "",
-    "text": "---\nTitle: How to pass GCP PDE exam on the first attempt\ndate: 2024-08-31\ndescription: How to pass GCP PDE exam on the first attempt\ncategories: [GCP]\n---"
-  },
-  {
-    "objectID": "blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
-    "href": "blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
-    "title": "arXiv LLMs Assistant: Write up in progress",
-    "section": "",
-    "text": "---\nTitle: arXiv LLMs Assistant\ndate: 2024-05-31\ndescription: arXiv LLMs Assistant\ncategories: [LLMs]\n---"
   },
   {
     "objectID": "index.html",
