@@ -24,7 +24,6 @@ ul.task-list li input[type="checkbox"] {
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="site_libs/quarto-search/fuse.min.js"></script>
@@ -44,14 +43,13 @@ ul.task-list li input[type="checkbox"] {
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
-  "type": "overlay",
+  "type": "textbox",
   "limit": 50,
   "keyboard-shortcut": [
     "f",
     "/",
     "s"
   ],
-  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -68,16 +66,25 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<link rel="stylesheet" href="styles.scss">
 </head>
 
-<body class="nav-fixed">
+<body class="nav-fixed fullcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand " data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-          <ul class="navbar-nav navbar-nav-scroll me-auto">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Dmitriy Popov-Velasco</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
     <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">About</span></a>
@@ -99,9 +106,21 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Contact</span></a>
   </li>  
 </ul>
-          <div class="quarto-navbar-tools">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/dapvelasco"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:dpopovvelasco@gmail.com"> <i class="bi bi-envelope" role="img" aria-label="email">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
 </div>
-            <div id="quarto-search" class="" title="Search"></div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -109,15 +128,7 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#dmitriy-popov-velasco" id="toc-dmitriy-popov-velasco" class="nav-link active" data-scroll-target="#dmitriy-popov-velasco">Dmitriy Popov-Velasco</a></li>
-  </ul>
-</nav>
-    </div>
+    
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -570,6 +581,19 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p><span class="faux-block">© 2023 Marvin Schmitt CC BY-SA 4.0</span></p>
+</div>   
+    <div class="nav-footer-center">
+<p><span class="faux-block"><a href="https://www.marvinschmitt.com/blog/website-tutorial-quarto/">View the tutorial for this template!</a></span></p>
+</div>
+    <div class="nav-footer-right">
+<p><span class="faux-block"><a href="https://github.com/marvinschmitt/quarto-website-template/">View source on GitHub</a></span></p>
+</div>
+  </div>
+</footer>
 
 
 
