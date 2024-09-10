@@ -1,5 +1,5 @@
-project:
-  type: website
+# project:
+#   type: website
 resources:
   - CNAME
 
@@ -35,8 +35,46 @@ website:
         aria-label: email
         href: "mailto:dpopovvelasco@gmail.com"
 
+# Don't touch unless you know what you are doing :) ------------
+  search: 
+    location: navbar
+    type: textbox
+  page-footer: 
+    left: |
+      <span class="faux-block">&#169; 2023 Marvin Schmitt CC BY-SA 4.0</span>
+    center: |
+      <span class="faux-block"><a href="https://www.marvinschmitt.com/blog/website-tutorial-quarto/">View the tutorial for this template!</a></span>
+    right: |
+      <span class="faux-block"><a href="https://github.com/marvinschmitt/quarto-website-template/">View source on GitHub</a></span>
 
-# format:
+project:
+  type: website
+  output-dir: docs
+
+  preview: 
+    port: 22222
+    browser: true
+    watch-inputs: true
+    navigate: true
+
+execute:
+  freeze: true
+
+format:
+  html:
+    fontsize: 1.1em
+    theme: 
+      - pulse
+      - html/styles.scss
+    toc: false
+    code-link: true
+    anchor-sections: true
+    fig-cap-location: margin
+    reference-location: margin
+    footnotes-hover: true
+
+
+    # format:
 #   html:
 #     theme: cosmo
 #     #css: styles.css
@@ -67,33 +105,3 @@ files:
 #   freeze: auto
 
 # Try with scss
-  search: 
-    location: navbar
-    type: textbox
-  
-
-project:
-  type: website
-  output-dir: docs
-
-  preview: 
-    port: 22222
-    browser: true
-    watch-inputs: true
-    navigate: true
-
-execute:
-  freeze: true
-
-format:
-  html:
-    fontsize: 1.1em
-    theme: 
-      - pulse
-      - styles.scss
-    toc: false
-    code-link: true
-    anchor-sections: true
-    fig-cap-location: margin
-    reference-location: margin
-    footnotes-hover: true
