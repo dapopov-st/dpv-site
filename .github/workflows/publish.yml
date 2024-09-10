@@ -14,6 +14,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Sass
+        run: npm install -g sass
+
+      - name: Compile SCSS to CSS
+        run: sass styles.scss styles.css
+
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
