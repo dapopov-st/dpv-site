@@ -78,24 +78,8 @@ files:
   - projects.qmd
   - notes.qmd
   - index.qmd
-  #- about.qmd
-# format:
-#   html:
-#     reference-location: document
-#     theme: 
-#       dark: [solar, custom.scss]
-#       light: [flatly, custom-light.scss]
-#     css:
-#       - styles.css
-#     toc: true
-#     # syntax-definitions: 
-#     # - fomo.xml
-# format:
-#   html:
-#     theme: cosmo
-#     css: styles.scss
-#     toc: true
-# execute: 
-#   freeze: auto
 
-# Try with scss
+
+html: 
+  includes:
+    in_header: favicon.html
