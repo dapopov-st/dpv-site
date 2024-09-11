@@ -1,7 +1,9 @@
 [
   {
     "listing": "/projects.html",
-    "items": []
+    "items": [
+      "/projects/indiv_projects/arxiv/arxiv-llm-assistant.html"
+    ]
   },
   {
     "listing": "/posts.html",

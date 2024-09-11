@@ -77,9 +77,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-title-sort'] },{ data: ['listing-date-sort'] }],
+      valueNames: ['listing-date','listing-title',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
       
-      searchColumns: ["listing-title","listing-date","listing-categories","listing-description"],
+      searchColumns: ["listing-date","listing-title","listing-author"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -186,7 +186,7 @@ window.Quarto = {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(4)</span></div><div class="category" data-category="LLMs">LLMs <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Machine Learning">Machine Learning <span class="quarto-category-count">(4)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(5)</span></div><div class="category" data-category="LLMs">LLMs <span class="quarto-category-count">(2)</span></div><div class="category" data-category="Machine Learning">Machine Learning <span class="quarto-category-count">(4)</span></div></div></div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -225,14 +225,14 @@ window.Quarto = {
      <select id="listing-project-listings-sort" class="form-select" aria-label="Order By" onchange="window['quarto-listings']['listing-project-listings'].sort(this.options[this.selectedIndex].value, { order: this.options[this.selectedIndex].getAttribute('data-direction')})">
        <option value="" disabled="" selected="" hidden="">Order By</option>
        <option value="index" data-direction="asc">Default</option>
-         <option value="listing-title-sort" data-direction="asc">
-          Title
-        </option>
          <option value="listing-date-sort" data-direction="asc">
           Date - Oldest
         </option>
          <option value="listing-date-sort" data-direction="desc">
           Date - Newest
+        </option>
+         <option value="listing-title-sort" data-direction="asc">
+          Title
         </option>
      </select>
   </div>
@@ -261,7 +261,15 @@ window.Quarto = {
 <a href="https://github.com/dapopov-st/arXiv-llms-assistant" class="title listing-title">arXiv-llms-assistant</a>
 </td>
 </tr>
-<tr data-index="1" data-categories="Machine Learning" data-listing-date-sort="1666065600000" data-listing-title-sort="Detecting anomalies in a statewide housing market with alternative data">
+<tr data-index="1" data-categories="LLMs" data-listing-date-sort="1689134400000" data-listing-file-modified-sort="1726094326490" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="112" data-listing-title-sort="arXiv LLMs Assistant" data-listing-filename-sort="arxiv-llm-assistant.ipynb">
+<td>
+<span class="listing-date">Jul 12, 2023</span>
+</td>
+<td>
+<a href="./projects/indiv_projects/arxiv/arxiv-llm-assistant.html" class="title listing-title">arXiv LLMs Assistant</a>
+</td>
+</tr>
+<tr data-index="2" data-categories="Machine Learning" data-listing-date-sort="1666065600000" data-listing-title-sort="Detecting anomalies in a statewide housing market with alternative data">
 <td>
 <span class="listing-date">Oct 18, 2022</span>
 </td>
@@ -269,7 +277,7 @@ window.Quarto = {
 <a href="https://nycdatascience.com/blog/student-works/detecting-anomalies-in-a-statewide-housing-market-with-alternative-data/" class="title listing-title">Detecting anomalies in a statewide housing market with alternative data</a>
 </td>
 </tr>
-<tr data-index="2" data-categories="Machine Learning" data-listing-date-sort="1661745600000" data-listing-title-sort="Investing in student housing">
+<tr data-index="3" data-categories="Machine Learning" data-listing-date-sort="1661745600000" data-listing-title-sort="Investing in student housing">
 <td>
 <span class="listing-date">Aug 29, 2022</span>
 </td>
@@ -277,7 +285,7 @@ window.Quarto = {
 <a href="https://github.com/dapopov-st/housing-price-predictions" class="title listing-title">Investing in student housing</a>
 </td>
 </tr>
-<tr data-index="3" data-categories="Machine Learning" data-listing-date-sort="1661745600000" data-listing-title-sort="Inventory classes with pytest and pdoc">
+<tr data-index="4" data-categories="Machine Learning" data-listing-date-sort="1661745600000" data-listing-title-sort="Inventory classes with pytest and pdoc">
 <td>
 <span class="listing-date">Aug 29, 2022</span>
 </td>
