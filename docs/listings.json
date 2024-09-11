@@ -1,5 +1,9 @@
 [
   {
+    "listing": "/projects.html",
+    "items": []
+  },
+  {
     "listing": "/posts.html",
     "items": [
       "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Build GPT2.html",
