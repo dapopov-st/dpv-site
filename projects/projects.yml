@@ -4,6 +4,7 @@
   categories: [Machine Learning, LLMs]
   description: |
     An LLM assistant for finding, interacting with, and effectively learning from arXiv papers.
+  thumbnail: ./images/arxiv-llms500.png
 
 - title: "Detecting anomalies in a statewide housing market with alternative data"
   path: https://nycdatascience.com/blog/student-works/detecting-anomalies-in-a-statewide-housing-market-with-alternative-data/
