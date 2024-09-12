@@ -32,6 +32,8 @@ website:
       - icon: envelope
         aria-label: email
         href: "mailto:dpopovvelasco@gmail.com"
+      - icon: github
+        href: https://github.com/dapopov-st
 
   search: 
     location: navbar
