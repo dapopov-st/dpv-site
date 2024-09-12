@@ -4,7 +4,7 @@
     "href": "projects.html",
     "title": "Dmitriy’s Projects",
     "section": "",
-    "text": "arXiv-llms-assistant\n\n\n\n\n\n\n\n\nMay 31, 2024\n\n\n\n\n\n\n\narXiv LLMs Assistant\n\n\n\n\n\n\n\n\nJul 12, 2023\n\n\n\n\n\n\n\nDetecting anomalies in a statewide housing market with alternative data\n\n\n\n\n\n\n\n\nOct 18, 2022\n\n\n\n\n\n\n\nInvesting in student housing\n\n\n\n\n\n\n\n\nAug 29, 2022\n\n\n\n\n\n\n\nInventory classes with pytest and pdoc\n\n\n\n\n\n\n\n\nAug 29, 2022\n\n\n\n\n\n\nNo matching items"
+    "text": "arXiv LLMs Assistant\n\n\n\n\n\n\n\n\nMay 31, 2024\n\n\n\n\n\n\n\narXiv-llms-assistant\n\n\n\n\n\n\n\n\nMay 31, 2024\n\n\n\n\n\n\n\nDetecting anomalies in a statewide housing market with alternative data\n\n\n\n\n\n\n\n\nOct 18, 2022\n\n\n\n\n\n\n\nInvesting in student housing\n\n\n\n\n\n\n\n\nAug 29, 2022\n\n\n\n\n\n\n\nInventory classes with pytest and pdoc\n\n\n\n\n\n\n\n\nAug 29, 2022\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts.html",
@@ -144,7 +144,7 @@
     "href": "projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
     "title": "arXiv LLMs Assistant",
     "section": "",
-    "text": "arXiv-llms-assistant: ‘Public’ version of a project submitted as part of an AI competition at LS Direct, demonstrating the use and evaluation of RAG with on-prem data as a way to capitalize on applications of gen AI to privacy-restricted domains.\n\nApplied exllamav2 6.0bpw quantization to run Mixtral-8x7B on personal GPUs with virtually no loss in quality and evaluate RAG pipeline configurations to find the best performing one (evaluation score ~90%).\nBuilt an assistant to study the LLM domain, compare out-of-repository papers with papers in a personal repo (Zotero) and recommend recent papers to read along with lists of question/answer pairs.\nOrchestrated a multi-faceted evaluation of RAG setups, implementing feedback mechanisms that led to the selection of the most effective configuration; this process improved question relevance, elevating overall project outcomes.\nBuilt a command line utility to ask questions about the contents of uploaded papers and generate question/answer sets based on these papers.\n\n\nls .\n\narxiv-llms500.png  arxiv-llms-assistant.ipynb"
+    "text": "arXiv-llms-assistant: ‘Public’ version of a project submitted as part of an AI competition at LS Direct, demonstrating the use and evaluation of RAG with on-prem data as a way to capitalize on applications of gen AI to privacy-restricted domains.\n\nApplied exllamav2 6.0bpw quantization to run Mixtral-8x7B on personal GPUs with virtually no loss in quality and evaluate RAG pipeline configurations to find the best performing one (evaluation score ~90%).\nBuilt an assistant to study the LLM domain, compare out-of-repository papers with papers in a personal repo (Zotero) and recommend recent papers to read along with lists of question/answer pairs.\nOrchestrated a multi-faceted evaluation of RAG setups, implementing feedback mechanisms that led to the selection of the most effective configuration; this process improved question relevance, elevating overall project outcomes.\nBuilt a command line utility to ask questions about the contents of uploaded papers and generate question/answer sets based on these papers."
   },
   {
     "objectID": "index.html",
