@@ -1,11 +1,3 @@
-- title: "arXiv-llms-assistant"
-  path: https://github.com/dapopov-st/arXiv-llms-assistant
-  date: 2024-05-31
-  categories: [Machine Learning, LLMs]
-  description: |
-    An LLM assistant for finding, interacting with, and effectively learning from arXiv papers.
-  thumbnail: arxiv-llms500.png
-
 - title: "Detecting anomalies in a statewide housing market with alternative data"
   path: https://nycdatascience.com/blog/student-works/detecting-anomalies-in-a-statewide-housing-market-with-alternative-data/
   date: 2022-10-18
