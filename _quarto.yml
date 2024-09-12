@@ -12,7 +12,7 @@ website:
   #       text: Home
   #     - href: about.qmd
   #       text: About
-
+  favicon: favicon.ico
   navbar:
     pinned: true
 
@@ -80,6 +80,6 @@ files:
   - index.qmd
 
 
-html: 
-  includes:
-    in_header: favicon.html
+# html: 
+#   includes:
+#     in_header: favicon.html
