@@ -4,7 +4,7 @@
     "href": "projects.html",
     "title": "Dmitriy’s Projects",
     "section": "",
-    "text": "Detecting anomalies in a statewide housing market with alternative data\n\n\n\n\n\nUnsupervised learning (TDA) project to detect housing market anomalies built with Zach Stone for Haystacks.ai.\n\n\n\n\n\nMay 31, 2024\n\n\n\n\n\n\n\n\n\n\n\n\narXiv LLMs Assistant\n\n\n\n\n\narXiv-llms-assistant is a ‘public’ version of a project submitted as part of an AI competition at LS Direct, demonstrating the use and evaluation of RAG with on-prem data as a way to capitalize on applications of gen AI to privacy-restricted domains.\n\n\n\n\n\nMay 31, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nInvesting in student housing with ML\n\n\n\n\n\nKaggle-style supervised learning \n\n\n\n\n\nAug 29, 2022\n\n\n\n\n\n\n\n\n\n\n\n\nInventory classes with pytest and pdoc\n\n\n\n\n\nInventory application for a tech video channel featuring computer builds with inventory classes in object-oriented Python, 90%+ coverage tests with pytest, comprehensive API documentation with pdoc, and packaging inside Docker.\n\n\n\n\n\nMar 10, 2022\n\n\n\n\n\n\n\n\n\n\n\n\nCOMPARATIVE STATICS OF A MONOPOLISTIC FIRM FACING RATE-OF-RETURN AND COMMAND-AND-CONTROL POLLUTION CONSTRAINTS\n\n\n\n\n\nA paper I co-authored in mathematical economics/economic theory.\n\n\n\n\n\nMar 5, 2014\n\n\n\n\n\n\nNo matching items"
+    "text": "Detecting anomalies in a statewide housing market with alternative data\n\n\n\n\n\nUnsupervised learning (TDA) project to detect housing market anomalies built with Zach Stone for Haystacks.ai.\n\n\n\n\n\nMay 31, 2024\n\n\n\n\n\n\n\n\n\n\n\n\narXiv LLMs Assistant\n\n\n\n\n\narXiv-llms-assistant is a ‘public’ version of a project submitted as part of an AI competition at LS Direct, demonstrating the use and evaluation of RAG with on-prem data as a way to capitalize on applications of gen AI to privacy-restricted domains.\n\n\n\n\n\nMay 31, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nProject Bird\n\n\n\n\n\nGCP ETL project to pull data from eBird API 2.0 and display a map of recent bird observations in a given area - a small side project to practice GCP skills and see more birds.\n\n\n\n\n\nApr 30, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nInvesting in student housing with ML\n\n\n\n\n\nKaggle-style supervised learning \n\n\n\n\n\nAug 29, 2022\n\n\n\n\n\n\n\n\n\n\n\n\nInventory classes with pytest and pdoc\n\n\n\n\n\nInventory application for a tech video channel featuring computer builds with inventory classes in object-oriented Python, 90%+ coverage tests with pytest, comprehensive API documentation with pdoc, and packaging inside Docker.\n\n\n\n\n\nMar 10, 2022\n\n\n\n\n\n\n\n\n\n\n\n\nCOMPARATIVE STATICS OF A MONOPOLISTIC FIRM FACING RATE-OF-RETURN AND COMMAND-AND-CONTROL POLLUTION CONSTRAINTS\n\n\n\n\n\nA paper I co-authored in mathematical economics/economic theory.\n\n\n\n\n\nMar 5, 2014\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "backups/investing-in-student-housing/investing-in-student-housing.html",
@@ -133,18 +133,18 @@
     "text": "References\nPress, O., & Wolf, L. (2017). Using the output embedding to improve language models. arXiv preprint arXiv:1608.05859v3.\nVaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2017). Attention Is All You Need. arXiv preprint arXiv:1706.03762 .\nXiong, R., Yang, Y., He, D., Zheng, K., Zheng, S., Xing, C., Zhang, H., Lan, Y., Wang, L., & Liu, T. (2020). On Layer Normalization in the Transformer Architecture. arXiv preprint arXiv:2002.04745."
   },
   {
-    "objectID": "projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
-    "href": "projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
-    "title": "arXiv LLMs Assistant",
+    "objectID": "projects/indiv_projects/project-bird/project-bird.html",
+    "href": "projects/indiv_projects/project-bird/project-bird.html",
+    "title": "Project Bird",
     "section": "",
-    "text": "Applied exllamav2 6.0bpw quantization to run Mixtral-8x7B on personal GPUs with virtually no loss in quality and evaluate RAG pipeline configurations to find the best performing one (evaluation score ~90%).\nBuilt an assistant to study the LLM domain, compare out-of-repository papers with papers in a personal repo (Zotero) and recommend recent papers to read along with lists of question/answer pairs.\nOrchestrated a multi-faceted evaluation of RAG setups, implementing feedback mechanisms that led to the selection of the most effective configuration; this process improved question relevance, elevating overall project outcomes.\nBuilt a command line utility to ask questions about the contents of uploaded papers and generate question/answer sets based on these papers.\nGitHub link"
+    "text": "Source: Image by the author\n\n\n\n\nGCP ETL project to pull data from eBird API 2.0 and display a map of recent bird observations in a given area: a small side project to practice GCP skills and see more birds.\n\nSchedule an Airflow job to obtain data from eBird API 2.0 and store in Cloud Storage.\nClean the data via an Apache Beam Dataflow job and push the results to BigQuery.\nUse a Cloud function to trigger the Dataflow job in Step 2 on file upload to Cloud Storage bucket.\nBuild geographic visualization with BigQuery Geo Viz.\n\nGitHub link"
   },
   {
-    "objectID": "projects/indiv_projects/inventory-classes/inventory-classes.html",
-    "href": "projects/indiv_projects/inventory-classes/inventory-classes.html",
-    "title": "Inventory classes with pytest and pdoc",
+    "objectID": "projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
+    "href": "projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
+    "title": "Detecting anomalies in a statewide housing market with alternative data",
     "section": "",
-    "text": "Source: Image by the author\n\n\n\nInventory-classes-with-pytest-and-pdoc: Inventory application for a tech video channel featuring computer builds with inventory classes in object-oriented Python, 90%+ coverage tests with pytest, comprehensive API documentation with pdoc, and packaging inside Docker.\nGitHub link"
+    "text": "Source: Image by the authors\n\n\n\nNYC DSA project with Zach Stone. Detected housing market anomalies with returns of over $100K/property in Georgia for Haystacks.ai by building a robust web scraping solution using Python/GCP and co-developing novel agglomerative clustering techniques (topological data analysis).\nGitHub link"
   },
   {
     "objectID": "projects/indiv_projects/publication/bulletin-publication.html",
@@ -154,11 +154,18 @@
     "text": "Source: COMPARATIVE STATICS OF A MONOPOLISTIC FIRM FACING RATE-OF-RETURN AND COMMAND-AND-CONTROL POLLUTION CONSTRAINTS\n\n\n\n\nThe intrinsic comparative statics properties of a general rate-of-return regulated, profit-maximizing model of a monopolist facing a command-and-control pollution constraint are derived. Recent advances in the theory of comparative statics are used to derive the basic comparative statics of the model, which are contained in an observable negative semi-definite matrix and possess the form of Slutsky-like expressions. We consider several command-and-control pollution constraints that are commonly implemented in practice, and conclude that the intrinsic comparative statics properties of the model are qualitatively invariant to the type of command-and-control pollution constraint imposed. We compare our results with those extant, and find that several basic results from the standard A–J model no longer hold in our model.\nPublication link"
   },
   {
-    "objectID": "projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
-    "href": "projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
-    "title": "Detecting anomalies in a statewide housing market with alternative data",
+    "objectID": "projects/indiv_projects/inventory-classes/inventory-classes.html",
+    "href": "projects/indiv_projects/inventory-classes/inventory-classes.html",
+    "title": "Inventory classes with pytest and pdoc",
     "section": "",
-    "text": "Source: Image by the authors\n\n\n\nNYC DSA project with Zach Stone. Detected housing market anomalies with returns of over $100K/property in Georgia for Haystacks.ai by building a robust web scraping solution using Python/GCP and co-developing novel agglomerative clustering techniques (topological data analysis).\nGitHub link"
+    "text": "Source: Image by the author\n\n\n\nInventory-classes-with-pytest-and-pdoc: Inventory application for a tech video channel featuring computer builds with inventory classes in object-oriented Python, 90%+ coverage tests with pytest, comprehensive API documentation with pdoc, and packaging inside Docker.\nGitHub link"
+  },
+  {
+    "objectID": "projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
+    "href": "projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
+    "title": "arXiv LLMs Assistant",
+    "section": "",
+    "text": "Applied exllamav2 6.0bpw quantization to run Mixtral-8x7B on personal GPUs with virtually no loss in quality and evaluate RAG pipeline configurations to find the best performing one (evaluation score ~90%).\nBuilt an assistant to study the LLM domain, compare out-of-repository papers with papers in a personal repo (Zotero) and recommend recent papers to read along with lists of question/answer pairs.\nOrchestrated a multi-faceted evaluation of RAG setups, implementing feedback mechanisms that led to the selection of the most effective configuration; this process improved question relevance, elevating overall project outcomes.\nBuilt a command line utility to ask questions about the contents of uploaded papers and generate question/answer sets based on these papers.\nGitHub link"
   },
   {
     "objectID": "contact.html",
