@@ -3,7 +3,7 @@
   path: https://github.com/dapopov-st/housing-price-predictions
   date: 2022-08-29
   categories: [Machine Learning, ML Deployment]
-  image: ./project/images/anomalies_img500.png
+  image: ./projects/images/ames_img_500.png
   image-alt: Investing in student housing with ML
   description: |
     Kaggle-style supervised learning
