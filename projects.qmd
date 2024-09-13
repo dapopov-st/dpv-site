@@ -11,7 +11,7 @@ listing:
   categories: true # allows you to sort posts by assigned categories 
   sort-ui: false
   filter-ui: false
-title-block-banner: true
+#title-block-banner: true
 aliases: ["projects/"]
 format:
   html:
