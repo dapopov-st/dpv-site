@@ -2,7 +2,9 @@
   {
     "listing": "/projects.html",
     "items": [
+      "/projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
       "/projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
+      "/projects/indiv_projects/inventory-classes/inventory-classes.html",
       "/projects/indiv_projects/publication/bulletin-publication.html"
     ]
   },
@@ -12,7 +14,8 @@
       "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Optimize GPT2.html",
       "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 1: Build GPT2.html",
       "/blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
-      "/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html"
+      "/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
+      "/blog/posts/kto-optimization/kto-optimization.html"
     ]
   }
 ]

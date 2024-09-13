@@ -1,21 +1,9 @@
-- title: "Detecting anomalies in a statewide housing market with alternative data"
-  path: https://nycdatascience.com/blog/student-works/detecting-anomalies-in-a-statewide-housing-market-with-alternative-data/
-  date: 2022-10-18
-  categories: [Machine Learning]
-  description: |
-    Developing novel anomaly detection methods for the real estate market.
 
-- title: "Investing in student housing"
+- title: "Investing in student housing with ML"
   path: https://github.com/dapopov-st/housing-price-predictions
   date: 2022-08-29
-  categories: [Machine Learning]
+  categories: [Machine Learning, ML Deployment]
+  image: ./project/images/anomalies_img500.png
+  image-alt: Investing in student housing with ML
   description: |
     Kaggle-style supervised learning
-
-- title: "Inventory classes with pytest and pdoc"
-  path: https://github.com/dapopov-st/housing-price-predictions
-  date: 2022-08-29
-  categories: [Machine Learning]
-  description: |
-    Inventory-classes-with-pytest-and-pdoc: Inventory application for a tech video channel featuring computer builds with inventory classes in object-oriented Python, 90%+ coverage tests with pytest, comprehensive API documentation with pdoc, and packaging inside Docker.
-    
