@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2024-09-19">
-<meta name="description" content="Optimizing the GPT-2 transformer in PyTorch">
+<meta name="description" content="Tokenization mechanics and challenges">
 
-<title>Training a tokenizer – Dmitriy Popov-Velasco</title>
+<title>Part 4 - Tokenization mechanics and challenges – Dmitriy Popov-Velasco</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -166,10 +166,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Training a tokenizer</h1>
+      <h1 class="title">Part 4 - Tokenization mechanics and challenges</h1>
                   <div>
         <div class="description">
-          Optimizing the GPT-2 transformer in PyTorch
+          Tokenization mechanics and challenges
         </div>
       </div>
                           <div class="quarto-categories">
@@ -206,6 +206,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
+<section id="training-a-tokenizer" class="level1 page-columns page-full">
+<h1>Training a tokenizer</h1>
 <ul>
 <li>In <em>Part3: Train GPT-2</em>, all the pieces of training GPT-2 from scratch were present <em>except</em> training the tokenizer. For that, I took the GPT-2 tokenizer settings available from Hugging Face and trained a new tokenizer with a smaller vocabulary. In this part, I’ll attempt to train a GPT-2-style tokenizer from scratch following <a href="https://www.youtube.com/watch?v=zduSFxRajkE">Let’s build the GPT Tokenizer</a>. The custom tokenizer will not match the GPT-2 tokenizer exactly (likely since there are implementation details OpenAI didn’t discuss) and will not be fast enough to use in it’s base Python version. However, the main goal here is to study the mechanics of the tokenization process.</li>
 <li>GPT-2 tokenizer uses the UTF-8 unicode encoding standard. In the context of UTF-8, a code point is a unique numerical value assigned to a character, symbol, or glyph in the Unicode character set. UTF-8 encodes ASCII characters in 1 byte, and may use up to 4 bytes for non-ASCII characters as described in the following <a href="https://en.wikipedia.org/wiki/UTF-8">Wikipedia article</a>:</li>
@@ -1207,6 +1209,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 <p>Radford, A., Wu, J., Child, R., Luan, D., Amodei, D., &amp; Sutskever, I. (2019). Language models are unsupervised multitask learners. Technical report, OpenAI.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
