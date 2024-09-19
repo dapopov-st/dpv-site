@@ -435,7 +435,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 2: Optimize GPT2_files/figure-html/cell-43-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 2: Optimize GPT-2_files/figure-html/cell-43-1-image.png" class="img-fluid figure-img"></p>
 <figcaption class="margin-caption">Source: initial training dynamics, image by the author</figcaption>
 </figure>
 </div>
@@ -455,7 +455,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 2: Optimize GPT2_files/figure-html/cell-45-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 2: Optimize GPT-2_files/figure-html/cell-45-1-image.png" class="img-fluid figure-img"></p>
 <figcaption class="margin-caption">gpu-cpu</figcaption>
 </figure>
 </div>
@@ -464,7 +464,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 2: Optimize GPT2_files/figure-html/cell-46-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 2: Optimize GPT-2_files/figure-html/cell-46-1-image.png" class="img-fluid figure-img"></p>
 <figcaption class="margin-caption">memory-hierarchy</figcaption>
 </figure>
 </div>
@@ -500,7 +500,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p>In particular, the NxN attention matrix is never read from/written to HBM. It’s simple to perform the matrix multiplications in a streaming manner, but computing softmax this way is more of a challenge. The crux of the algorithmic rewrite is the online softmax trick, which incrementally computes the softmax without needing all the inputs as is customary for standard softmax normalization. The key insight is that the softmax function can be broken down into smaller chunks, computed independently on GPU, and then combined using a ‘softmax trick’ formula. This enables FlashAttention to process long sequences more efficiently, without having to materialize the entire attention matrix at once.<br>
 </p></li>
 <li><p>In more detail, from p.5 of Dao et al.&nbsp;(2022), the softmax trick uses intermediate <em>m</em> and <em>l</em> variables that combine the statistics from individual ‘attention submatrices’ to reconstruct the softmax for the entire attention matrix.<br>
-<img src="Part 2: Optimize GPT2_files/figure-html/cell-51-1-image.png" class="img-fluid" alt="flash-attention"></p></li>
+<img src="Part 2: Optimize GPT-2_files/figure-html/cell-51-1-image.png" class="img-fluid" alt="flash-attention"></p></li>
 <li><p>With FlashAttention in place, the four lines above become one line in the following code:</p></li>
 </ul>
 <div id="cell-53" class="cell">
@@ -545,7 +545,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 2: Optimize GPT2_files/figure-html/cell-61-1-image-2.png" class="img-fluid figure-img"></p>
+<p><img src="Part 2: Optimize GPT-2_files/figure-html/cell-61-1-image-2.png" class="img-fluid figure-img"></p>
 <figcaption class="margin-caption">Source: training dynamics with grad norm clipping, image by the author</figcaption>
 </figure>
 </div>
@@ -597,7 +597,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Part 2: Optimize GPT2_files/figure-html/cell-12-output-2.png" class="img-fluid figure-img"></p>
+<p><img src="Part 2: Optimize GPT-2_files/figure-html/cell-12-output-2.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
@@ -998,7 +998,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 2: Optimize GPT2_files/figure-html/cell-116-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 2: Optimize GPT-2_files/figure-html/cell-116-1-image.png" class="img-fluid figure-img"></p>
 <figcaption class="margin-caption">DDP training dynamics on two 3090’s with micro-batch size of 8, image by the author.png</figcaption>
 </figure>
 </div>
@@ -1009,7 +1009,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 2: Optimize GPT2_files/figure-html/cell-118-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 2: Optimize GPT-2_files/figure-html/cell-118-1-image.png" class="img-fluid figure-img"></p>
 <figcaption class="margin-caption">DDP training dynamics on two 3090’s with micro-batch size of 10, image by the author.png</figcaption>
 </figure>
 </div>
