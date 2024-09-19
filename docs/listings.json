@@ -12,8 +12,10 @@
   {
     "listing": "/posts.html",
     "items": [
-      "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Optimize GPT2.html",
-      "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 1: Build GPT2.html",
+      "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 4: Tokenization mechanics and challenges.html",
+      "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 3: Train GPT-2.html",
+      "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Optimize GPT-2.html",
+      "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 1: Build GPT-2.html",
       "/blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
       "/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
       "/blog/posts/kto-optimization/kto-optimization.html"

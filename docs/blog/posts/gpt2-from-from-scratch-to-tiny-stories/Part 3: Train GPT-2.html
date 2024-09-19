@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2024-09-17">
+<meta name="description" content="Optimizing the GPT-2 transformer in PyTorch">
+
+<title>Part 3: Train GPT-2 – Dmitriy Popov-Velasco</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Dmitriy Popov-Velasco</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../posts.html"> 
+<span class="menu-text">Blogs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/dapvelasco"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:dpopovvelasco@gmail.com"> <i class="bi bi-envelope" role="img" aria-label="email">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/dapopov-st"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Part 3: Train GPT-2</h1>
+                  <div>
+        <div class="description">
+          Optimizing the GPT-2 transformer in PyTorch
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">LLMs</div>
+                <div class="quarto-category">Training</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 17, 2024</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
+
+
+
+
+<ul>
+<li>This is Part 3 of building, optimizing, and training GPT-2 from scratch. In this part, I’ll train GPT-2-style transformer on the <a href="https://huggingface.co/datasets/roneneldan/TinyStories">Tiny Stories dataset</a>, which is a synthetic dataset of children’s stories produced by Microsoft Research. Since this dataset has shorter sequences and limited vocabulary, this is an opportunity to adjust both the tokenizer and the GPT-2 transformer to further speed up training. To this end, I’ll first train a Hugging Face tokenizer since OpenAI’s original tiktoken tokenizer cannot be trained. I’ll also show how to adjust Andrej’s code to be used with the Hugging Face tokenizer.</li>
+</ul>
+<section id="training-the-tokenizer" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="training-the-tokenizer">Training the tokenizer</h2>
+<ul>
+<li>I’ll first train the tokenizer using the method recommended by <a href="https://huggingface.co/learn/nlp-course/en/chapter6/2">Hugging Face</a>. I may loop back to this to replicate it from scratch in a later notebook.</li>
+</ul>
+<div id="cell-5" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>tiny_stories_ds<span class="op">=</span>load_dataset(<span class="st">"roneneldan/TinyStories"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_training_corpus(dataset,split<span class="op">=</span><span class="st">'train'</span>,field<span class="op">=</span><span class="st">'text'</span>):</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    dataset <span class="op">=</span> dataset[split]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> start_idx <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(dataset), <span class="dv">1024</span>): <span class="co">#using a power of 2, why not...</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">yield</span> dataset[start_idx:start_idx<span class="op">+</span><span class="dv">1024</span>][field]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>training_corpus <span class="op">=</span> get_training_corpus(tiny_stories_ds)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>old_tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(<span class="st">'gpt2'</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> old_tokenizer.train_new_from_iterator(training_corpus,vocab_size<span class="op">=</span><span class="dv">6400</span>) <span class="co"># don't forget to adjust the training script with this number!</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>tokenizer.save_pretrained(<span class="st">'./tokenizer/tiny_stories_tokenizer'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>Most common words get encoded in a single token</li>
+</ul>
+<p><code>tokenizer.encode(' dog'),tokenizer.encode(' girl'), tokenizer.encode(' bird'),tokenizer.encode(' dad'),tokenizer.encode(' mom'),tokenizer.encode(' cat'),tokenizer.encode(' Lily')</code> yields</p>
+<p><code>([634], [446], [537], [648], [365], [701], [364])</code> - Note the presence of space before the common words: this is how GPT-2 encodes words by default.</p>
+<ul>
+<li>Running some experiments on the tokenizer length, here are some statistics on a random subset of size 10000 tokenized with tokenizers with various vocabulary sizes:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Part 3: Train GPT-2_files/figure-html/cell-8-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Part 3: Train GPT-2_files/figure-html/cell-9-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Part 3: Train GPT-2_files/figure-html/cell-10-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Part 3: Train GPT-2_files/figure-html/cell-11-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">Source: graph made by the author</figcaption>
+</figure>
+</div>
+<ul>
+<li><p>As expected, as tokenizer size decreases, the average number of tokens per story increases and the distribution of tokens needed per story shifts to the rights slightly. Regardless, almost 97% of the stories can be tokenized in their entirety by 512 tokens or less. I thus choose to shrink the sequence length from 1024 to 512: critically, this will reduce the amount of memory taken by the embedding matrices and the activations, allowing me to use much bigger batch sizes per GPU (64 instead of 8 or 10) during training. This leads to further memory speed-ups.</p>
+<ul>
+<li>Note that 512 is still a multiple of 32, agreeing with recommendations by both Andrej and <a href="https://arxiv.org/abs/2401.14489">Anthony et al (2024)</a>.</li>
+<li>Also, the model would be ~91M parameters rather than 126M parameters of the original GPT-2 small.</li>
+<li>Shrinking <em>just</em> the vocab size but <em>not</em> the sequence length increases the training speed from 110K tokens/second with default GPT-2 setup from Part 2 to about 150K tokens/second.</li>
+<li>Reducing both the vocab size <em>and</em> the sequence length further speeds up the training to 162K tokens/second, about 47% training speed-up overall.</li>
+</ul></li>
+<li><p>The <em>tinystories</em> dataset has 2.12M stories. At about 200 tokens/story at vocab size of 6400, this makes for about 420M tokens. With vocab size shrunk to 6400, I’m able to process batches of size 32 with 1024 tokens/batch per each of the two GPUs, I’m able to process 150K tokens/second, leading to about an 8-hour training run for a full pass through the data.</p></li>
+<li><p>In addition, 96.75% of the stories are under 512 tokens in length. Reducing the sequence length to 512 allows us to increase the batch size to 64 and speeds up training to 162K tokens/second.</p></li>
+</ul>
+<div id="cell-15" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>torchrun <span class="op">--</span>standalone <span class="op">--</span>nproc_per_node<span class="op">=</span><span class="dv">2</span> train_gpt2.py </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><p>torchrun shows the following warning: “Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.” I have 24 threads on my machine (can find this out with <em>nproc</em>), so setting <em>export OMP_NUM_THREADS=8</em> to let each GPU access 8 threads.</p></li>
+<li><p>Now 405M tokens (2.12M stories at 191 tokens/story on average) at 131072 (64 batch size/GPU x 512 sequence length x 2 GPUs) tokens processed/step would take at most 6200 steps for a full epoch.</p></li>
+</ul>
+</section>
+<section id="integrating-the-hugging-face-tokenizer-with-andrejs-code" class="level2">
+<h2 class="anchored" data-anchor-id="integrating-the-hugging-face-tokenizer-with-andrejs-code">Integrating the Hugging Face tokenizer with Andrej’s code</h2>
+<ul>
+<li>Inside fineweb.py, Andrej’s setup and <em>tokenize</em> function are as follows:</li>
+</ul>
+<div id="cell-20" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tiktoken</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>fw <span class="op">=</span> load_dataset(<span class="st">"HuggingFaceFW/fineweb-edu"</span>, name<span class="op">=</span>remote_name, split<span class="op">=</span><span class="st">"train"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># init the tokenizer</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>enc <span class="op">=</span> tiktoken.get_encoding(<span class="st">"gpt2"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>eot <span class="op">=</span> enc._special_tokens[<span class="st">'&lt;|endoftext|&gt;'</span>] <span class="co"># end of text token</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tokenize(doc):</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># tokenizes a single document and returns a numpy array of uint16 tokens</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    tokens <span class="op">=</span> [eot] <span class="co"># the special &lt;|endoftext|&gt; token delimits all documents</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    tokens.extend(enc.encode_ordinary(doc[<span class="st">"text"</span>]))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    tokens_np <span class="op">=</span> np.array(tokens)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> (<span class="dv">0</span> <span class="op">&lt;=</span> tokens_np).<span class="bu">all</span>() <span class="kw">and</span> (tokens_np <span class="op">&lt;</span> <span class="dv">2</span><span class="op">**</span><span class="dv">16</span>).<span class="bu">all</span>(), <span class="st">"token dictionary too large for uint16"</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    tokens_np_uint16 <span class="op">=</span> tokens_np.astype(np.uint16)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tokens_np_uint16</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>I made an analogous script called tinystories.py to load and use the custom Hugging Face tokenizer trained above:</li>
+</ul>
+<div id="cell-22" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset, concatenate_datasets <span class="co"># pip install datasets</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>train_dataset <span class="op">=</span> load_dataset(<span class="st">"roneneldan/TinyStories"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>val_dataset <span class="op">=</span> load_dataset(<span class="st">"roneneldan/TinyStories"</span>, split<span class="op">=</span><span class="st">"validation"</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># download the dataset</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>fw <span class="op">=</span> concatenate_datasets([train_dataset, val_dataset])</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>enc <span class="op">=</span> AutoTokenizer.from_pretrained(<span class="st">"tokenizer/tiny_stories_tokenizer"</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># init the tokenizer</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>eot <span class="op">=</span> enc.encode(enc.eos_token)[<span class="dv">0</span>]<span class="co"># end of text token</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>MAX_LEN <span class="op">=</span> <span class="dv">512</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'Using max len of </span><span class="sc">{</span>MAX_LEN<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tokenize(doc):</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># tokenizes a single document and returns a numpy array of uint16 tokens</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    tokens <span class="op">=</span> [eot] <span class="co"># the special &lt;|endoftext|&gt; token delimits all documents</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    tokens.extend(enc.encode(doc[<span class="st">'text'</span>]))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print(f"tokens: {tokens}")</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(tokens)<span class="op">&gt;</span>MAX_LEN: <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    tokens_np <span class="op">=</span> np.array(tokens)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> (<span class="dv">0</span> <span class="op">&lt;=</span> tokens_np).<span class="bu">all</span>() <span class="kw">and</span> (tokens_np <span class="op">&lt;</span> <span class="dv">2</span><span class="op">**</span><span class="dv">16</span>).<span class="bu">all</span>(), <span class="st">"token dictionary too large for uint16"</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    tokens_np_uint16 <span class="op">=</span> tokens_np.astype(np.uint16)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tokens_np_uint16</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>Inside train_gpt2.py, I also loaded this tokenizer, adjusted the GPTConfig class, adjusted the batch size and the sequence length.</li>
+<li>I also commented out all parts pertaining to HellaSwag eval: I’m not interested in training the transformer to do great on HellaSwag as its main purpose is to generate coherent children’s stories.</li>
+</ul>
+<div id="cell-24" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GPTConfig:</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    block_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">512</span> <span class="co">#1024 # max sequence length</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    vocab_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">6400</span> <span class="co"># number of tokens: 50,000 BPE merges + 256 bytes tokens + 1 &lt;|endoftext|&gt; token</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    n_layer: <span class="bu">int</span> <span class="op">=</span> <span class="dv">12</span> <span class="co"># number of layers</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    n_head: <span class="bu">int</span> <span class="op">=</span> <span class="dv">12</span> <span class="co"># number of heads</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    n_embd: <span class="bu">int</span> <span class="op">=</span> <span class="dv">768</span> <span class="co">#738 #768 # embedding/hidden dimension</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>enc <span class="op">=</span> AutoTokenizer.from_pretrained(<span class="st">"tokenizer/tiny_stories_tokenizer"</span>) <span class="co">#tiktoken.get_encoding("gpt2")</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>total_batch_size <span class="op">=</span> <span class="dv">524288</span> <span class="co"># 2**19, ~0.5M, in number of tokens</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> <span class="dv">64</span> <span class="co">#32 # micro batch size</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>T <span class="op">=</span> <span class="dv">512</span> <span class="co">#1024 # sequence length</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> total_batch_size <span class="op">%</span> (B <span class="op">*</span> T <span class="op">*</span> ddp_world_size) <span class="op">==</span> <span class="dv">0</span>, <span class="st">"make sure total_batch_size is divisible by B * T * ddp_world_size"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="generate-from-the-model" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="generate-from-the-model">Generate from the model</h2>
+<ul>
+<li>I trained for 6200 steps. Validation loss went down consistently from 8.84 at the start to 1.3003 after 6000 steps, then stopped decreasing, increasing slightly to 1.3026 after 6500 steps. As a full pass through the data has already been conducted, it is possible that the model started overfitting slightly to the training data. This suggests that the model with the current settings and size has been fully trained. I expect that perhaps further reducing the model size and training for more epochs could both reduce the potential for overfitting and produce a model of comparable quality in fewer parameters. In fact, TinyStories research project by Eldan, R., &amp; Li, Y. (2023) suggests this possibility.</li>
+<li>Some sample generations to show the model’s learning progression are below.</li>
+</ul>
+<section id="after-500-steps" class="level3">
+<h3 class="anchored" data-anchor-id="after-500-steps">After 500 steps</h3>
+<p>validation loss: 2.1717</p>
+<p>rank 1 sample 0: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. When she arrived, she found a berry and took a rank 1 sample 1: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. She decided to jump over the trees and jump over the rank 1 sample 2: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. He spent every day looking for something to eat, but rank 1 sample 3: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat.</p>
+<p>One day the carrot was so filthy that it rank 0 sample 0: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat.</p>
+<p>As the rabbit was running, he began to rank 0 sample 1: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. He felt so happy to have the special treat he took rank 0 sample 2: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. The rabbit stopped to gather lots of juicy apples of apples rank 0 sample 3: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. But something was different and it started to feel bored.</p>
+</section>
+<section id="after-1000-steps" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="after-1000-steps">After 1000 steps</h3>
+<p>validation loss: 1.5746</p>
+<p>rank 1 sample 0: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. He was so excited about his reward!</p>
+<p>As rank 1 sample 1: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. Every morning the rabbit would go out searching for something to rank 1 sample 2: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. The rabbit had to find a big, juicy carrot and rank 1 sample 3: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. He hopped around all the sights until he found a big rank 0 sample 0: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. He hopped off the trail and went back to his den rank 0 sample 1: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. One day, the rabbit came across a big tree with rank 0 sample 2: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. One day, he came across a pond and had a rank 0 sample 3: Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. As he was hopping around, the rabbit saw a big</p>
+<ul>
+<li>Next, let’s load the model trained for 200 steps and generate from it.</li>
+</ul>
+<div id="cell-30" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> train_gpt2 <span class="im">import</span> GPT, GPTConfig</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">'cuda:0'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"using device: </span><span class="sc">{</span>device<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the checkpoint</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#checkpoint = torch.load('log/model_00999.pt', map_location=device)</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>checkpoint <span class="op">=</span> torch.load(<span class="st">'log/model_06000.pt'</span>, map_location<span class="op">=</span>device)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the config from the checkpoint</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>config <span class="op">=</span> checkpoint[<span class="st">'config'</span>]</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the model with the saved config</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> GPT(config)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the state dict into the model</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>model.load_state_dict(checkpoint[<span class="st">'model'</span>])</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>model.<span class="bu">eval</span>()</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>model.to(device)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model loaded successfully and set to evaluation mode."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>using device: cuda:0
+using device: cuda:0
+Model loaded successfully and set to evaluation mode.</code></pre>
+</div>
+</div>
+<div id="cell-31" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>checkpoint <span class="op">=</span> torch.load(<span class="st">'log/model_01000.pt'</span>, map_location<span class="op">=</span>device)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the config from the checkpoin</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>checkpoint[<span class="st">'val_loss'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>1.6329686641693115</code></pre>
+</div>
+</div>
+<div id="cell-32" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>checkpoint[<span class="st">'val_loss'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>1.3002820014953613</code></pre>
+</div>
+</div>
+<ul>
+<li>Best checkpoint above, started to overfit slightly, validation loss at last step 6500 was 1.3026, a bit larger than at step 6000.</li>
+</ul>
+<div id="cell-34" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>num_return_sequences <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>max_length <span class="op">=</span> <span class="dv">250</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>device_type <span class="op">=</span> device</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> enc <span class="op">=</span> AutoTokenizer.from_pretrained(<span class="st">"tokenizer/tiny_stories_tokenizer"</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">'cuda:0'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>tokenizer.pad_token <span class="op">=</span> tokenizer.eos_token</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">#starter_txt="Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat."</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>starter_txt<span class="op">=</span><span class="st">"Once upon a time in a land far, far away"</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#starter_txt = "Once upon a time"</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> enc.encode(starter_txt)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> torch.tensor(tokens, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> tokens.unsqueeze(<span class="dv">0</span>).repeat(num_return_sequences, <span class="dv">1</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>xgen <span class="op">=</span> tokens.to(device)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>sample_rng <span class="op">=</span> torch.Generator(device<span class="op">=</span>device)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>sample_rng.manual_seed(<span class="dv">42</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> xgen.size(<span class="dv">1</span>) <span class="op">&lt;</span> max_length:</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># forward the model to get the logits</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">#with torch.autocast(device_type=device_type, dtype=torch.bfloat16):</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>        logits, loss <span class="op">=</span> model(xgen) <span class="co"># (B, T, vocab_size)</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># take the logits at the last position</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> logits[:, <span class="op">-</span><span class="dv">1</span>, :] <span class="co"># (B, vocab_size)</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># get the probabilities</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>        probs <span class="op">=</span> F.softmax(logits, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># do top-k sampling of 50 (huggingface pipeline default)</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># topk_probs here becomes (5, 50), topk_indices is (5, 50)</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>        topk_probs, topk_indices <span class="op">=</span> torch.topk(probs, <span class="dv">50</span>, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        <span class="co"># select a token from the top-k probabilities</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>        <span class="co"># note: multinomial does not demand the input to sum to 1</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>        ix <span class="op">=</span> torch.multinomial(topk_probs, <span class="dv">1</span>, generator<span class="op">=</span>sample_rng) <span class="co"># (B, 1)</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>        <span class="co"># gather the corresponding indices</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>        xcol <span class="op">=</span> torch.gather(topk_indices, <span class="op">-</span><span class="dv">1</span>, ix) <span class="co"># (B, 1)</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>        <span class="co"># append to the sequence</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>        xgen <span class="op">=</span> torch.cat((xgen, xcol), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="co"># print the generated text</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_return_sequences):</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>    tokens <span class="op">=</span> xgen[i, :max_length].tolist()</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>    decoded <span class="op">=</span> enc.decode(tokens)</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"sample </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>decoded<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>sample 0: Once upon a time in a land far, far away there was a little boy named Joe. Joe was very anxious, as he didn't know how he was going to be successful. One day, he got an idea. He decided to march to a faraway village so he could get back at his family.
+
+Joe marched and marched, until his legs got tired. He stopped to rest at a small river.
+
+Suddenly, a bird landed beside him. Joe looked around and saw the bird was singing a song. The bird told him to keep going.
+
+Joe marched, and he eventually reached the village. His family was happy to see him and they hugged him tight.
+
+Joe smiled and said, "I'm glad I marched. Now I'm home."
+
+The bird replied, "I'm glad too. Good luck!"
+
+Joe waved goodbye to the bird and marched back&lt;|endoftext|&gt;Once upon a time, there was a boy. He loved to whistle. One day, he was walking in the park and he saw a very big hill. He was excited to see it, so he started to whistle his favorite tune.
+
+On top of the hill, he saw something very special. It was a
+sample 1: Once upon a time in a land far, far away, there lived a kind and honest wolf. Every day, he would do kind things for the animals in the forest, and the animals would appreciate him.
+
+One day, the wolf was walking through the forest and he saw a tiny house by the side of the road. Inside the house was a little girl, all alone. The honest wolf smiled and said "Hello! Would you like to come in and help me?".
+
+The little girl smiled back and said "Yes, please!". The wolf then went inside the house to help her. He quickly pulled out a big box from under the table, which he could open to reveal. Inside the box was a special treat for the little girl. She thanked the kind and honest wolf, and happily ate the treat.
+
+As the deer finished, he said goodbye to the little girl, and she waved goodbye to the honest wolf before leaving.
+
+The honest wolf watched her go, smiled a happy smile, and went on his way, happy that he had been able to help.&lt;|endoftext|&gt;Once upon a time there was a boy named Tom. Tom loved to run around in the garden and had lots of fun. One day
+sample 2: Once upon a time in a land far, far away, there lived a special place. It was home to a beautiful garden, full of green plants and colorful flowers. Every day, the garden was filled with the most incredible things. The flowers bloomed for the garden and the grass grew bigger and bigger, until all of the garden was full of colour!
+
+Every day, the sun shone brightly, and the birds sang as they sang. The garden was a vibrant, peaceful place to be.
+
+But after a while, something strange happened. Every day, the plants in the garden started to decrease and grow, leavingting the ground completely dry leaves. So, the gardeners decided they had to stop it by taking it back into the forest to try and make it better.
+
+The gardeners thought and thought, but they had no idea what to do. Then all of a sudden, one of the gardeners had an idea.
+
+â€œLetâ€™s work together!â€ said the gardener. So the gardeners asked all their friends and family to help out. Soon, the garden was back to normal and the flowers were blooming brighter than ever before!
+
+The gardeners were
+sample 3: Once upon a time in a land far, far away there lived a little girl named Lucy. Every day, Lucy would go out in her garden and pick berries.
+
+One morning, Lucy saw something very special. In the middle of the garden was a big pot of jam! Lucy was so excited that she ran to get her mom to show her the jam.
+
+"Mom, look!" she said. "What is this?"
+
+Her mom smiled and said, "This is a special jam, Lucy! It's something very fragile and sweet!"
+
+Lucy was so excited that she couldn't wait to try the jam and she went outside every morning to pick two jars of jam for her breakfast.
+
+The jam always made Lucy so happy, because when she came home from breakfast, she was able to eat two jars of jam. She was so grateful that she owned two jars of jam, and was the happiest little girl in the world!&lt;|endoftext|&gt;Once there was a dog called Max. He was a very playful pup who loved to explore the world. One day Max went outside and saw a deep stream. He wanted to get to the other side, but it had gotten dark and he was scared.</code></pre>
+</div>
+</div>
+<ul>
+<li>Once upon a time, there was a little girl called Alice who lived in a big house. Every day, Alice’s mummy and daddy and her two siblings wanted to explain something very important to Alice.</li>
+</ul>
+<p>One day it was Alice’s birthday, and her mummy and daddy said that she was getting a present! Alice couldn’t believe it, as she had never seen such a present before.</p>
+<p>Mummy and Daddy explained that a present is a big, expensive box filled with toys. Alice was excited and couldn’t wait to open it.</p>
+<p>Suddenly, a loud noise came from outside. Daddy and Mummy and Alice ran out of the house and saw a truck full of presents on the street. Everyone in the truck had come out for Alice - it was all because of the expensive box!</p>
+<p>Alice was so excited. She opened the present and carefully chose her very own present, a teddy bear with a big, red bow. She hugged the toy, smiled, and thanked her mummy and daddy and the other men from the truck.</p>
+<p>Alice and her family left the house, excited about the presents. She couldn’t wait to show her friends at preschool the next day!</p>
+<ul>
+<li>Once upon a time in a land far, far away… seems to produce good stories!</li>
+<li>Once upon a time in a land far, far away there was a little boy named Joe. Joe was very anxious, as he didn’t know how he was going to be successful. One day, he got an idea. He decided to march to a faraway village so he could get back at his family.</li>
+</ul>
+<p>Joe marched and marched, until his legs got tired. He stopped to rest at a small river.</p>
+<p>Suddenly, a bird landed beside him. Joe looked around and saw the bird was singing a song. The bird told him to keep going.</p>
+<p>Joe marched, and he eventually reached the village. His family was happy to see him and they hugged him tight.</p>
+<p>Joe smiled and said, “I’m glad I marched. Now I’m home.”</p>
+<p>The bird replied, “I’m glad too. Good luck!”</p>
+<p>Joe waved goodbye to the bird and marched back - Once upon a time in a land far, far away there lived a little girl named Lucy. Every day, Lucy would go out in her garden and pick berries.</p>
+<p>One morning, Lucy saw something very special. In the middle of the garden was a big pot of jam! Lucy was so excited that she ran to get her mom to show her the jam.</p>
+<p>“Mom, look!” she said. “What is this?”</p>
+<p>Her mom smiled and said, “This is a special jam, Lucy! It’s something very fragile and sweet!”</p>
+<p>Lucy was so excited that she couldn’t wait to try the jam and she went outside every morning to pick two jars of jam for her breakfast.</p>
+<p>The jam always made Lucy so happy, because when she came home from breakfast, she was able to eat two jars of jam. She was so grateful that she owned two jars of jam, and was the happiest little girl in the world!</p>
+<ul>
+<li>Once upon a time there was a loyal rabbit who left the forest to look for something delicious to eat. As he hopped through the forest, he noticed a big, old, rusty well. He hopped closer and closer until he could see inside.</li>
+</ul>
+<p>â€œWhat do you think is in there?â€ asked the loyal rabbit.</p>
+<p>Suddenly, a small frog poked his head out of the well. â€œI can see a secret of whatâ€™s insideâ€ he said.</p>
+<p>The rabbit was excited, so he stepped into the well and started to dive. As he dove in, he could hear the stream gurgling and the water running. Suddenly, he heard a voice calling his name.</p>
+<p>â€œI made it,â€ he said. It was a frog, who lived in the well. â€œCome this way, little one, itâ€™s so much fun here!â€</p>
+<p>The rabbit thanked the frog and hopped away. Everytime he visits the well, he remembers that loyal and kind heart he made. - Not a bad story but perhaps has tokenization issues? Could consider training for 2000 steps with fully custom tokenizer or understand what’s going on.</p>
+<ul>
+<li>Looks like these unusual tokens come directly from the <em>tinystories</em> dataset hosted on Hugging Face. See the following, for example,</li>
+</ul>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Part 3: Train GPT-2_files/figure-html/cell-37-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">Source: https://huggingface.co/datasets/roneneldan/TinyStories</figcaption>
+</figure>
+</div>
+<ul>
+<li>Upon further research, I found that the issue was <a href="https://huggingface.co/datasets/roneneldan/TinyStories/discussions/10">brought up</a> in the past and is likely a consequence of an encoding issue with UTF-8. Nonetheless, I plan to dig deeper into tokenization to round off this study.</li>
+</ul>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>Anthony, Q., Hatef, J., Narayanan, D., Biderman, S., Bekman, S., Yin, J., Shafi, A., Subramoni, H., &amp; Panda, D. (2024). The Case for Co-Designing Model Architectures with Hardware. arXiv preprint arXiv:2401.14489. https://doi.org/10.48550/arXiv.2401.14489</p>
+<p>Eldan, R., &amp; Li, Y. (2023). TinyStories: How Small Can Language Models Be and Still Speak Coherent English? arXiv preprint arXiv:2305.07759.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p><span class="faux-block">© 2024 Dmitriy Popov-Velasco CC BY-SA 4.0</span></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
