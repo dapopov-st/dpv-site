@@ -591,300 +591,49 @@ merges: {(101, 32): 256, (105, 110): 257, (115, 32): 258, (226, 128): 259, (32, 
 </div>
 </div>
 <ul>
-<li>Andrej’s more sophisticated implementation with handling of special tokens, saving, and loading, is below for a more authoritative reference:</li>
+<li>Andrej has a more sophisticated implementation with handling of special tokens, saving, and loading methods. His <em>train</em> method is below for reference:</li>
 </ul>
 <div id="cell-41" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">### Karpathy's tokenizer</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co">"""</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="co">Minimal (byte-level) Byte Pair Encoding tokenizer.</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co">Algorithmically follows along the GPT tokenizer:</span></span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a><span class="co">https://github.com/openai/gpt-2/blob/master/src/encoder.py</span></span>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> RegexTokenizerAK(Tokenizer):</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> train(<span class="va">self</span>, text, vocab_size, verbose<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> vocab_size <span class="op">&gt;=</span> <span class="dv">256</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>        num_merges <span class="op">=</span> vocab_size <span class="op">-</span> <span class="dv">256</span></span>
 <span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a><span class="co">Unlike BasicTokenizer:</span></span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="co">- RegexTokenizer handles an optional regex splitting pattern.</span></span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a><span class="co">- RegexTokenizer handles optional special tokens.</span></span>
-<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a><span class="co">"""</span></span>
-<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm</span>
-<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> regex <span class="im">as</span> re</span>
-<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_stats(ids, counts<span class="op">=</span><span class="va">None</span>):</span>
-<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a><span class="co">    Given a list of integers, return a dictionary of counts of consecutive pairs</span></span>
-<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a><span class="co">    Example: [1, 2, 3, 1, 2] -&gt; {(1, 2): 2, (2, 3): 1, (3, 1): 1}</span></span>
-<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a><span class="co">    Optionally allows to update an existing dictionary of counts</span></span>
-<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>    counts <span class="op">=</span> {} <span class="cf">if</span> counts <span class="kw">is</span> <span class="va">None</span> <span class="cf">else</span> counts</span>
-<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> pair <span class="kw">in</span> <span class="bu">zip</span>(ids, ids[<span class="dv">1</span>:]): <span class="co"># iterate consecutive elements</span></span>
-<span id="cb37-22"><a href="#cb37-22" aria-hidden="true" tabindex="-1"></a>        counts[pair] <span class="op">=</span> counts.get(pair, <span class="dv">0</span>) <span class="op">+</span> <span class="dv">1</span></span>
-<span id="cb37-23"><a href="#cb37-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> counts</span>
-<span id="cb37-24"><a href="#cb37-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-25"><a href="#cb37-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-26"><a href="#cb37-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> merge(ids, pair, idx):</span>
-<span id="cb37-27"><a href="#cb37-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb37-28"><a href="#cb37-28" aria-hidden="true" tabindex="-1"></a><span class="co">    In the list of integers (ids), replace all consecutive occurrences</span></span>
-<span id="cb37-29"><a href="#cb37-29" aria-hidden="true" tabindex="-1"></a><span class="co">    of pair with the new integer token idx</span></span>
-<span id="cb37-30"><a href="#cb37-30" aria-hidden="true" tabindex="-1"></a><span class="co">    Example: ids=[1, 2, 3, 1, 2], pair=(1, 2), idx=4 -&gt; [4, 3, 4]</span></span>
-<span id="cb37-31"><a href="#cb37-31" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb37-32"><a href="#cb37-32" aria-hidden="true" tabindex="-1"></a>    newids <span class="op">=</span> []</span>
-<span id="cb37-33"><a href="#cb37-33" aria-hidden="true" tabindex="-1"></a>    i <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb37-34"><a href="#cb37-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> i <span class="op">&lt;</span> <span class="bu">len</span>(ids):</span>
-<span id="cb37-35"><a href="#cb37-35" aria-hidden="true" tabindex="-1"></a>        <span class="co"># if not at the very last position AND the pair matches, replace it</span></span>
-<span id="cb37-36"><a href="#cb37-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ids[i] <span class="op">==</span> pair[<span class="dv">0</span>] <span class="kw">and</span> i <span class="op">&lt;</span> <span class="bu">len</span>(ids) <span class="op">-</span> <span class="dv">1</span> <span class="kw">and</span> ids[i<span class="op">+</span><span class="dv">1</span>] <span class="op">==</span> pair[<span class="dv">1</span>]:</span>
-<span id="cb37-37"><a href="#cb37-37" aria-hidden="true" tabindex="-1"></a>            newids.append(idx)</span>
-<span id="cb37-38"><a href="#cb37-38" aria-hidden="true" tabindex="-1"></a>            i <span class="op">+=</span> <span class="dv">2</span></span>
-<span id="cb37-39"><a href="#cb37-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb37-40"><a href="#cb37-40" aria-hidden="true" tabindex="-1"></a>            newids.append(ids[i])</span>
-<span id="cb37-41"><a href="#cb37-41" aria-hidden="true" tabindex="-1"></a>            i <span class="op">+=</span> <span class="dv">1</span></span>
-<span id="cb37-42"><a href="#cb37-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> newids</span>
-<span id="cb37-43"><a href="#cb37-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-44"><a href="#cb37-44" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Tokenizer:</span>
-<span id="cb37-45"><a href="#cb37-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Base class for Tokenizers"""</span></span>
-<span id="cb37-46"><a href="#cb37-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-47"><a href="#cb37-47" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>):</span>
-<span id="cb37-48"><a href="#cb37-48" aria-hidden="true" tabindex="-1"></a>        <span class="co"># default: vocab size of 256 (all bytes), no merges, no patterns</span></span>
-<span id="cb37-49"><a href="#cb37-49" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.merges <span class="op">=</span> {} <span class="co"># (int, int) -&gt; int</span></span>
-<span id="cb37-50"><a href="#cb37-50" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pattern <span class="op">=</span> <span class="st">""</span> <span class="co"># str</span></span>
-<span id="cb37-51"><a href="#cb37-51" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.special_tokens <span class="op">=</span> {} <span class="co"># str -&gt; int, e.g. {'&lt;|endoftext|&gt;': 100257}</span></span>
-<span id="cb37-52"><a href="#cb37-52" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.vocab <span class="op">=</span> <span class="va">self</span>._build_vocab() <span class="co"># int -&gt; bytes</span></span>
-<span id="cb37-53"><a href="#cb37-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-54"><a href="#cb37-54" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> train(<span class="va">self</span>, text, vocab_size, verbose<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb37-55"><a href="#cb37-55" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Tokenizer can train a vocabulary of size vocab_size from text</span></span>
-<span id="cb37-56"><a href="#cb37-56" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">NotImplementedError</span></span>
-<span id="cb37-57"><a href="#cb37-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-58"><a href="#cb37-58" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> encode(<span class="va">self</span>, text):</span>
-<span id="cb37-59"><a href="#cb37-59" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Tokenizer can encode a string into a list of integers</span></span>
-<span id="cb37-60"><a href="#cb37-60" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">NotImplementedError</span></span>
-<span id="cb37-61"><a href="#cb37-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-62"><a href="#cb37-62" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> decode(<span class="va">self</span>, ids):</span>
-<span id="cb37-63"><a href="#cb37-63" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Tokenizer can decode a list of integers into a string</span></span>
-<span id="cb37-64"><a href="#cb37-64" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">NotImplementedError</span></span>
-<span id="cb37-65"><a href="#cb37-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-66"><a href="#cb37-66" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _build_vocab(<span class="va">self</span>):</span>
-<span id="cb37-67"><a href="#cb37-67" aria-hidden="true" tabindex="-1"></a>        <span class="co"># vocab is simply and deterministically derived from merges</span></span>
-<span id="cb37-68"><a href="#cb37-68" aria-hidden="true" tabindex="-1"></a>        vocab <span class="op">=</span> {idx: <span class="bu">bytes</span>([idx]) <span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">256</span>)}</span>
-<span id="cb37-69"><a href="#cb37-69" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (p0, p1), idx <span class="kw">in</span> <span class="va">self</span>.merges.items():</span>
-<span id="cb37-70"><a href="#cb37-70" aria-hidden="true" tabindex="-1"></a>            vocab[idx] <span class="op">=</span> vocab[p0] <span class="op">+</span> vocab[p1]</span>
-<span id="cb37-71"><a href="#cb37-71" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> special, idx <span class="kw">in</span> <span class="va">self</span>.special_tokens.items():</span>
-<span id="cb37-72"><a href="#cb37-72" aria-hidden="true" tabindex="-1"></a>            vocab[idx] <span class="op">=</span> special.encode(<span class="st">"utf-8"</span>)</span>
-<span id="cb37-73"><a href="#cb37-73" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> vocab</span>
-<span id="cb37-74"><a href="#cb37-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-75"><a href="#cb37-75" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> save(<span class="va">self</span>, file_prefix):</span>
-<span id="cb37-76"><a href="#cb37-76" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb37-77"><a href="#cb37-77" aria-hidden="true" tabindex="-1"></a><span class="co">        Saves two files: file_prefix.vocab and file_prefix.model</span></span>
-<span id="cb37-78"><a href="#cb37-78" aria-hidden="true" tabindex="-1"></a><span class="co">        This is inspired (but not equivalent to!) sentencepiece's model saving:</span></span>
-<span id="cb37-79"><a href="#cb37-79" aria-hidden="true" tabindex="-1"></a><span class="co">        - model file is the critical one, intended for load()</span></span>
-<span id="cb37-80"><a href="#cb37-80" aria-hidden="true" tabindex="-1"></a><span class="co">        - vocab file is just a pretty printed version for human inspection only</span></span>
-<span id="cb37-81"><a href="#cb37-81" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb37-82"><a href="#cb37-82" aria-hidden="true" tabindex="-1"></a>        <span class="co"># write the model: to be used in load() later</span></span>
-<span id="cb37-83"><a href="#cb37-83" aria-hidden="true" tabindex="-1"></a>        model_file <span class="op">=</span> file_prefix <span class="op">+</span> <span class="st">".model"</span></span>
-<span id="cb37-84"><a href="#cb37-84" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> <span class="bu">open</span>(model_file, <span class="st">'w'</span>) <span class="im">as</span> f:</span>
-<span id="cb37-85"><a href="#cb37-85" aria-hidden="true" tabindex="-1"></a>            <span class="co"># write the version, pattern and merges, that's all that's needed</span></span>
-<span id="cb37-86"><a href="#cb37-86" aria-hidden="true" tabindex="-1"></a>            f.write(<span class="st">"minbpe v1</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb37-87"><a href="#cb37-87" aria-hidden="true" tabindex="-1"></a>            f.write(<span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>pattern<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
-<span id="cb37-88"><a href="#cb37-88" aria-hidden="true" tabindex="-1"></a>            <span class="co"># write the special tokens, first the number of them, then each one</span></span>
-<span id="cb37-89"><a href="#cb37-89" aria-hidden="true" tabindex="-1"></a>            f.write(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(<span class="va">self</span>.special_tokens)<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
-<span id="cb37-90"><a href="#cb37-90" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> special, idx <span class="kw">in</span> <span class="va">self</span>.special_tokens.items():</span>
-<span id="cb37-91"><a href="#cb37-91" aria-hidden="true" tabindex="-1"></a>                f.write(<span class="ss">f"</span><span class="sc">{</span>special<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span>idx<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
-<span id="cb37-92"><a href="#cb37-92" aria-hidden="true" tabindex="-1"></a>            <span class="co"># the merges dict</span></span>
-<span id="cb37-93"><a href="#cb37-93" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> idx1, idx2 <span class="kw">in</span> <span class="va">self</span>.merges:</span>
-<span id="cb37-94"><a href="#cb37-94" aria-hidden="true" tabindex="-1"></a>                f.write(<span class="ss">f"</span><span class="sc">{</span>idx1<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span>idx2<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
-<span id="cb37-95"><a href="#cb37-95" aria-hidden="true" tabindex="-1"></a>        <span class="co"># write the vocab: for the human to look at</span></span>
-<span id="cb37-96"><a href="#cb37-96" aria-hidden="true" tabindex="-1"></a>        vocab_file <span class="op">=</span> file_prefix <span class="op">+</span> <span class="st">".vocab"</span></span>
-<span id="cb37-97"><a href="#cb37-97" aria-hidden="true" tabindex="-1"></a>        inverted_merges <span class="op">=</span> {idx: pair <span class="cf">for</span> pair, idx <span class="kw">in</span> <span class="va">self</span>.merges.items()}</span>
-<span id="cb37-98"><a href="#cb37-98" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> <span class="bu">open</span>(vocab_file, <span class="st">"w"</span>, encoding<span class="op">=</span><span class="st">"utf-8"</span>) <span class="im">as</span> f:</span>
-<span id="cb37-99"><a href="#cb37-99" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> idx, token <span class="kw">in</span> <span class="va">self</span>.vocab.items():</span>
-<span id="cb37-100"><a href="#cb37-100" aria-hidden="true" tabindex="-1"></a>                <span class="co"># note: many tokens may be partial utf-8 sequences</span></span>
-<span id="cb37-101"><a href="#cb37-101" aria-hidden="true" tabindex="-1"></a>                <span class="co"># and cannot be decoded into valid strings. Here we're using</span></span>
-<span id="cb37-102"><a href="#cb37-102" aria-hidden="true" tabindex="-1"></a>                <span class="co"># errors='replace' to replace them with the replacement char �.</span></span>
-<span id="cb37-103"><a href="#cb37-103" aria-hidden="true" tabindex="-1"></a>                <span class="co"># this also means that we couldn't possibly use .vocab in load()</span></span>
-<span id="cb37-104"><a href="#cb37-104" aria-hidden="true" tabindex="-1"></a>                <span class="co"># because decoding in this way is a lossy operation!</span></span>
-<span id="cb37-105"><a href="#cb37-105" aria-hidden="true" tabindex="-1"></a>                s <span class="op">=</span> render_token(token)</span>
-<span id="cb37-106"><a href="#cb37-106" aria-hidden="true" tabindex="-1"></a>                <span class="co"># find the children of this token, if any</span></span>
-<span id="cb37-107"><a href="#cb37-107" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> idx <span class="kw">in</span> inverted_merges:</span>
-<span id="cb37-108"><a href="#cb37-108" aria-hidden="true" tabindex="-1"></a>                    <span class="co"># if this token has children, render it nicely as a merge</span></span>
-<span id="cb37-109"><a href="#cb37-109" aria-hidden="true" tabindex="-1"></a>                    idx0, idx1 <span class="op">=</span> inverted_merges[idx]</span>
-<span id="cb37-110"><a href="#cb37-110" aria-hidden="true" tabindex="-1"></a>                    s0 <span class="op">=</span> render_token(<span class="va">self</span>.vocab[idx0])</span>
-<span id="cb37-111"><a href="#cb37-111" aria-hidden="true" tabindex="-1"></a>                    s1 <span class="op">=</span> render_token(<span class="va">self</span>.vocab[idx1])</span>
-<span id="cb37-112"><a href="#cb37-112" aria-hidden="true" tabindex="-1"></a>                    f.write(<span class="ss">f"[</span><span class="sc">{</span>s0<span class="sc">}</span><span class="ss">][</span><span class="sc">{</span>s1<span class="sc">}</span><span class="ss">] -&gt; [</span><span class="sc">{</span>s<span class="sc">}</span><span class="ss">] </span><span class="sc">{</span>idx<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
-<span id="cb37-113"><a href="#cb37-113" aria-hidden="true" tabindex="-1"></a>                <span class="cf">else</span>:</span>
-<span id="cb37-114"><a href="#cb37-114" aria-hidden="true" tabindex="-1"></a>                    <span class="co"># otherwise this is leaf token, just print it</span></span>
-<span id="cb37-115"><a href="#cb37-115" aria-hidden="true" tabindex="-1"></a>                    <span class="co"># (this should just be the first 256 tokens, the bytes)</span></span>
-<span id="cb37-116"><a href="#cb37-116" aria-hidden="true" tabindex="-1"></a>                    f.write(<span class="ss">f"[</span><span class="sc">{</span>s<span class="sc">}</span><span class="ss">] </span><span class="sc">{</span>idx<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
-<span id="cb37-117"><a href="#cb37-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-118"><a href="#cb37-118" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> load(<span class="va">self</span>, model_file):</span>
-<span id="cb37-119"><a href="#cb37-119" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Inverse of save() but only for the model file"""</span></span>
-<span id="cb37-120"><a href="#cb37-120" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> model_file.endswith(<span class="st">".model"</span>)</span>
-<span id="cb37-121"><a href="#cb37-121" aria-hidden="true" tabindex="-1"></a>        <span class="co"># read the model file</span></span>
-<span id="cb37-122"><a href="#cb37-122" aria-hidden="true" tabindex="-1"></a>        merges <span class="op">=</span> {}</span>
-<span id="cb37-123"><a href="#cb37-123" aria-hidden="true" tabindex="-1"></a>        special_tokens <span class="op">=</span> {}</span>
-<span id="cb37-124"><a href="#cb37-124" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> <span class="dv">256</span></span>
-<span id="cb37-125"><a href="#cb37-125" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> <span class="bu">open</span>(model_file, <span class="st">'r'</span>, encoding<span class="op">=</span><span class="st">"utf-8"</span>) <span class="im">as</span> f:</span>
-<span id="cb37-126"><a href="#cb37-126" aria-hidden="true" tabindex="-1"></a>            <span class="co"># read the version</span></span>
-<span id="cb37-127"><a href="#cb37-127" aria-hidden="true" tabindex="-1"></a>            version <span class="op">=</span> f.readline().strip()</span>
-<span id="cb37-128"><a href="#cb37-128" aria-hidden="true" tabindex="-1"></a>            <span class="cf">assert</span> version <span class="op">==</span> <span class="st">"minbpe v1"</span></span>
-<span id="cb37-129"><a href="#cb37-129" aria-hidden="true" tabindex="-1"></a>            <span class="co"># read the pattern</span></span>
-<span id="cb37-130"><a href="#cb37-130" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.pattern <span class="op">=</span> f.readline().strip()</span>
-<span id="cb37-131"><a href="#cb37-131" aria-hidden="true" tabindex="-1"></a>            <span class="co"># read the special tokens</span></span>
-<span id="cb37-132"><a href="#cb37-132" aria-hidden="true" tabindex="-1"></a>            num_special <span class="op">=</span> <span class="bu">int</span>(f.readline().strip())</span>
-<span id="cb37-133"><a href="#cb37-133" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_special):</span>
-<span id="cb37-134"><a href="#cb37-134" aria-hidden="true" tabindex="-1"></a>                special, special_idx <span class="op">=</span> f.readline().strip().split()</span>
-<span id="cb37-135"><a href="#cb37-135" aria-hidden="true" tabindex="-1"></a>                special_tokens[special] <span class="op">=</span> <span class="bu">int</span>(special_idx)</span>
-<span id="cb37-136"><a href="#cb37-136" aria-hidden="true" tabindex="-1"></a>            <span class="co"># read the merges</span></span>
-<span id="cb37-137"><a href="#cb37-137" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> line <span class="kw">in</span> f:</span>
-<span id="cb37-138"><a href="#cb37-138" aria-hidden="true" tabindex="-1"></a>                idx1, idx2 <span class="op">=</span> <span class="bu">map</span>(<span class="bu">int</span>, line.split())</span>
-<span id="cb37-139"><a href="#cb37-139" aria-hidden="true" tabindex="-1"></a>                merges[(idx1, idx2)] <span class="op">=</span> idx</span>
-<span id="cb37-140"><a href="#cb37-140" aria-hidden="true" tabindex="-1"></a>                idx <span class="op">+=</span> <span class="dv">1</span></span>
-<span id="cb37-141"><a href="#cb37-141" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.merges <span class="op">=</span> merges</span>
-<span id="cb37-142"><a href="#cb37-142" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.special_tokens <span class="op">=</span> special_tokens</span>
-<span id="cb37-143"><a href="#cb37-143" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.vocab <span class="op">=</span> <span class="va">self</span>._build_vocab()</span>
-<span id="cb37-144"><a href="#cb37-144" aria-hidden="true" tabindex="-1"></a><span class="co"># the main GPT text split patterns, see</span></span>
-<span id="cb37-145"><a href="#cb37-145" aria-hidden="true" tabindex="-1"></a><span class="co"># https://github.com/openai/tiktoken/blob/main/tiktoken_ext/openai_public.py</span></span>
-<span id="cb37-146"><a href="#cb37-146" aria-hidden="true" tabindex="-1"></a>GPT2_SPLIT_PATTERN <span class="op">=</span> <span class="vs">r"""'(?:[sdmt]|ll|ve|re)| ?\p</span><span class="sc">{L}</span><span class="vs">+| ?\p</span><span class="sc">{N}</span><span class="vs">+| ?[^\s\p</span><span class="sc">{L}</span><span class="vs">\p</span><span class="sc">{N}</span><span class="vs">]+|\s+(?!\S)|\s+"""</span></span>
-<span id="cb37-147"><a href="#cb37-147" aria-hidden="true" tabindex="-1"></a>GPT4_SPLIT_PATTERN <span class="op">=</span> <span class="vs">r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p</span><span class="sc">{L}</span><span class="vs">\p</span><span class="sc">{N}</span><span class="vs">]?+\p</span><span class="sc">{L}</span><span class="vs">+|\p</span><span class="sc">{N}</span><span class="vs">{1,3}| ?[^\s\p</span><span class="sc">{L}</span><span class="vs">\p</span><span class="sc">{N}</span><span class="vs">]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""</span></span>
-<span id="cb37-148"><a href="#cb37-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-149"><a href="#cb37-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-150"><a href="#cb37-150" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> RegexTokenizerAK(Tokenizer):</span>
-<span id="cb37-151"><a href="#cb37-151" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, pattern<span class="op">=</span><span class="va">None</span>):</span>
-<span id="cb37-152"><a href="#cb37-152" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb37-153"><a href="#cb37-153" aria-hidden="true" tabindex="-1"></a><span class="co">        - pattern: optional string to override the default (GPT-4 split pattern)</span></span>
-<span id="cb37-154"><a href="#cb37-154" aria-hidden="true" tabindex="-1"></a><span class="co">        - special_tokens: str -&gt; int dictionary of special tokens</span></span>
-<span id="cb37-155"><a href="#cb37-155" aria-hidden="true" tabindex="-1"></a><span class="co">          example: {'&lt;|endoftext|&gt;': 100257}</span></span>
-<span id="cb37-156"><a href="#cb37-156" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb37-157"><a href="#cb37-157" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
-<span id="cb37-158"><a href="#cb37-158" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pattern <span class="op">=</span> GPT4_SPLIT_PATTERN <span class="cf">if</span> pattern <span class="kw">is</span> <span class="va">None</span> <span class="cf">else</span> pattern</span>
-<span id="cb37-159"><a href="#cb37-159" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.compiled_pattern <span class="op">=</span> re.<span class="bu">compile</span>(<span class="va">self</span>.pattern)</span>
-<span id="cb37-160"><a href="#cb37-160" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.special_tokens <span class="op">=</span> {}</span>
-<span id="cb37-161"><a href="#cb37-161" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.inverse_special_tokens <span class="op">=</span> {}</span>
-<span id="cb37-162"><a href="#cb37-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-163"><a href="#cb37-163" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> train(<span class="va">self</span>, text, vocab_size, verbose<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb37-164"><a href="#cb37-164" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> vocab_size <span class="op">&gt;=</span> <span class="dv">256</span></span>
-<span id="cb37-165"><a href="#cb37-165" aria-hidden="true" tabindex="-1"></a>        num_merges <span class="op">=</span> vocab_size <span class="op">-</span> <span class="dv">256</span></span>
-<span id="cb37-166"><a href="#cb37-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-167"><a href="#cb37-167" aria-hidden="true" tabindex="-1"></a>        <span class="co"># split the text up into text chunks</span></span>
-<span id="cb37-168"><a href="#cb37-168" aria-hidden="true" tabindex="-1"></a>        text_chunks <span class="op">=</span> re.findall(<span class="va">self</span>.compiled_pattern, text)</span>
-<span id="cb37-169"><a href="#cb37-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-170"><a href="#cb37-170" aria-hidden="true" tabindex="-1"></a>        <span class="co"># input text preprocessing</span></span>
-<span id="cb37-171"><a href="#cb37-171" aria-hidden="true" tabindex="-1"></a>        ids <span class="op">=</span> [<span class="bu">list</span>(ch.encode(<span class="st">"utf-8"</span>)) <span class="cf">for</span> ch <span class="kw">in</span> text_chunks]</span>
-<span id="cb37-172"><a href="#cb37-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-173"><a href="#cb37-173" aria-hidden="true" tabindex="-1"></a>        <span class="co"># iteratively merge the most common pairs to create new tokens</span></span>
-<span id="cb37-174"><a href="#cb37-174" aria-hidden="true" tabindex="-1"></a>        merges <span class="op">=</span> {} <span class="co"># (int, int) -&gt; int</span></span>
-<span id="cb37-175"><a href="#cb37-175" aria-hidden="true" tabindex="-1"></a>        vocab <span class="op">=</span> {idx: <span class="bu">bytes</span>([idx]) <span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">256</span>)} <span class="co"># idx -&gt; bytes</span></span>
-<span id="cb37-176"><a href="#cb37-176" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_merges):</span>
-<span id="cb37-177"><a href="#cb37-177" aria-hidden="true" tabindex="-1"></a>            <span class="co"># count the number of times every consecutive pair appears</span></span>
-<span id="cb37-178"><a href="#cb37-178" aria-hidden="true" tabindex="-1"></a>            stats <span class="op">=</span> {}</span>
-<span id="cb37-179"><a href="#cb37-179" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> chunk_ids <span class="kw">in</span> ids:</span>
-<span id="cb37-180"><a href="#cb37-180" aria-hidden="true" tabindex="-1"></a>                <span class="co"># passing in stats will update it in place, adding up counts</span></span>
-<span id="cb37-181"><a href="#cb37-181" aria-hidden="true" tabindex="-1"></a>                get_stats(chunk_ids, stats)</span>
-<span id="cb37-182"><a href="#cb37-182" aria-hidden="true" tabindex="-1"></a>            <span class="co"># find the pair with the highest count</span></span>
-<span id="cb37-183"><a href="#cb37-183" aria-hidden="true" tabindex="-1"></a>            pair <span class="op">=</span> <span class="bu">max</span>(stats, key<span class="op">=</span>stats.get)</span>
-<span id="cb37-184"><a href="#cb37-184" aria-hidden="true" tabindex="-1"></a>            <span class="co"># mint a new token: assign it the next available id</span></span>
-<span id="cb37-185"><a href="#cb37-185" aria-hidden="true" tabindex="-1"></a>            idx <span class="op">=</span> <span class="dv">256</span> <span class="op">+</span> i</span>
-<span id="cb37-186"><a href="#cb37-186" aria-hidden="true" tabindex="-1"></a>            <span class="co"># replace all occurrences of pair in ids with idx</span></span>
-<span id="cb37-187"><a href="#cb37-187" aria-hidden="true" tabindex="-1"></a>            ids <span class="op">=</span> [merge(chunk_ids, pair, idx) <span class="cf">for</span> chunk_ids <span class="kw">in</span> ids]</span>
-<span id="cb37-188"><a href="#cb37-188" aria-hidden="true" tabindex="-1"></a>            <span class="co"># save the merge</span></span>
-<span id="cb37-189"><a href="#cb37-189" aria-hidden="true" tabindex="-1"></a>            merges[pair] <span class="op">=</span> idx</span>
-<span id="cb37-190"><a href="#cb37-190" aria-hidden="true" tabindex="-1"></a>            vocab[idx] <span class="op">=</span> vocab[pair[<span class="dv">0</span>]] <span class="op">+</span> vocab[pair[<span class="dv">1</span>]]</span>
-<span id="cb37-191"><a href="#cb37-191" aria-hidden="true" tabindex="-1"></a>            <span class="co"># prints</span></span>
-<span id="cb37-192"><a href="#cb37-192" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> verbose:</span>
-<span id="cb37-193"><a href="#cb37-193" aria-hidden="true" tabindex="-1"></a>                <span class="bu">print</span>(<span class="ss">f"merge </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>num_merges<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>pair<span class="sc">}</span><span class="ss"> -&gt; </span><span class="sc">{</span>idx<span class="sc">}</span><span class="ss"> (</span><span class="sc">{</span>vocab[idx]<span class="sc">}</span><span class="ss">) had </span><span class="sc">{</span>stats[pair]<span class="sc">}</span><span class="ss"> occurrences"</span>)</span>
-<span id="cb37-194"><a href="#cb37-194" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-195"><a href="#cb37-195" aria-hidden="true" tabindex="-1"></a>        <span class="co"># save class variables</span></span>
-<span id="cb37-196"><a href="#cb37-196" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.merges <span class="op">=</span> merges <span class="co"># used in encode()</span></span>
-<span id="cb37-197"><a href="#cb37-197" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.vocab <span class="op">=</span> vocab   <span class="co"># used in decode()</span></span>
-<span id="cb37-198"><a href="#cb37-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-199"><a href="#cb37-199" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> register_special_tokens(<span class="va">self</span>, special_tokens):</span>
-<span id="cb37-200"><a href="#cb37-200" aria-hidden="true" tabindex="-1"></a>        <span class="co"># special_tokens is a dictionary of str -&gt; int</span></span>
-<span id="cb37-201"><a href="#cb37-201" aria-hidden="true" tabindex="-1"></a>        <span class="co"># example: {"&lt;|endoftext|&gt;": 100257}</span></span>
-<span id="cb37-202"><a href="#cb37-202" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.special_tokens <span class="op">=</span> special_tokens</span>
-<span id="cb37-203"><a href="#cb37-203" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.inverse_special_tokens <span class="op">=</span> {v: k <span class="cf">for</span> k, v <span class="kw">in</span> special_tokens.items()}</span>
-<span id="cb37-204"><a href="#cb37-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-205"><a href="#cb37-205" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> decode(<span class="va">self</span>, ids):</span>
-<span id="cb37-206"><a href="#cb37-206" aria-hidden="true" tabindex="-1"></a>        <span class="co"># given ids (list of integers), return Python string</span></span>
-<span id="cb37-207"><a href="#cb37-207" aria-hidden="true" tabindex="-1"></a>        part_bytes <span class="op">=</span> []</span>
-<span id="cb37-208"><a href="#cb37-208" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> idx <span class="kw">in</span> ids:</span>
-<span id="cb37-209"><a href="#cb37-209" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> idx <span class="kw">in</span> <span class="va">self</span>.vocab:</span>
-<span id="cb37-210"><a href="#cb37-210" aria-hidden="true" tabindex="-1"></a>                part_bytes.append(<span class="va">self</span>.vocab[idx])</span>
-<span id="cb37-211"><a href="#cb37-211" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> idx <span class="kw">in</span> <span class="va">self</span>.inverse_special_tokens:</span>
-<span id="cb37-212"><a href="#cb37-212" aria-hidden="true" tabindex="-1"></a>                part_bytes.append(<span class="va">self</span>.inverse_special_tokens[idx].encode(<span class="st">"utf-8"</span>))</span>
-<span id="cb37-213"><a href="#cb37-213" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
-<span id="cb37-214"><a href="#cb37-214" aria-hidden="true" tabindex="-1"></a>                <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"invalid token id: </span><span class="sc">{</span>idx<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb37-215"><a href="#cb37-215" aria-hidden="true" tabindex="-1"></a>        text_bytes <span class="op">=</span> <span class="st">b""</span>.join(part_bytes)</span>
-<span id="cb37-216"><a href="#cb37-216" aria-hidden="true" tabindex="-1"></a>        text <span class="op">=</span> text_bytes.decode(<span class="st">"utf-8"</span>, errors<span class="op">=</span><span class="st">"replace"</span>)</span>
-<span id="cb37-217"><a href="#cb37-217" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> text</span>
-<span id="cb37-218"><a href="#cb37-218" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-219"><a href="#cb37-219" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _encode_chunk(<span class="va">self</span>, text_bytes):</span>
-<span id="cb37-220"><a href="#cb37-220" aria-hidden="true" tabindex="-1"></a>        <span class="co"># return the token ids</span></span>
-<span id="cb37-221"><a href="#cb37-221" aria-hidden="true" tabindex="-1"></a>        <span class="co"># let's begin. first, convert all bytes to integers in range 0..255</span></span>
-<span id="cb37-222"><a href="#cb37-222" aria-hidden="true" tabindex="-1"></a>        ids <span class="op">=</span> <span class="bu">list</span>(text_bytes)</span>
-<span id="cb37-223"><a href="#cb37-223" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="bu">len</span>(ids) <span class="op">&gt;=</span> <span class="dv">2</span>:</span>
-<span id="cb37-224"><a href="#cb37-224" aria-hidden="true" tabindex="-1"></a>            <span class="co"># find the pair with the lowest merge index</span></span>
-<span id="cb37-225"><a href="#cb37-225" aria-hidden="true" tabindex="-1"></a>            stats <span class="op">=</span> get_stats(ids)</span>
-<span id="cb37-226"><a href="#cb37-226" aria-hidden="true" tabindex="-1"></a>            pair <span class="op">=</span> <span class="bu">min</span>(stats, key<span class="op">=</span><span class="kw">lambda</span> p: <span class="va">self</span>.merges.get(p, <span class="bu">float</span>(<span class="st">"inf"</span>)))</span>
-<span id="cb37-227"><a href="#cb37-227" aria-hidden="true" tabindex="-1"></a>            <span class="co"># subtle: if there are no more merges available, the key will</span></span>
-<span id="cb37-228"><a href="#cb37-228" aria-hidden="true" tabindex="-1"></a>            <span class="co"># result in an inf for every single pair, and the min will be</span></span>
-<span id="cb37-229"><a href="#cb37-229" aria-hidden="true" tabindex="-1"></a>            <span class="co"># just the first pair in the list, arbitrarily</span></span>
-<span id="cb37-230"><a href="#cb37-230" aria-hidden="true" tabindex="-1"></a>            <span class="co"># we can detect this terminating case by a membership check</span></span>
-<span id="cb37-231"><a href="#cb37-231" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> pair <span class="kw">not</span> <span class="kw">in</span> <span class="va">self</span>.merges:</span>
-<span id="cb37-232"><a href="#cb37-232" aria-hidden="true" tabindex="-1"></a>                <span class="cf">break</span> <span class="co"># nothing else can be merged anymore</span></span>
-<span id="cb37-233"><a href="#cb37-233" aria-hidden="true" tabindex="-1"></a>            <span class="co"># otherwise let's merge the best pair (lowest merge index)</span></span>
-<span id="cb37-234"><a href="#cb37-234" aria-hidden="true" tabindex="-1"></a>            idx <span class="op">=</span> <span class="va">self</span>.merges[pair]</span>
-<span id="cb37-235"><a href="#cb37-235" aria-hidden="true" tabindex="-1"></a>            ids <span class="op">=</span> merge(ids, pair, idx)</span>
-<span id="cb37-236"><a href="#cb37-236" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ids</span>
-<span id="cb37-237"><a href="#cb37-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-238"><a href="#cb37-238" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> encode_ordinary(<span class="va">self</span>, text):</span>
-<span id="cb37-239"><a href="#cb37-239" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Encoding that ignores any special tokens."""</span></span>
-<span id="cb37-240"><a href="#cb37-240" aria-hidden="true" tabindex="-1"></a>        <span class="co"># split text into chunks of text by categories defined in regex pattern</span></span>
-<span id="cb37-241"><a href="#cb37-241" aria-hidden="true" tabindex="-1"></a>        text_chunks <span class="op">=</span> re.findall(<span class="va">self</span>.compiled_pattern, text)</span>
-<span id="cb37-242"><a href="#cb37-242" aria-hidden="true" tabindex="-1"></a>        <span class="co"># all chunks of text are encoded separately, then results are joined</span></span>
-<span id="cb37-243"><a href="#cb37-243" aria-hidden="true" tabindex="-1"></a>        ids <span class="op">=</span> []</span>
-<span id="cb37-244"><a href="#cb37-244" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> chunk <span class="kw">in</span> text_chunks:</span>
-<span id="cb37-245"><a href="#cb37-245" aria-hidden="true" tabindex="-1"></a>            chunk_bytes <span class="op">=</span> chunk.encode(<span class="st">"utf-8"</span>) <span class="co"># raw bytes</span></span>
-<span id="cb37-246"><a href="#cb37-246" aria-hidden="true" tabindex="-1"></a>            chunk_ids <span class="op">=</span> <span class="va">self</span>._encode_chunk(chunk_bytes)</span>
-<span id="cb37-247"><a href="#cb37-247" aria-hidden="true" tabindex="-1"></a>            ids.extend(chunk_ids)</span>
-<span id="cb37-248"><a href="#cb37-248" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ids</span>
-<span id="cb37-249"><a href="#cb37-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-250"><a href="#cb37-250" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> encode(<span class="va">self</span>, text, allowed_special<span class="op">=</span><span class="st">"none_raise"</span>):</span>
-<span id="cb37-251"><a href="#cb37-251" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb37-252"><a href="#cb37-252" aria-hidden="true" tabindex="-1"></a><span class="co">        Unlike encode_ordinary, this function handles special tokens.</span></span>
-<span id="cb37-253"><a href="#cb37-253" aria-hidden="true" tabindex="-1"></a><span class="co">        allowed_special: can be "all"|"none"|"none_raise" or a custom set of special tokens</span></span>
-<span id="cb37-254"><a href="#cb37-254" aria-hidden="true" tabindex="-1"></a><span class="co">        if none_raise, then an error is raised if any special token is encountered in text</span></span>
-<span id="cb37-255"><a href="#cb37-255" aria-hidden="true" tabindex="-1"></a><span class="co">        this is the default tiktoken behavior right now as well</span></span>
-<span id="cb37-256"><a href="#cb37-256" aria-hidden="true" tabindex="-1"></a><span class="co">        any other behavior is either annoying, or a major footgun</span></span>
-<span id="cb37-257"><a href="#cb37-257" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb37-258"><a href="#cb37-258" aria-hidden="true" tabindex="-1"></a>        <span class="co"># decode the user desire w.r.t. handling of special tokens</span></span>
-<span id="cb37-259"><a href="#cb37-259" aria-hidden="true" tabindex="-1"></a>        special <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb37-260"><a href="#cb37-260" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> allowed_special <span class="op">==</span> <span class="st">"all"</span>:</span>
-<span id="cb37-261"><a href="#cb37-261" aria-hidden="true" tabindex="-1"></a>            special <span class="op">=</span> <span class="va">self</span>.special_tokens</span>
-<span id="cb37-262"><a href="#cb37-262" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> allowed_special <span class="op">==</span> <span class="st">"none"</span>:</span>
-<span id="cb37-263"><a href="#cb37-263" aria-hidden="true" tabindex="-1"></a>            special <span class="op">=</span> {}</span>
-<span id="cb37-264"><a href="#cb37-264" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> allowed_special <span class="op">==</span> <span class="st">"none_raise"</span>:</span>
-<span id="cb37-265"><a href="#cb37-265" aria-hidden="true" tabindex="-1"></a>            special <span class="op">=</span> {}</span>
-<span id="cb37-266"><a href="#cb37-266" aria-hidden="true" tabindex="-1"></a>            <span class="cf">assert</span> <span class="bu">all</span>(token <span class="kw">not</span> <span class="kw">in</span> text <span class="cf">for</span> token <span class="kw">in</span> <span class="va">self</span>.special_tokens)</span>
-<span id="cb37-267"><a href="#cb37-267" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> <span class="bu">isinstance</span>(allowed_special, <span class="bu">set</span>):</span>
-<span id="cb37-268"><a href="#cb37-268" aria-hidden="true" tabindex="-1"></a>            special <span class="op">=</span> {k: v <span class="cf">for</span> k, v <span class="kw">in</span> <span class="va">self</span>.special_tokens.items() <span class="cf">if</span> k <span class="kw">in</span> allowed_special}</span>
-<span id="cb37-269"><a href="#cb37-269" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb37-270"><a href="#cb37-270" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"allowed_special=</span><span class="sc">{</span>allowed_special<span class="sc">}</span><span class="ss"> not understood"</span>)</span>
-<span id="cb37-271"><a href="#cb37-271" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> special:</span>
-<span id="cb37-272"><a href="#cb37-272" aria-hidden="true" tabindex="-1"></a>            <span class="co"># shortcut: if no special tokens, just use the ordinary encoding</span></span>
-<span id="cb37-273"><a href="#cb37-273" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>.encode_ordinary(text)</span>
-<span id="cb37-274"><a href="#cb37-274" aria-hidden="true" tabindex="-1"></a>        <span class="co"># otherwise, we have to be careful with potential special tokens in text</span></span>
-<span id="cb37-275"><a href="#cb37-275" aria-hidden="true" tabindex="-1"></a>        <span class="co"># we handle special tokens by splitting the text</span></span>
-<span id="cb37-276"><a href="#cb37-276" aria-hidden="true" tabindex="-1"></a>        <span class="co"># based on the occurrence of any exact match with any of the special tokens</span></span>
-<span id="cb37-277"><a href="#cb37-277" aria-hidden="true" tabindex="-1"></a>        <span class="co"># we can use re.split for this. note that surrounding the pattern with ()</span></span>
-<span id="cb37-278"><a href="#cb37-278" aria-hidden="true" tabindex="-1"></a>        <span class="co"># makes it into a capturing group, so the special tokens will be included</span></span>
-<span id="cb37-279"><a href="#cb37-279" aria-hidden="true" tabindex="-1"></a>        special_pattern <span class="op">=</span> <span class="st">"("</span> <span class="op">+</span> <span class="st">"|"</span>.join(re.escape(k) <span class="cf">for</span> k <span class="kw">in</span> special) <span class="op">+</span> <span class="st">")"</span></span>
-<span id="cb37-280"><a href="#cb37-280" aria-hidden="true" tabindex="-1"></a>        special_chunks <span class="op">=</span> re.split(special_pattern, text)</span>
-<span id="cb37-281"><a href="#cb37-281" aria-hidden="true" tabindex="-1"></a>        <span class="co"># now all the special characters are separated from the rest of the text</span></span>
-<span id="cb37-282"><a href="#cb37-282" aria-hidden="true" tabindex="-1"></a>        <span class="co"># all chunks of text are encoded separately, then results are joined</span></span>
-<span id="cb37-283"><a href="#cb37-283" aria-hidden="true" tabindex="-1"></a>        ids <span class="op">=</span> []</span>
-<span id="cb37-284"><a href="#cb37-284" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> part <span class="kw">in</span> special_chunks:</span>
-<span id="cb37-285"><a href="#cb37-285" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> part <span class="kw">in</span> special:</span>
-<span id="cb37-286"><a href="#cb37-286" aria-hidden="true" tabindex="-1"></a>                <span class="co"># this is a special token, encode it separately as a special case</span></span>
-<span id="cb37-287"><a href="#cb37-287" aria-hidden="true" tabindex="-1"></a>                ids.append(special[part])</span>
-<span id="cb37-288"><a href="#cb37-288" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
-<span id="cb37-289"><a href="#cb37-289" aria-hidden="true" tabindex="-1"></a>                <span class="co"># this is an ordinary sequence, encode it normally</span></span>
-<span id="cb37-290"><a href="#cb37-290" aria-hidden="true" tabindex="-1"></a>                ids.extend(<span class="va">self</span>.encode_ordinary(part))</span>
-<span id="cb37-291"><a href="#cb37-291" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ids</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># split the text up into text chunks</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>        text_chunks <span class="op">=</span> re.findall(<span class="va">self</span>.compiled_pattern, text)</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># input text preprocessing</span></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>        ids <span class="op">=</span> [<span class="bu">list</span>(ch.encode(<span class="st">"utf-8"</span>)) <span class="cf">for</span> ch <span class="kw">in</span> text_chunks]</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>        <span class="co"># iteratively merge the most common pairs to create new tokens</span></span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>        merges <span class="op">=</span> {} <span class="co"># (int, int) -&gt; int</span></span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>        vocab <span class="op">=</span> {idx: <span class="bu">bytes</span>([idx]) <span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">256</span>)} <span class="co"># idx -&gt; bytes</span></span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_merges):</span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>            <span class="co"># count the number of times every consecutive pair appears</span></span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>            stats <span class="op">=</span> {}</span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> chunk_ids <span class="kw">in</span> ids:</span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a>                <span class="co"># passing in stats will update it in place, adding up counts</span></span>
+<span id="cb37-22"><a href="#cb37-22" aria-hidden="true" tabindex="-1"></a>                get_stats(chunk_ids, stats)</span>
+<span id="cb37-23"><a href="#cb37-23" aria-hidden="true" tabindex="-1"></a>            <span class="co"># find the pair with the highest count</span></span>
+<span id="cb37-24"><a href="#cb37-24" aria-hidden="true" tabindex="-1"></a>            pair <span class="op">=</span> <span class="bu">max</span>(stats, key<span class="op">=</span>stats.get)</span>
+<span id="cb37-25"><a href="#cb37-25" aria-hidden="true" tabindex="-1"></a>            <span class="co"># mint a new token: assign it the next available id</span></span>
+<span id="cb37-26"><a href="#cb37-26" aria-hidden="true" tabindex="-1"></a>            idx <span class="op">=</span> <span class="dv">256</span> <span class="op">+</span> i</span>
+<span id="cb37-27"><a href="#cb37-27" aria-hidden="true" tabindex="-1"></a>            <span class="co"># replace all occurrences of pair in ids with idx</span></span>
+<span id="cb37-28"><a href="#cb37-28" aria-hidden="true" tabindex="-1"></a>            ids <span class="op">=</span> [merge(chunk_ids, pair, idx) <span class="cf">for</span> chunk_ids <span class="kw">in</span> ids]</span>
+<span id="cb37-29"><a href="#cb37-29" aria-hidden="true" tabindex="-1"></a>            <span class="co"># save the merge</span></span>
+<span id="cb37-30"><a href="#cb37-30" aria-hidden="true" tabindex="-1"></a>            merges[pair] <span class="op">=</span> idx</span>
+<span id="cb37-31"><a href="#cb37-31" aria-hidden="true" tabindex="-1"></a>            vocab[idx] <span class="op">=</span> vocab[pair[<span class="dv">0</span>]] <span class="op">+</span> vocab[pair[<span class="dv">1</span>]]</span>
+<span id="cb37-32"><a href="#cb37-32" aria-hidden="true" tabindex="-1"></a>            <span class="co"># prints</span></span>
+<span id="cb37-33"><a href="#cb37-33" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> verbose:</span>
+<span id="cb37-34"><a href="#cb37-34" aria-hidden="true" tabindex="-1"></a>                <span class="bu">print</span>(<span class="ss">f"merge </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>num_merges<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>pair<span class="sc">}</span><span class="ss"> -&gt; </span><span class="sc">{</span>idx<span class="sc">}</span><span class="ss"> (</span><span class="sc">{</span>vocab[idx]<span class="sc">}</span><span class="ss">) had </span><span class="sc">{</span>stats[pair]<span class="sc">}</span><span class="ss"> occurrences"</span>)</span>
+<span id="cb37-35"><a href="#cb37-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-36"><a href="#cb37-36" aria-hidden="true" tabindex="-1"></a>        <span class="co"># save class variables</span></span>
+<span id="cb37-37"><a href="#cb37-37" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.merges <span class="op">=</span> merges <span class="co"># used in encode()</span></span>
+<span id="cb37-38"><a href="#cb37-38" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.vocab <span class="op">=</span> vocab   <span class="co"># used in decode()</span></span>
+<span id="cb37-39"><a href="#cb37-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-40"><a href="#cb37-40" aria-hidden="true" tabindex="-1"></a>    ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li>As expected, Andrej’s tokenizer works flawlessly:</li>
