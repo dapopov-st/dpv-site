@@ -648,13 +648,16 @@ merges: {(101, 32): 256, (105, 110): 257, (115, 32): 258, (226, 128): 259, (32, 
 <pre><code>100%|██████████| 1020/1020 [00:37&lt;00:00, 27.28it/s]</code></pre>
 </div>
 </div>
+<ul>
+<li>As a side note, I could be wrong, but I think the following line may help make the tokenizer deterministic: pair = max(stats.items(), key=lambda item: (item[1], -item[0][0], -item[0][1]))[0]</li>
+</ul>
 </section>
 <section id="training-and-comparing-tokenizers-on-tinystories-data" class="level2">
 <h2 class="anchored" data-anchor-id="training-and-comparing-tokenizers-on-tinystories-data">Training and comparing tokenizers on TinyStories data</h2>
 <ul>
 <li>Now let’s train and compare the tokenizers on subsets on the TinyStories dataset.</li>
 </ul>
-<div id="cell-46" class="cell" data-execution_count="3">
+<div id="cell-47" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>tiny_stories_ds<span class="op">=</span>load_dataset(<span class="st">"roneneldan/TinyStories"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -662,10 +665,10 @@ merges: {(101, 32): 256, (105, 110): 257, (115, 32): 258, (226, 128): 259, (32, 
   from .autonotebook import tqdm as notebook_tqdm</code></pre>
 </div>
 </div>
-<div id="cell-47" class="cell" data-execution_count="17">
+<div id="cell-48" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>sample_list <span class="op">=</span> tiny_stories_ds[<span class="st">'train'</span>].shuffle(seed<span class="op">=</span><span class="dv">1337</span>).select(<span class="bu">range</span>(<span class="dv">1000</span>))[<span class="st">'text'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-48" class="cell" data-execution_count="18">
+<div id="cell-49" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>sample_list[:<span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>['Once upon a time, there was a little girl named Lily. She loved to play with clay and make different shapes. One day, she made a good-looking horse with the clay. She was very happy and showed it to her mother.\n\nHer mother said, "Wow, Lily! That\'s a beautiful horse. Can you kneel down and show me how it runs?"\n\nLily knelt down and made the horse run with her hands. Her mother smiled and said, "You\'re so creative, Lily. Keep making more things with clay." \n\nLily smiled and said, "I will, Mommy. And maybe next time, I\'ll make a good-looking dog for you."',
@@ -673,11 +676,11 @@ merges: {(101, 32): 256, (105, 110): 257, (115, 32): 258, (226, 128): 259, (32, 
  'One day, a curious little girl named Lucy wanted to have a picnic. She asked her mom, "Can we have a picnic today?" Her mom said, "Yes, but we must be careful." Lucy was very happy and started to pack a big basket with food.\n\nThey went to the park and found a nice spot under a big tree. They put a blanket on the grass and started eating their sandwiches. Lucy saw a little bird and wanted to give it some bread. Her mom said, "Be careful, Lucy. Don\'t go too far."\n\nBut Lucy didn\'t listen. She walked away from the picnic to find the little bird. She looked and looked but couldn\'t find it. She was lost and didn\'t know how to go back to her mom. Lucy started to cry.\n\nHer mom looked for her but couldn\'t find her. She was very sad and scared. The picnic was not fun anymore. They didn\'t know that going too far away from the picnic would make them feel so bad.\n\nIn the end, Lucy and her mom were both very sad. They wished they had listened to each other and stayed close during the picnic.']</code></pre>
 </div>
 </div>
-<div id="cell-49" class="cell" data-execution_count="19">
+<div id="cell-50" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>training_corpus<span class="op">=</span><span class="st">'&lt;--&gt;'</span>.join(sample_list) <span class="co"># choose to use this since my basic tokenizer does not handle the special tokens</span></span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="co">#training_corpus='&lt;|endoftext|&gt;'.join(sample_list)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-50" class="cell" data-execution_count="20">
+<div id="cell-51" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(training_corpus[:<span class="dv">500</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Once upon a time, there was a little girl named Lily. She loved to play with clay and make different shapes. One day, she made a good-looking horse with the clay. She was very happy and showed it to her mother.
@@ -689,7 +692,7 @@ Lily knelt down and made the horse run with her hands. Her mother smiled and sai
 Lily smiled and said, "I will, Mommy. A</code></pre>
 </div>
 </div>
-<div id="cell-51" class="cell" data-execution_count="33">
+<div id="cell-52" class="cell" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>tokenizer_dpv <span class="op">=</span> RegexTokenizer(pattern<span class="op">=</span>GPT2_SPLIT_PATTERN)</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>tokenizer_dpv.train(training_corpus,vocab_size<span class="op">=</span><span class="dv">6400</span>,verbose<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -705,35 +708,35 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 <pre><code></code></pre>
 </div>
 </div>
-<div id="cell-52" class="cell" data-execution_count="193">
+<div id="cell-53" class="cell" data-execution_count="193">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> tokenizer_dpv.decode(tokenizer_dpv.encode(training_corpus[:<span class="dv">200</span>]))<span class="op">==</span>training_corpus[:<span class="dv">200</span>], <span class="st">'enc/dec mismatch'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-53" class="cell" data-execution_count="21">
+<div id="cell-54" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>tokenizer_ak <span class="op">=</span> RegexTokenizerAK(pattern<span class="op">=</span>GPT2_SPLIT_PATTERN)</span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>tokenizer_ak.train(training_corpus,vocab_size<span class="op">=</span><span class="dv">6400</span>,verbose<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>  0%|          | 0/6144 [00:00&lt;?, ?it/s]100%|██████████| 6144/6144 [13:57&lt;00:00,  7.34it/s]</code></pre>
 </div>
 </div>
-<div id="cell-54" class="cell" data-execution_count="192">
+<div id="cell-55" class="cell" data-execution_count="192">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> tokenizer_ak.decode(tokenizer_ak.encode(training_corpus[:<span class="dv">200</span>]))<span class="op">==</span>training_corpus[:<span class="dv">200</span>], <span class="st">'enc/dec mismatch'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-55" class="cell" data-execution_count="23">
+<div id="cell-56" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> tokenizer_ak.decode(tokenizer_ak.encode(training_corpus[:<span class="dv">200</span>]))<span class="op">==</span>tokenizer_dpv.decode(tokenizer_dpv.encode(training_corpus[:<span class="dv">200</span>])), <span class="st">'ak/dpv mismatch'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-56" class="cell" data-execution_count="229">
+<div id="cell-57" class="cell" data-execution_count="229">
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>tokenizer_ak.decode(tokenizer_ak.encode(training_corpus[:<span class="dv">200</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="229">
 <pre><code>'Once upon a time, there was a little girl named Lily. She loved to play with clay and make different shapes. One day, she made a good-looking horse with the clay. She was very happy and showed it to h'</code></pre>
 </div>
 </div>
-<div id="cell-57" class="cell" data-execution_count="164">
+<div id="cell-58" class="cell" data-execution_count="164">
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>text_sample <span class="op">=</span> training_corpus[:<span class="dv">1024</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li>Now let’s train the GPT-2 tokenizer using HuggingFace tokenizers:</li>
 </ul>
-<div id="cell-59" class="cell" data-execution_count="171">
+<div id="cell-60" class="cell" data-execution_count="171">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> GPT2TokenizerFast</span>
 <span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tokenizers <span class="im">import</span> trainers, Tokenizer</span>
 <span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -767,7 +770,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 <ul>
 <li>For reference, let’s also train a ‘standard’ BPE tokenizer where all implementation details are known:</li>
 </ul>
-<div id="cell-61" class="cell">
+<div id="cell-62" class="cell">
 <div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tokenizers <span class="im">import</span> Tokenizer, trainers, models, pre_tokenizers, normalizers</span>
 <span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a new ByteLevelBPETokenizer</span></span>
@@ -794,7 +797,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 <ul>
 <li>Before the lexicographic adjustment:</li>
 </ul>
-<div id="cell-63" class="cell">
+<div id="cell-64" class="cell">
 <div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tokenizer_dpv.encode(text))</span>
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(tokenizer_dpv.encode(text)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -802,7 +805,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 454</code></pre>
 </div>
 </div>
-<div id="cell-64" class="cell" data-execution_count="241">
+<div id="cell-65" class="cell" data-execution_count="241">
 <div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tokenizer_ak.encode(text))</span>
 <span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(tokenizer_ak.encode(text)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -813,7 +816,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 <ul>
 <li>After the lexicographic adjustment:</li>
 </ul>
-<div id="cell-66" class="cell" data-execution_count="16">
+<div id="cell-67" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tokenizer_ak.encode(text))</span>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(tokenizer_ak.encode(text)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -821,7 +824,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 497</code></pre>
 </div>
 </div>
-<div id="cell-67" class="cell" data-execution_count="221">
+<div id="cell-68" class="cell" data-execution_count="221">
 <div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>tokenizer_dpv.encode(<span class="st">'&lt;--&gt;'</span>),tokenizer_ak.encode(<span class="st">'&lt;--&gt;'</span>) <span class="co"># Ok, encoded early on by both tokenizers</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="221">
 <pre><code>([374], [375])</code></pre>
@@ -831,7 +834,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 <li><p>My tokenizer behaves similarly to Andrej’s, with most merges happening around the same time. Both appear to possess the same compression ratio (tokenized the sample text to 454 tokens to represent text of length 1024) on the chosen sample, and both successfully recover the original sequence. The main difference seems to come from Andrej’s tokenizer using <em>get_stats</em> on each chunk separately and merging pairs within the chunks separately, while mine merges pairs within the entire concatenated byte string. While this is slower (13:57 vs 03:18 on my machine), it is a more careful (and likely more ‘correct’) handling of the individual chunks. I would imagine the modern highly optimized tokenizers to perform tokenization on multiple chunks of text in parallel, aligning best with Andrej’s implementation.</p></li>
 <li><p>However, GPT-2 tokenizer appears to yield different tokens even with same vocabulary size. It also differs from the standard BPE tokenizer available from Hugging Face. Since not all details of GPT-2 tokenizer implementation are known (referring to 4-spaces not being merged for Python code, for example), this could be due to a custom implementation detail of GPT-2.</p></li>
 </ul>
-<div id="cell-69" class="cell" data-execution_count="242">
+<div id="cell-70" class="cell" data-execution_count="242">
 <div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(gpt2_custom.encode(text_sample).ids)</span>
 <span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(gpt2_custom.encode(text)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -839,7 +842,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 344</code></pre>
 </div>
 </div>
-<div id="cell-70" class="cell" data-execution_count="243">
+<div id="cell-71" class="cell" data-execution_count="243">
 <div class="sourceCode cell-code" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(bpe_tokenizer.encode(text_sample).ids)</span>
 <span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(bpe_tokenizer.encode(text)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -889,7 +892,7 @@ merges: {(101, 32): 256, (100, 32): 257, (116, 104): 258, (32, 97): 259, (46, 32
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 4: Tokenization mechanics and challenges_files/figure-html/cell-80-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 4: Tokenization mechanics and challenges_files/figure-html/cell-81-1-image.png" class="img-fluid figure-img"></p>
 <figcaption class="margin-caption">Source: Mu, J., Li, X. L., &amp; Goodman, N. (2023).</figcaption>
 </figure>
 </div>
