@@ -55,6 +55,7 @@ project:
 
 execute:
   freeze: true
+  cache: true
 
 format:
   html:
