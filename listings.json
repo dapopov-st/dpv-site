@@ -10,6 +10,12 @@
     ]
   },
   {
+    "listing": "/notes.html",
+    "items": [
+      "/notes/ml-algos-numpy-torch.html"
+    ]
+  },
+  {
     "listing": "/posts.html",
     "items": [
       "/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 4: Tokenization mechanics and challenges.html",

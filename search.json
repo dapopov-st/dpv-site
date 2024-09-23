@@ -259,6 +259,34 @@
     "text": "Source: Image by the author\n\n\n\nGitHub link"
   },
   {
+    "objectID": "notes/ml-algos-numpy-torch.html",
+    "href": "notes/ml-algos-numpy-torch.html",
+    "title": "ML Algorithms in Numpy and PyTorch",
+    "section": "",
+    "text": "import numpy as np\nimport torch\nfrom sklearn import datasets\nfrom sklearn.model_selection import train_test_split\nfrom matplotlib.colors import ListedColormap\nimport collections"
+  },
+  {
+    "objectID": "notes/ml-algos-numpy-torch.html#ml-algorithms-in-numpy-and-pytorch",
+    "href": "notes/ml-algos-numpy-torch.html#ml-algorithms-in-numpy-and-pytorch",
+    "title": "ML Algorithms in Numpy and PyTorch",
+    "section": "",
+    "text": "import numpy as np\nimport torch\nfrom sklearn import datasets\nfrom sklearn.model_selection import train_test_split\nfrom matplotlib.colors import ListedColormap\nimport collections"
+  },
+  {
+    "objectID": "notes/ml-algos-numpy-torch.html#knn",
+    "href": "notes/ml-algos-numpy-torch.html#knn",
+    "title": "ML Algorithms in Numpy and PyTorch",
+    "section": "KNN",
+    "text": "KNN\n\nPredict the class based on the most common class among the k nearest neighbors\nfit: doesn’t actually “train” the model in a traditional sense, just stores the training data.\npredict: for each point, find k nearest neighbors, then find most common class among these.\n\n\nclass KNN:\n    def __init__(self,k=3):\n        self.k = k\n\n    def _dist(self,x1,x2):\n        return np.sqrt(np.sum((x1-x2)**2))\n    \n    def fit(self,X,y):\n        self.X_train = X\n        self.y_train = y\n\n    def _predict(self,x,debug=False):\n        dists=np.array([self._dist(x,x_train) for x_train in self.X_train])\n        sorted_indices = np.argsort(dists)[:self.k]\n        labels = [self.y_train[i] for i in sorted_indices]\n        most_common_labels = collections.Counter(labels).most_common(1)[0][0]\n        if debug: \n            print(\"ORIGINAL: \",dists)\n            print(\"LABELS: \",labels)\n            print(\"MOST COMMON LABEL: \", most_common_labels)\n        return most_common_labels\n    \n    def predict(self,X,debug):\n        # X can have multiple samples, so predict for each one\n        out = np.array([self._predict(x,debug) for x in X])\n        if debug: print(out)\n        return out\n\n\n\niris = datasets.load_iris()\nX,y = iris.data, iris.target\n\nX_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)\ndef accuracy(y_true,y_pred):\n    return np.sum(y_true==y_pred)/len(y_true)\n\n\nk = 3\nclf = KNN(k)\nclf.fit(X_train,y_train)\npredictions  = clf.predict(X_test,debug=False)\nprint(\"Accuracy: \", accuracy(y_test,predictions))\n\nAccuracy:  1.0\n\n\n\nFirst implement a naive implementation by directly converting numpy arrays to torch.tensors and replacing numpy functions with PyTorch functions.\n\n\nclass KNNTorchNaive:\n    def __init__(self,k=3):\n        self.k = k\n\n    def _dist(self,x1,x2):\n        return torch.sqrt(torch.sum((x1-x2)**2))\n    \n    def fit(self,X,y):\n        self.X_train = X\n        self.y_train = y\n\n    def _predict(self,x,debug=False):\n        dists=torch.tensor([self._dist(x,x_train) for x_train in self.X_train])\n        sorted_indices = torch.argsort(dists)[:self.k]\n        labels = [self.y_train[i] for i in sorted_indices]\n        most_common_labels = collections.Counter(labels).most_common(1)[0][0]\n        if debug: \n            print(\"ORIGINAL: \",dists)\n            print(\"LABELS: \",labels)\n            print(\"MOST COMMON LABEL: \", most_common_labels)\n        return most_common_labels\n    \n    def predict(self,X,debug):\n        # X can have multiple samples, so predict for each one\n        out = torch.tensor([self._predict(x,debug) for x in X])\n        if debug: print(out)\n        return out\n\n\nk = 3\nX = torch.from_numpy(X).float()\ny = torch.from_numpy(y).long()\nX_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2, random_state=42)\ndef accuracy(y_true,y_pred): return torch.sum(y_true==y_pred).item()/len(y_true)\nclf = KNNTorchNaive(k)\nclf.fit(X_train,y_train)\npredictions  = clf.predict(X_test,debug=False)\nprint(\"Accuracy: \", accuracy(y_test,predictions))\n\nAccuracy:  1.0\n\n\n\nX_train.shape\n\ntorch.Size([120, 4])\n\n\n\nclass KNNTorchBroadcast:\n    def __init__(self,k=3):\n        self.k = k\n    \n    def fit(self,X,y):\n        self.X_train = X\n        self.y_train = y\n\n    def _predict(self,x,debug=False):\n        #print(x.shape)\n        dists = torch.sqrt(torch.sum((self.X_train-x)**2,dim=1))\n        sorted_indices = torch.argsort(dists)[:self.k]\n        labels = [self.y_train[i] for i in sorted_indices] #could perhaps be optimized, but trying to keep this consistent with collections.Counter\n        most_common_labels = collections.Counter(labels).most_common(1)[0][0]\n        if debug: \n            print(\"ORIGINAL: \",dists)\n            print(\"LABELS: \",labels)\n            print(\"MOST COMMON LABEL: \", most_common_labels)\n        return most_common_labels\n    \n    def predict(self,X,debug):\n        # X can have multiple samples, so predict for each one\n        out = torch.tensor([self._predict(x,debug) for x in X])\n        if debug: print(out)\n        return out\n\n\nBroadcasting in PyTorch follows these rules:\n\n\nIf the two tensors differ in the number of dimensions, the shape of the tensor with fewer dimensions is padded with ones on its leading (left) side.\nIf the shape of the two tensors does not match in any dimension, the tensor with shape equal to 1 in that dimension is stretched to match the other shape.\nIf in any dimension the sizes disagree and neither is equal to 1, an error is raised.\n\n\nWe subtract tensor x of shape [4] from a tensor self.X_train of shape [120, 4], PyTorch automatically broadcasts x to the shape of self.X_train by repeating it along the 0th dimension.\n\nIn the dists calculation, the tensors differ in number of dimensions, so x is padded on the left with 1, becoming [1,4] according to Rule 1. Then by Rule 2, this resulting tensor is “stretched out” along 0th dimension from shape [1,4] to [120,4].\n\n\n\ndef accuracy(y_true,y_pred): return torch.sum(y_true==y_pred).item()/len(y_true)\nclf = KNNTorchBroadcast(k)\nclf.fit(X_train,y_train)\npredictions  = clf.predict(X_test,debug=False)\nprint(\"Accuracy: \", accuracy(y_test,predictions))\n\nAccuracy:  1.0"
+  },
+  {
+    "objectID": "notes.html",
+    "href": "notes.html",
+    "title": "Dmitriy’s Notes",
+    "section": "",
+    "text": "Order By\n       Default\n         \n          Title\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\nTitle\n\n\n\n\n\n\nML Algorithms in Numpy and PyTorch\n\n\n\n\n\nNo matching items"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Dmitriy Popov-Velasco",
