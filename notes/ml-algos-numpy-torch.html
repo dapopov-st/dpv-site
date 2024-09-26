@@ -207,17 +207,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li>The goal of this is to practice building basic ML algorithms from scratch in numpy/PyTorch. I use <a href="https://www.youtube.com/playlist?list=PLqnslRFeH2Upcrywf-u2etjdxxkL8nl7E">Machine Learning from Scratch</a> series as a starting point, generally watching the first part of the video to review the setup, then building the algorithms out myself, looking at the repo for test cases/if stuck.</li>
 </ul>
-<div id="cell-2" class="cell" data-execution_count="65">
+<div id="cell-2" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.colors <span class="im">import</span> ListedColormap</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> collections</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> make_blobs</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> time <span class="im">import</span> perf_counter</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.colors <span class="im">import</span> ListedColormap</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> collections</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> make_blobs</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> time <span class="im">import</span> perf_counter</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="knn" class="level2">
 <h2 class="anchored" data-anchor-id="knn">KNN</h2>
@@ -1032,6 +1033,117 @@ Accuracy: 0.9159026386036382</code></pre>
 <p><img src="ml-algos-numpy-torch_files/figure-html/cell-25-output-2.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
+</div>
+</div>
+</section>
+<section id="logistic-regression" class="level2">
+<h2 class="anchored" data-anchor-id="logistic-regression">Logistic Regression</h2>
+<ul>
+<li>Gradient updates are same as in linear regression, but since the targets are 0/1, convert predictions to probabilities via sigmoid.</li>
+</ul>
+<div id="cell-40" class="cell" data-execution_count="162">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LogisticRegression:</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, learning_rate<span class="op">=</span><span class="fl">0.001</span>, n_iters<span class="op">=</span><span class="dv">1000</span>):</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lr <span class="op">=</span> learning_rate</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_iters <span class="op">=</span> n_iters</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.weights <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.bias <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, y):</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>       <span class="va">self</span>.n_examples, <span class="va">self</span>.n_feats <span class="op">=</span> X.shape</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>       <span class="va">self</span>.weights <span class="op">=</span> np.zeros(<span class="va">self</span>.n_feats)</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>       <span class="va">self</span>.bias <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>       <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="va">self</span>.n_iters):</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>           y_pred <span class="op">=</span> <span class="va">self</span>._sigmoid(X<span class="op">@</span>self.weights<span class="op">+</span><span class="va">self</span>.bias)</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>           dw <span class="op">=</span> (<span class="dv">2</span><span class="op">/</span><span class="va">self</span>.n_examples)<span class="op">*</span>np.dot(X.T,y_pred<span class="op">-</span>y)</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>           db <span class="op">=</span> (<span class="dv">2</span><span class="op">/</span><span class="va">self</span>.n_examples)<span class="op">*</span>np.<span class="bu">sum</span>(y_pred<span class="op">-</span>y)</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>           <span class="va">self</span>.weights <span class="op">-=</span> <span class="va">self</span>.lr <span class="op">*</span> dw</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>           <span class="va">self</span>.bias <span class="op">-=</span> <span class="va">self</span>.lr <span class="op">*</span> db</span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X):</span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>        probs <span class="op">=</span> <span class="va">self</span>._sigmoid(X<span class="op">@</span>self.weights<span class="op">+</span><span class="va">self</span>.bias)</span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.array([<span class="dv">1</span> <span class="cf">if</span> prob <span class="op">&gt;</span> <span class="fl">0.5</span> <span class="cf">else</span> <span class="dv">0</span> <span class="cf">for</span> prob <span class="kw">in</span> probs ])</span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _sigmoid(<span class="va">self</span>, x):</span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span><span class="op">/</span>(<span class="dv">1</span><span class="op">+</span>np.exp(<span class="op">-</span>x))</span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Testing</span></span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imports</span></span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> accuracy(y_true, y_pred):</span>
+<span id="cb39-36"><a href="#cb39-36" aria-hidden="true" tabindex="-1"></a>        accuracy <span class="op">=</span> np.<span class="bu">sum</span>(y_true <span class="op">==</span> y_pred) <span class="op">/</span> <span class="bu">len</span>(y_true)</span>
+<span id="cb39-37"><a href="#cb39-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> accuracy</span>
+<span id="cb39-38"><a href="#cb39-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-39"><a href="#cb39-39" aria-hidden="true" tabindex="-1"></a>    bc <span class="op">=</span> datasets.load_breast_cancer()</span>
+<span id="cb39-40"><a href="#cb39-40" aria-hidden="true" tabindex="-1"></a>    X, y <span class="op">=</span> bc.data, bc.target</span>
+<span id="cb39-41"><a href="#cb39-41" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb39-42"><a href="#cb39-42" aria-hidden="true" tabindex="-1"></a>        X, y, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">1234</span></span>
+<span id="cb39-43"><a href="#cb39-43" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb39-44"><a href="#cb39-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-45"><a href="#cb39-45" aria-hidden="true" tabindex="-1"></a>    regressor <span class="op">=</span> LogisticRegression(learning_rate<span class="op">=</span><span class="fl">0.00005</span>, n_iters<span class="op">=</span><span class="dv">1000</span>) <span class="co"># think they forgot 2x in grad updates, halving lr to get same accuracy</span></span>
+<span id="cb39-46"><a href="#cb39-46" aria-hidden="true" tabindex="-1"></a>    regressor.fit(X_train, y_train)</span>
+<span id="cb39-47"><a href="#cb39-47" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> regressor.predict(X_test)</span>
+<span id="cb39-48"><a href="#cb39-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-49"><a href="#cb39-49" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"LR classification accuracy:"</span>, accuracy(y_test, predictions))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>LR classification accuracy: 0.9298245614035088</code></pre>
+</div>
+</div>
+<ul>
+<li>PyTorch version is not very numerically stable, increased precision to <code>torch.float64</code> to match that of numpy, experimented with different random seeds until found one of the better ones. <code>BCEWithLogitsLoss</code> may help the issue in the future. Either way, there seems to be a about 3 different ‘valleys’ where the algorithm ends up ‘converging’, likely local minima on the loss surface.</li>
+</ul>
+<div id="cell-42" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LogisticRegressionTorch(nn.Module):</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, input_dims):</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.ff <span class="op">=</span> nn.Linear(input_dims,<span class="dv">1</span>,dtype<span class="op">=</span>torch.float64)</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sigm <span class="op">=</span> nn.Sigmoid()</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, X):</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> <span class="va">self</span>.sigm(<span class="va">self</span>.ff(X))</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Imports</span></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>bc <span class="op">=</span> datasets.load_breast_cancer()</span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> torch.tensor(bc.data,dtype <span class="op">=</span> torch.float64), torch.tensor(bc.target, dtype <span class="op">=</span> torch.float64).view(<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>    X, y, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">1234</span></span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">7777777</span>) <span class="co"># a bit unstable, depending on random seed, this is one of the better ones</span></span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a>n_iters, lr <span class="op">=</span> <span class="dv">10000</span>, <span class="fl">.00005</span></span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>n_examples, n_feats <span class="op">=</span> X.shape</span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a>log_reg <span class="op">=</span> LogisticRegressionTorch(n_feats)</span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a>loss_fn <span class="op">=</span> nn.BCELoss() <span class="co"># may consider nn.BCEWithLogitsLoss() for numeric stability</span></span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.SGD(log_reg.parameters(),lr)</span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_iters):</span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a>    optimizer.zero_grad()</span>
+<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a>    y_pred <span class="op">=</span> log_reg(X_train).view(<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> loss_fn(y_pred,y_train)</span>
+<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a>    loss.backward()</span>
+<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a>    optimizer.step()</span>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a>    y_pred_test <span class="op">=</span> log_reg(X_test)</span>
+<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a>    y_pred_test_class <span class="op">=</span> y_pred_test.<span class="bu">round</span>()</span>
+<span id="cb41-38"><a href="#cb41-38" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="bu">list</span>(<span class="bu">zip</span>(y_pred_test_class,y_test)))</span>
+<span id="cb41-39"><a href="#cb41-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-40"><a href="#cb41-40" aria-hidden="true" tabindex="-1"></a>correct <span class="op">=</span> (y_pred_test_class<span class="op">==</span>y_test).<span class="bu">float</span>()</span>
+<span id="cb41-41"><a href="#cb41-41" aria-hidden="true" tabindex="-1"></a>accuracy <span class="op">=</span> correct.<span class="bu">sum</span>()<span class="op">/</span><span class="bu">len</span>(correct)</span>
+<span id="cb41-42"><a href="#cb41-42" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"LR classification accuracy:"</span>, accuracy.item())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[(tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([1.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([1.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64)), (tensor([0.], dtype=torch.float64), tensor([0.], dtype=torch.float64))]
+LR classification accuracy: 0.9298245906829834</code></pre>
 </div>
 </div>
 
