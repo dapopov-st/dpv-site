@@ -1146,6 +1146,303 @@ Accuracy: 0.9159026386036382</code></pre>
 LR classification accuracy: 0.9298245906829834</code></pre>
 </div>
 </div>
+</section>
+<section id="pca" class="level2">
+<h2 class="anchored" data-anchor-id="pca">PCA</h2>
+<ul>
+<li>Subtract the mean from X</li>
+<li>Calculate Cov(X,X)</li>
+<li>Calculate eigenvectors and eigenvalues of the covariance matrix</li>
+<li>Sort the eigenvectors according to their eigenvalues in decreasing order</li>
+<li>Choose the first k eigenvectors as the new k dimensions</li>
+<li>Transform the original n-dimensional data points into k dimensions by projecting with dot product</li>
+</ul>
+<p>Some explanation for why this works from GPT 4omini, found points 3 and 4 to be particularly useful:</p>
+<p>In PCA, we start with a dataset represented as a matrix, and we want to identify the directions (principal components) in which the data varies the most. Here’s how eigenvectors and eigenvalues come into play:</p>
+<ol type="1">
+<li><p><strong>Covariance Matrix</strong>: The covariance matrix of the dataset captures how the variables vary with respect to each other. When you compute the covariance matrix, you’re essentially summarizing the relationships and variances of the dimensions.</p></li>
+<li><p><strong>Eigenvalues and Eigenvectors</strong>: When you find the eigenvalues and eigenvectors of the covariance matrix, the eigenvectors represent the directions of maximum variance (principal components), and the corresponding eigenvalues quantify the amount of variance in those directions. Specifically:</p>
+<ul>
+<li>An eigenvector with a larger eigenvalue indicates that there is more variance in the data along that direction.</li>
+<li>Conversely, a smaller eigenvalue indicates less variance.</li>
+</ul></li>
+<li><p><strong>Preservation of Variance</strong>: The reason the eigenvectors corresponding to the largest eigenvalues preserve the most variance is that they effectively align with the directions where the data is most spread out. When you project the data onto these eigenvectors (principal components), you are capturing the largest portion of the data’s variability.</p></li>
+<li><p><strong>Transformation and Basis</strong>: Regarding your mention of transforming the standard basis, think of it this way: The largest eigenvalues indicate how much “stretching” occurs along the directions defined by their corresponding eigenvectors. These are the directions where the data points are furthest apart from each other, hence preserving the variance best. The eigenvalues tell you how much variance is retained when the data is projected onto the eigenvectors.</p></li>
+</ol>
+<p>In summary, in PCA, the eigenvectors of the covariance matrix with the largest eigenvalues indicate the directions of maximum variance, and projecting data onto these eigenvectors retains the most significant patterns and variability from the original dataset. This is why they are so crucial for dimensionality reduction while retaining important information.</p>
+<div id="cell-46" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> PCA:</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, n_components):</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_components <span class="op">=</span> n_components</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.components <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.mean <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, debug <span class="op">=</span> <span class="va">False</span>):</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.X_bar <span class="op">=</span> np.mean(X,axis<span class="op">=</span><span class="dv">0</span>) <span class="co"># store so as to be able to subtract it later in transform</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>        X<span class="op">-=</span> <span class="va">self</span>.X_bar  <span class="co">#subtract teh mean from X</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>        cov <span class="op">=</span> X.T <span class="op">@</span> X <span class="co">#calculate cov of X</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>        eigenvalues, eigenvectors <span class="op">=</span> np.linalg.eig(cov) <span class="co">#calculate eigenvectors/eigenvalues</span></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> debug: <span class="bu">print</span>(<span class="st">"eigenvalues, eigenvectors "</span>, eigenvalues, eigenvectors)</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>        eigenvectors <span class="op">=</span> eigenvectors[np.argsort(eigenvalues)[::<span class="op">-</span><span class="dv">1</span>]] <span class="co"># Sort the eigenvectors according to their eigenvalues in decreasing order</span></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> debug: <span class="bu">print</span>(eigenvectors) </span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.components <span class="op">=</span> eigenvectors[:<span class="va">self</span>.n_components] <span class="co"># Choose the first k eigenvectors as the new k dimensions</span></span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> debug: <span class="bu">print</span>(<span class="va">self</span>.components) </span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>           </span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> transform(<span class="va">self</span>, X):</span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>        X <span class="op">-=</span> <span class="va">self</span>.X_bar <span class="co"># Must subtract the mean to center new data consistently!</span></span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Transform the original n-dimensional data points into k dimensions by projecting with dot product </span></span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> X <span class="op">@</span> <span class="va">self</span>.components.T     </span>
+<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb43-24"><a href="#cb43-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Testing</span></span>
+<span id="cb43-25"><a href="#cb43-25" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb43-26"><a href="#cb43-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imports</span></span>
+<span id="cb43-27"><a href="#cb43-27" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb43-28"><a href="#cb43-28" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb43-29"><a href="#cb43-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-30"><a href="#cb43-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># data = datasets.load_digits()</span></span>
+<span id="cb43-31"><a href="#cb43-31" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> datasets.load_iris()</span>
+<span id="cb43-32"><a href="#cb43-32" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> data.data</span>
+<span id="cb43-33"><a href="#cb43-33" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> data.target</span>
+<span id="cb43-34"><a href="#cb43-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-35"><a href="#cb43-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Project the data onto the 2 primary principal components</span></span>
+<span id="cb43-36"><a href="#cb43-36" aria-hidden="true" tabindex="-1"></a>    pca <span class="op">=</span> PCA(<span class="dv">2</span>)</span>
+<span id="cb43-37"><a href="#cb43-37" aria-hidden="true" tabindex="-1"></a>    pca.fit(X,debug <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb43-38"><a href="#cb43-38" aria-hidden="true" tabindex="-1"></a>    X_projected <span class="op">=</span> pca.transform(X)</span>
+<span id="cb43-39"><a href="#cb43-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-40"><a href="#cb43-40" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Shape of X:"</span>, X.shape)</span>
+<span id="cb43-41"><a href="#cb43-41" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Shape of transformed X:"</span>, X_projected.shape)</span>
+<span id="cb43-42"><a href="#cb43-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-43"><a href="#cb43-43" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">=</span> X_projected[:, <span class="dv">0</span>]</span>
+<span id="cb43-44"><a href="#cb43-44" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">=</span> X_projected[:, <span class="dv">1</span>]</span>
+<span id="cb43-45"><a href="#cb43-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-46"><a href="#cb43-46" aria-hidden="true" tabindex="-1"></a>    plt.scatter(</span>
+<span id="cb43-47"><a href="#cb43-47" aria-hidden="true" tabindex="-1"></a>        x1, x2, c<span class="op">=</span>y, edgecolor<span class="op">=</span><span class="st">"none"</span>, alpha<span class="op">=</span><span class="fl">0.8</span>, cmap<span class="op">=</span>plt.cm.get_cmap(<span class="st">"viridis"</span>, <span class="dv">3</span>)</span>
+<span id="cb43-48"><a href="#cb43-48" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb43-49"><a href="#cb43-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-50"><a href="#cb43-50" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">"Principal Component 1"</span>)</span>
+<span id="cb43-51"><a href="#cb43-51" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">"Principal Component 2"</span>)</span>
+<span id="cb43-52"><a href="#cb43-52" aria-hidden="true" tabindex="-1"></a>    plt.colorbar()</span>
+<span id="cb43-53"><a href="#cb43-53" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>eigenvalues, eigenvectors  [630.0080142   36.15794144  11.65321551   3.55142885] [[ 0.36138659 -0.65658877 -0.58202985  0.31548719]
+ [-0.08452251 -0.73016143  0.59791083 -0.3197231 ]
+ [ 0.85667061  0.17337266  0.07623608 -0.47983899]
+ [ 0.3582892   0.07548102  0.54583143  0.75365743]]
+[[ 0.36138659 -0.65658877 -0.58202985  0.31548719]
+ [-0.08452251 -0.73016143  0.59791083 -0.3197231 ]
+ [ 0.85667061  0.17337266  0.07623608 -0.47983899]
+ [ 0.3582892   0.07548102  0.54583143  0.75365743]]
+[[ 0.36138659 -0.65658877 -0.58202985  0.31548719]
+ [-0.08452251 -0.73016143  0.59791083 -0.3197231 ]]
+Shape of X: (150, 4)
+Shape of transformed X: (150, 2)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/tmp/ipykernel_6079/3178312349.py:47: MatplotlibDeprecationWarning: The get_cmap function was deprecated in Matplotlib 3.7 and will be removed in 3.11. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap()`` or ``pyplot.get_cmap()`` instead.
+  x1, x2, c=y, edgecolor="none", alpha=0.8, cmap=plt.cm.get_cmap("viridis", 3)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ml-algos-numpy-torch_files/figure-html/cell-28-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-47" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> PCATorch:</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, n_components):</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_components <span class="op">=</span> n_components</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.components <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.mean <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, debug <span class="op">=</span> <span class="va">False</span>):</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.X_bar <span class="op">=</span> torch.mean(X,axis<span class="op">=</span><span class="dv">0</span>) <span class="co"># store so as to be able to subtract it later in transform</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>        X<span class="op">-=</span> <span class="va">self</span>.X_bar  <span class="co">#subtract teh mean from X</span></span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>        cov <span class="op">=</span> X.T <span class="op">@</span> X <span class="co">#calculate cov of X</span></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>        eigenvalues_complex, eigenvectors_complex <span class="op">=</span> torch.linalg.eig(cov) <span class="co">#calculate eigenvectors/eigenvalues; return complex</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>        eigenvalues, eigenvalues_imag <span class="op">=</span> eigenvalues_complex.real, eigenvalues_complex.imag</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>        eigenvectors, eigenvectors_imag <span class="op">=</span> eigenvectors_complex.real, eigenvectors_complex.imag</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> torch.allclose(eigenvalues_imag, torch.zeros_like(eigenvalues_imag),atol<span class="op">=</span><span class="fl">1e-6</span>), <span class="st">"Imaginary parts of eigenvalues are not zero"</span></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> torch.allclose(eigenvectors_imag, torch.zeros_like(eigenvectors_imag),atol<span class="op">=</span><span class="fl">1e-6</span>), <span class="st">"Imaginary parts of eigenvectors are not zero"</span></span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> debug: <span class="bu">print</span>(<span class="st">"eigenvalues, eigenvectors "</span>, eigenvalues, eigenvectors)</span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>        eigenvectors <span class="op">=</span> eigenvectors[torch.argsort(eigenvalues,descending<span class="op">=</span><span class="va">True</span>)] <span class="co"># Sort the eigenvectors according to their eigenvalues in decreasing order</span></span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> debug: <span class="bu">print</span>(eigenvectors) </span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.components <span class="op">=</span> eigenvectors[:<span class="va">self</span>.n_components] <span class="co"># Choose the first k eigenvectors as the new k dimensions</span></span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> debug: <span class="bu">print</span>(<span class="va">self</span>.components) </span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>           </span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> transform(<span class="va">self</span>, X):</span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a>        X <span class="op">-=</span> <span class="va">self</span>.X_bar <span class="co"># Must subtract the mean to center new data consistently!</span></span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Transform the original n-dimensional data points into k dimensions by projecting with dot product </span></span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> X <span class="op">@</span> <span class="va">self</span>.components.T     </span>
+<span id="cb46-27"><a href="#cb46-27" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb46-28"><a href="#cb46-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Testing</span></span>
+<span id="cb46-29"><a href="#cb46-29" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb46-30"><a href="#cb46-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imports</span></span>
+<span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb46-32"><a href="#cb46-32" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb46-33"><a href="#cb46-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-34"><a href="#cb46-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># data = datasets.load_digits()</span></span>
+<span id="cb46-35"><a href="#cb46-35" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> datasets.load_iris()</span>
+<span id="cb46-36"><a href="#cb46-36" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> torch.tensor(data.data,dtype <span class="op">=</span> torch.float32)</span>
+<span id="cb46-37"><a href="#cb46-37" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> torch.tensor(data.target, dtype<span class="op">=</span>torch.float32)</span>
+<span id="cb46-38"><a href="#cb46-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-39"><a href="#cb46-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Project the data onto the 2 primary principal components</span></span>
+<span id="cb46-40"><a href="#cb46-40" aria-hidden="true" tabindex="-1"></a>    pca <span class="op">=</span> PCATorch(<span class="dv">2</span>)</span>
+<span id="cb46-41"><a href="#cb46-41" aria-hidden="true" tabindex="-1"></a>    pca.fit(X,debug <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb46-42"><a href="#cb46-42" aria-hidden="true" tabindex="-1"></a>    X_projected <span class="op">=</span> pca.transform(X)</span>
+<span id="cb46-43"><a href="#cb46-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-44"><a href="#cb46-44" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Shape of X:"</span>, X.shape)</span>
+<span id="cb46-45"><a href="#cb46-45" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Shape of transformed X:"</span>, X_projected.shape)</span>
+<span id="cb46-46"><a href="#cb46-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-47"><a href="#cb46-47" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">=</span> X_projected[:, <span class="dv">0</span>]</span>
+<span id="cb46-48"><a href="#cb46-48" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">=</span> X_projected[:, <span class="dv">1</span>]</span>
+<span id="cb46-49"><a href="#cb46-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-50"><a href="#cb46-50" aria-hidden="true" tabindex="-1"></a>    plt.scatter(</span>
+<span id="cb46-51"><a href="#cb46-51" aria-hidden="true" tabindex="-1"></a>        x1, x2, c<span class="op">=</span>y, edgecolor<span class="op">=</span><span class="st">"none"</span>, alpha<span class="op">=</span><span class="fl">0.8</span>, cmap<span class="op">=</span>plt.cm.get_cmap(<span class="st">"viridis"</span>, <span class="dv">3</span>)</span>
+<span id="cb46-52"><a href="#cb46-52" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb46-53"><a href="#cb46-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-54"><a href="#cb46-54" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">"Principal Component 1"</span>)</span>
+<span id="cb46-55"><a href="#cb46-55" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">"Principal Component 2"</span>)</span>
+<span id="cb46-56"><a href="#cb46-56" aria-hidden="true" tabindex="-1"></a>    plt.colorbar()</span>
+<span id="cb46-57"><a href="#cb46-57" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>eigenvalues, eigenvectors  tensor([630.0081,  36.1579,  11.6532,   3.5514]) tensor([[-0.3614, -0.6566, -0.5820,  0.3155],
+        [ 0.0845, -0.7302,  0.5979, -0.3197],
+        [-0.8567,  0.1734,  0.0762, -0.4798],
+        [-0.3583,  0.0755,  0.5458,  0.7537]])
+tensor([[-0.3614, -0.6566, -0.5820,  0.3155],
+        [ 0.0845, -0.7302,  0.5979, -0.3197],
+        [-0.8567,  0.1734,  0.0762, -0.4798],
+        [-0.3583,  0.0755,  0.5458,  0.7537]])
+tensor([[-0.3614, -0.6566, -0.5820,  0.3155],
+        [ 0.0845, -0.7302,  0.5979, -0.3197]])
+Shape of X: torch.Size([150, 4])
+Shape of transformed X: torch.Size([150, 2])</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/tmp/ipykernel_6079/1788467269.py:51: MatplotlibDeprecationWarning: The get_cmap function was deprecated in Matplotlib 3.7 and will be removed in 3.11. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap()`` or ``pyplot.get_cmap()`` instead.
+  x1, x2, c=y, edgecolor="none", alpha=0.8, cmap=plt.cm.get_cmap("viridis", 3)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ml-algos-numpy-torch_files/figure-html/cell-29-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-48" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="bu">help</span>(torch.linalg.eig)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Help on built-in function linalg_eig in module torch._C._linalg:
+
+linalg_eig(...)
+    linalg.eig(A, *, out=None) -&gt; (Tensor, Tensor)
+    
+    Computes the eigenvalue decomposition of a square matrix if it exists.
+    
+    Letting :math:`\mathbb{K}` be :math:`\mathbb{R}` or :math:`\mathbb{C}`,
+    the **eigenvalue decomposition** of a square matrix
+    :math:`A \in \mathbb{K}^{n \times n}` (if it exists) is defined as
+    
+    .. math::
+    
+        A = V \operatorname{diag}(\Lambda) V^{-1}\mathrlap{\qquad V \in \mathbb{C}^{n \times n}, \Lambda \in \mathbb{C}^n}
+    
+    This decomposition exists if and only if :math:`A` is `diagonalizable`_.
+    This is the case when all its eigenvalues are different.
+    
+    Supports input of float, double, cfloat and cdouble dtypes.
+    Also supports batches of matrices, and if :attr:`A` is a batch of matrices then
+    the output has the same batch dimensions.
+    
+    .. note:: The eigenvalues and eigenvectors of a real matrix may be complex.
+    
+    
+    .. note:: When inputs are on a CUDA device, this function synchronizes that device with the CPU.
+    
+    
+    .. warning:: This function assumes that :attr:`A` is `diagonalizable`_ (for example, when all the
+                 eigenvalues are different). If it is not diagonalizable, the returned
+                 eigenvalues will be correct but :math:`A \neq V \operatorname{diag}(\Lambda)V^{-1}`.
+    
+    .. warning:: The returned eigenvectors are normalized to have norm `1`.
+                 Even then, the eigenvectors of a matrix are not unique, nor are they continuous with respect to
+                 :attr:`A`. Due to this lack of uniqueness, different hardware and software may compute
+                 different eigenvectors.
+    
+                 This non-uniqueness is caused by the fact that multiplying an eigenvector by
+                 by :math:`e^{i \phi}, \phi \in \mathbb{R}` produces another set of valid eigenvectors
+                 of the matrix.  For this reason, the loss function shall not depend on the phase of the
+                 eigenvectors, as this quantity is not well-defined.
+                 This is checked when computing the gradients of this function. As such,
+                 when inputs are on a CUDA device, the computation of the gradients
+                 of this function synchronizes that device with the CPU.
+    
+    
+    .. warning:: Gradients computed using the `eigenvectors` tensor will only be finite when
+                 :attr:`A` has distinct eigenvalues.
+                 Furthermore, if the distance between any two eigenvalues is close to zero,
+                 the gradient will be numerically unstable, as it depends on the eigenvalues
+                 :math:`\lambda_i` through the computation of
+                 :math:`\frac{1}{\min_{i \neq j} \lambda_i - \lambda_j}`.
+    
+    .. seealso::
+    
+            :func:`torch.linalg.eigvals` computes only the eigenvalues.
+            Unlike :func:`torch.linalg.eig`, the gradients of :func:`~eigvals` are always
+            numerically stable.
+    
+            :func:`torch.linalg.eigh` for a (faster) function that computes the eigenvalue decomposition
+            for Hermitian and symmetric matrices.
+    
+            :func:`torch.linalg.svd` for a function that computes another type of spectral
+            decomposition that works on matrices of any shape.
+    
+            :func:`torch.linalg.qr` for another (much faster) decomposition that works on matrices of
+            any shape.
+    
+    Args:
+        A (Tensor): tensor of shape `(*, n, n)` where `*` is zero or more batch dimensions
+                    consisting of diagonalizable matrices.
+    
+    Keyword args:
+        out (tuple, optional): output tuple of two tensors. Ignored if `None`. Default: `None`.
+    
+    Returns:
+        A named tuple `(eigenvalues, eigenvectors)` which corresponds to :math:`\Lambda` and :math:`V` above.
+    
+        `eigenvalues` and `eigenvectors` will always be complex-valued, even when :attr:`A` is real. The eigenvectors
+        will be given by the columns of `eigenvectors`.
+    
+    Examples::
+    
+        &gt;&gt;&gt; A = torch.randn(2, 2, dtype=torch.complex128)
+        &gt;&gt;&gt; A
+        tensor([[ 0.9828+0.3889j, -0.4617+0.3010j],
+                [ 0.1662-0.7435j, -0.6139+0.0562j]], dtype=torch.complex128)
+        &gt;&gt;&gt; L, V = torch.linalg.eig(A)
+        &gt;&gt;&gt; L
+        tensor([ 1.1226+0.5738j, -0.7537-0.1286j], dtype=torch.complex128)
+        &gt;&gt;&gt; V
+        tensor([[ 0.9218+0.0000j,  0.1882-0.2220j],
+                [-0.0270-0.3867j,  0.9567+0.0000j]], dtype=torch.complex128)
+        &gt;&gt;&gt; torch.dist(V @ torch.diag(L) @ torch.linalg.inv(V), A)
+        tensor(7.7119e-16, dtype=torch.float64)
+    
+        &gt;&gt;&gt; A = torch.randn(3, 2, 2, dtype=torch.float64)
+        &gt;&gt;&gt; L, V = torch.linalg.eig(A)
+        &gt;&gt;&gt; torch.dist(V @ torch.diag_embed(L) @ torch.linalg.inv(V), A)
+        tensor(3.2841e-16, dtype=torch.float64)
+    
+    .. _diagonalizable:
+        https://en.wikipedia.org/wiki/Diagonalizable_matrix#Definition
+</code></pre>
+</div>
+</div>
 
 
 </section>
