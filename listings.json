@@ -12,7 +12,9 @@
   {
     "listing": "/notes.html",
     "items": [
-      "/notes/ml-algos-numpy-torch.html"
+      "/notes/ml-algos-numpy-torch.html",
+      "/notes/ImplementingDbscan.html",
+      "/notes/AcceleratingMatrixMultiplication.html"
     ]
   },
   {

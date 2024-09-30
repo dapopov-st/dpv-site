@@ -207,7 +207,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li>The goal of this is to practice building basic ML algorithms from scratch in numpy/PyTorch. I use <a href="https://www.youtube.com/playlist?list=PLqnslRFeH2Upcrywf-u2etjdxxkL8nl7E">Machine Learning from Scratch</a> series as a starting point, generally watching the first part of the video to review the setup, then building the algorithms out myself, looking at the repo for test cases/if stuck.</li>
 </ul>
-<div id="cell-2" class="cell" data-execution_count="1">
+<div id="cell-2" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -1334,113 +1334,174 @@ Shape of transformed X: torch.Size([150, 2])</code></pre>
 </div>
 </div>
 </div>
-<div id="cell-48" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="bu">help</span>(torch.linalg.eig)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="decision-tree" class="level2">
+<h2 class="anchored" data-anchor-id="decision-tree">Decision Tree</h2>
+<ul>
+<li>Training:
+<ul>
+<li>Calculate information gain (IG) with each possible split. IG = Entropy(parent) - weighted avg of Entropy(children). Entropy = - Sum(p(X)*log(p(X))), where p(X)=(#x/n)</li>
+<li>Divide set with that feature and value that gives the greatest IG</li>
+<li>Divide tree and do the same for all created branches</li>
+<li>… repeat until reach stopping criteria (max depth, min # samples, min impurity decrease).</li>
+</ul></li>
+<li>Testing:
+<ul>
+<li>Follow the tree until you reach a leaf node</li>
+<li>Return the most common class label</li>
+</ul></li>
+<li>Not implementing this in PyTorch since it’s a mostly iterative algorithm and don’t expect a gain from GPU parallelization.</li>
+</ul>
+<div id="cell-50" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Node:</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, feature<span class="op">=</span><span class="va">None</span>, threshold<span class="op">=</span><span class="va">None</span>, left<span class="op">=</span><span class="va">None</span>, right<span class="op">=</span><span class="va">None</span>, <span class="op">*</span>, value<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="co">        Initialize a node in the decision tree.</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.feature <span class="op">=</span> feature</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.threshold <span class="op">=</span> threshold</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.left <span class="op">=</span> left</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.right <span class="op">=</span> right</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.value <span class="op">=</span> value</span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> is_leaf_node(<span class="va">self</span>):</span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a><span class="co">        Check if the node is a leaf node.</span></span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.value <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span></span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DecisionTree:</span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, min_samples_split<span class="op">=</span><span class="dv">2</span>, max_depth<span class="op">=</span><span class="dv">100</span>, n_feats<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a><span class="co">        Initialize the decision tree.</span></span>
+<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.min_samples_split <span class="op">=</span> min_samples_split</span>
+<span id="cb49-24"><a href="#cb49-24" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.max_depth <span class="op">=</span> max_depth</span>
+<span id="cb49-25"><a href="#cb49-25" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_feats <span class="op">=</span> n_feats</span>
+<span id="cb49-26"><a href="#cb49-26" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.root <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb49-27"><a href="#cb49-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-28"><a href="#cb49-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, y):</span>
+<span id="cb49-29"><a href="#cb49-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-30"><a href="#cb49-30" aria-hidden="true" tabindex="-1"></a><span class="co">        Fit the decision tree to the data.</span></span>
+<span id="cb49-31"><a href="#cb49-31" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-32"><a href="#cb49-32" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_feats <span class="op">=</span> X.shape[<span class="dv">1</span>] <span class="cf">if</span> <span class="kw">not</span> <span class="va">self</span>.n_feats <span class="cf">else</span> <span class="bu">min</span>(X.shape[<span class="dv">1</span>], <span class="va">self</span>.n_feats)</span>
+<span id="cb49-33"><a href="#cb49-33" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.root <span class="op">=</span> <span class="va">self</span>._grow_tree(X, y)</span>
+<span id="cb49-34"><a href="#cb49-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-35"><a href="#cb49-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X):</span>
+<span id="cb49-36"><a href="#cb49-36" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-37"><a href="#cb49-37" aria-hidden="true" tabindex="-1"></a><span class="co">        Predict the class labels for the input data.</span></span>
+<span id="cb49-38"><a href="#cb49-38" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-39"><a href="#cb49-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.array([<span class="va">self</span>._traverse_tree(x, <span class="va">self</span>.root) <span class="cf">for</span> x <span class="kw">in</span> X])</span>
+<span id="cb49-40"><a href="#cb49-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-41"><a href="#cb49-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _grow_tree(<span class="va">self</span>, X, y, depth<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb49-42"><a href="#cb49-42" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-43"><a href="#cb49-43" aria-hidden="true" tabindex="-1"></a><span class="co">        Recursively grow the decision tree.</span></span>
+<span id="cb49-44"><a href="#cb49-44" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-45"><a href="#cb49-45" aria-hidden="true" tabindex="-1"></a>        n_labels <span class="op">=</span> <span class="bu">len</span>(np.unique(y))</span>
+<span id="cb49-46"><a href="#cb49-46" aria-hidden="true" tabindex="-1"></a>        n_samples, n_feats <span class="op">=</span> X.shape</span>
+<span id="cb49-47"><a href="#cb49-47" aria-hidden="true" tabindex="-1"></a>        leaf_value <span class="op">=</span> collections.Counter(y).most_common(<span class="dv">1</span>)[<span class="dv">0</span>][<span class="dv">0</span>]</span>
+<span id="cb49-48"><a href="#cb49-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-49"><a href="#cb49-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check stopping criteria</span></span>
+<span id="cb49-50"><a href="#cb49-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> depth <span class="op">&gt;=</span> <span class="va">self</span>.max_depth <span class="kw">or</span> n_samples <span class="op">&lt;</span> <span class="va">self</span>.min_samples_split <span class="kw">or</span> n_labels <span class="op">==</span> <span class="dv">1</span>:</span>
+<span id="cb49-51"><a href="#cb49-51" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Node(value<span class="op">=</span>leaf_value)</span>
+<span id="cb49-52"><a href="#cb49-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-53"><a href="#cb49-53" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Find the best split</span></span>
+<span id="cb49-54"><a href="#cb49-54" aria-hidden="true" tabindex="-1"></a>        feat_idxs <span class="op">=</span> np.random.choice(n_feats, size<span class="op">=</span><span class="va">self</span>.n_feats, replace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb49-55"><a href="#cb49-55" aria-hidden="true" tabindex="-1"></a>        best_feat_idx, best_thresh <span class="op">=</span> <span class="va">self</span>._best_criteria(X, y, feat_idxs)</span>
+<span id="cb49-56"><a href="#cb49-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-57"><a href="#cb49-57" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create child nodes recursively</span></span>
+<span id="cb49-58"><a href="#cb49-58" aria-hidden="true" tabindex="-1"></a>        left_idxs, right_idxs <span class="op">=</span> <span class="va">self</span>._split(X[:, best_feat_idx], best_thresh)</span>
+<span id="cb49-59"><a href="#cb49-59" aria-hidden="true" tabindex="-1"></a>        left <span class="op">=</span> <span class="va">self</span>._grow_tree(X[left_idxs, :], y[left_idxs], depth <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb49-60"><a href="#cb49-60" aria-hidden="true" tabindex="-1"></a>        right <span class="op">=</span> <span class="va">self</span>._grow_tree(X[right_idxs, :], y[right_idxs], depth <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb49-61"><a href="#cb49-61" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Node(feature<span class="op">=</span>best_feat_idx, threshold<span class="op">=</span>best_thresh, left<span class="op">=</span>left, right<span class="op">=</span>right)</span>
+<span id="cb49-62"><a href="#cb49-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-63"><a href="#cb49-63" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _best_criteria(<span class="va">self</span>, X, y, feat_idxs):</span>
+<span id="cb49-64"><a href="#cb49-64" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-65"><a href="#cb49-65" aria-hidden="true" tabindex="-1"></a><span class="co">        Find the best split criteria.</span></span>
+<span id="cb49-66"><a href="#cb49-66" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-67"><a href="#cb49-67" aria-hidden="true" tabindex="-1"></a>        max_gain <span class="op">=</span> <span class="op">-</span><span class="bu">float</span>(<span class="st">'inf'</span>)</span>
+<span id="cb49-68"><a href="#cb49-68" aria-hidden="true" tabindex="-1"></a>        best_feat_idx, best_thresh <span class="op">=</span> <span class="va">None</span>, <span class="va">None</span></span>
+<span id="cb49-69"><a href="#cb49-69" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> feat_idx <span class="kw">in</span> feat_idxs:</span>
+<span id="cb49-70"><a href="#cb49-70" aria-hidden="true" tabindex="-1"></a>            X_col <span class="op">=</span> X[:, feat_idx]</span>
+<span id="cb49-71"><a href="#cb49-71" aria-hidden="true" tabindex="-1"></a>            thresholds <span class="op">=</span> np.unique(X_col)</span>
+<span id="cb49-72"><a href="#cb49-72" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> thresh <span class="kw">in</span> thresholds:</span>
+<span id="cb49-73"><a href="#cb49-73" aria-hidden="true" tabindex="-1"></a>                gain <span class="op">=</span> <span class="va">self</span>._information_gain(y, X_col, thresh)</span>
+<span id="cb49-74"><a href="#cb49-74" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> gain <span class="op">&gt;</span> max_gain:</span>
+<span id="cb49-75"><a href="#cb49-75" aria-hidden="true" tabindex="-1"></a>                    max_gain, best_feat_idx, best_thresh <span class="op">=</span> gain, feat_idx, thresh</span>
+<span id="cb49-76"><a href="#cb49-76" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> best_feat_idx, best_thresh</span>
+<span id="cb49-77"><a href="#cb49-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-78"><a href="#cb49-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">@staticmethod</span></span>
+<span id="cb49-79"><a href="#cb49-79" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> entropy(y):</span>
+<span id="cb49-80"><a href="#cb49-80" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-81"><a href="#cb49-81" aria-hidden="true" tabindex="-1"></a><span class="co">        Calculate the entropy of a label array.</span></span>
+<span id="cb49-82"><a href="#cb49-82" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-83"><a href="#cb49-83" aria-hidden="true" tabindex="-1"></a>        hist <span class="op">=</span> np.bincount(y)</span>
+<span id="cb49-84"><a href="#cb49-84" aria-hidden="true" tabindex="-1"></a>        ps <span class="op">=</span> hist <span class="op">/</span> <span class="bu">len</span>(y)</span>
+<span id="cb49-85"><a href="#cb49-85" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">-</span>np.<span class="bu">sum</span>([p <span class="op">*</span> np.log2(p) <span class="cf">for</span> p <span class="kw">in</span> ps <span class="cf">if</span> p <span class="op">&gt;</span> <span class="dv">0</span>])</span>
+<span id="cb49-86"><a href="#cb49-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-87"><a href="#cb49-87" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _information_gain(<span class="va">self</span>, y, X_column, split_thresh):</span>
+<span id="cb49-88"><a href="#cb49-88" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-89"><a href="#cb49-89" aria-hidden="true" tabindex="-1"></a><span class="co">        Calculate the information gain of a split.</span></span>
+<span id="cb49-90"><a href="#cb49-90" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-91"><a href="#cb49-91" aria-hidden="true" tabindex="-1"></a>        parent_entropy <span class="op">=</span> DecisionTree.entropy(y)</span>
+<span id="cb49-92"><a href="#cb49-92" aria-hidden="true" tabindex="-1"></a>        left_idxs, right_idxs <span class="op">=</span> <span class="va">self</span>._split(X_column, split_thresh)</span>
+<span id="cb49-93"><a href="#cb49-93" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(left_idxs) <span class="op">==</span> <span class="dv">0</span> <span class="kw">or</span> <span class="bu">len</span>(right_idxs) <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb49-94"><a href="#cb49-94" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">0</span></span>
+<span id="cb49-95"><a href="#cb49-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-96"><a href="#cb49-96" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> <span class="bu">len</span>(y)</span>
+<span id="cb49-97"><a href="#cb49-97" aria-hidden="true" tabindex="-1"></a>        n_left, n_right <span class="op">=</span> <span class="bu">len</span>(left_idxs), <span class="bu">len</span>(right_idxs)</span>
+<span id="cb49-98"><a href="#cb49-98" aria-hidden="true" tabindex="-1"></a>        e_left, e_right <span class="op">=</span> DecisionTree.entropy(y[left_idxs]), DecisionTree.entropy(y[right_idxs])</span>
+<span id="cb49-99"><a href="#cb49-99" aria-hidden="true" tabindex="-1"></a>        children_entropy <span class="op">=</span> (n_left <span class="op">*</span> e_left <span class="op">+</span> n_right <span class="op">*</span> e_right) <span class="op">/</span> n</span>
+<span id="cb49-100"><a href="#cb49-100" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> parent_entropy <span class="op">-</span> children_entropy</span>
+<span id="cb49-101"><a href="#cb49-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-102"><a href="#cb49-102" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _split(<span class="va">self</span>, X_column, split_thresh):</span>
+<span id="cb49-103"><a href="#cb49-103" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-104"><a href="#cb49-104" aria-hidden="true" tabindex="-1"></a><span class="co">        Split the data based on the split threshold.</span></span>
+<span id="cb49-105"><a href="#cb49-105" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-106"><a href="#cb49-106" aria-hidden="true" tabindex="-1"></a>        left_idxs <span class="op">=</span> np.argwhere(X_column <span class="op">&lt;=</span> split_thresh).flatten()</span>
+<span id="cb49-107"><a href="#cb49-107" aria-hidden="true" tabindex="-1"></a>        right_idxs <span class="op">=</span> np.argwhere(X_column <span class="op">&gt;</span> split_thresh).flatten()</span>
+<span id="cb49-108"><a href="#cb49-108" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> left_idxs, right_idxs</span>
+<span id="cb49-109"><a href="#cb49-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-110"><a href="#cb49-110" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _traverse_tree(<span class="va">self</span>, x, node):</span>
+<span id="cb49-111"><a href="#cb49-111" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-112"><a href="#cb49-112" aria-hidden="true" tabindex="-1"></a><span class="co">        Traverse the tree to make a prediction.</span></span>
+<span id="cb49-113"><a href="#cb49-113" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-114"><a href="#cb49-114" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> node.is_leaf_node():</span>
+<span id="cb49-115"><a href="#cb49-115" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> node.value</span>
+<span id="cb49-116"><a href="#cb49-116" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> x[node.feature] <span class="op">&lt;=</span> node.threshold:</span>
+<span id="cb49-117"><a href="#cb49-117" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>._traverse_tree(x, node.left)</span>
+<span id="cb49-118"><a href="#cb49-118" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb49-119"><a href="#cb49-119" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>._traverse_tree(x, node.right)</span>
+<span id="cb49-120"><a href="#cb49-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-121"><a href="#cb49-121" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb49-122"><a href="#cb49-122" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imports</span></span>
+<span id="cb49-123"><a href="#cb49-123" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb49-124"><a href="#cb49-124" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb49-125"><a href="#cb49-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-126"><a href="#cb49-126" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> accuracy(y_true, y_pred):</span>
+<span id="cb49-127"><a href="#cb49-127" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-128"><a href="#cb49-128" aria-hidden="true" tabindex="-1"></a><span class="co">        Calculate the accuracy of predictions.</span></span>
+<span id="cb49-129"><a href="#cb49-129" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-130"><a href="#cb49-130" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.<span class="bu">sum</span>(y_true <span class="op">==</span> y_pred) <span class="op">/</span> <span class="bu">len</span>(y_true)</span>
+<span id="cb49-131"><a href="#cb49-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-132"><a href="#cb49-132" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load dataset</span></span>
+<span id="cb49-133"><a href="#cb49-133" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> datasets.load_breast_cancer()</span>
+<span id="cb49-134"><a href="#cb49-134" aria-hidden="true" tabindex="-1"></a>    X, y <span class="op">=</span> data.data, data.target</span>
+<span id="cb49-135"><a href="#cb49-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-136"><a href="#cb49-136" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Split dataset into training and testing sets</span></span>
+<span id="cb49-137"><a href="#cb49-137" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">1234</span>)</span>
+<span id="cb49-138"><a href="#cb49-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-139"><a href="#cb49-139" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize and train the decision tree</span></span>
+<span id="cb49-140"><a href="#cb49-140" aria-hidden="true" tabindex="-1"></a>    clf <span class="op">=</span> DecisionTree(max_depth<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb49-141"><a href="#cb49-141" aria-hidden="true" tabindex="-1"></a>    clf.fit(X_train, y_train)</span>
+<span id="cb49-142"><a href="#cb49-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-143"><a href="#cb49-143" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make predictions and calculate accuracy</span></span>
+<span id="cb49-144"><a href="#cb49-144" aria-hidden="true" tabindex="-1"></a>    y_pred <span class="op">=</span> clf.predict(X_test)</span>
+<span id="cb49-145"><a href="#cb49-145" aria-hidden="true" tabindex="-1"></a>    acc <span class="op">=</span> accuracy(y_test, y_pred)</span>
+<span id="cb49-146"><a href="#cb49-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-147"><a href="#cb49-147" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Accuracy:"</span>, acc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Help on built-in function linalg_eig in module torch._C._linalg:
-
-linalg_eig(...)
-    linalg.eig(A, *, out=None) -&gt; (Tensor, Tensor)
-    
-    Computes the eigenvalue decomposition of a square matrix if it exists.
-    
-    Letting :math:`\mathbb{K}` be :math:`\mathbb{R}` or :math:`\mathbb{C}`,
-    the **eigenvalue decomposition** of a square matrix
-    :math:`A \in \mathbb{K}^{n \times n}` (if it exists) is defined as
-    
-    .. math::
-    
-        A = V \operatorname{diag}(\Lambda) V^{-1}\mathrlap{\qquad V \in \mathbb{C}^{n \times n}, \Lambda \in \mathbb{C}^n}
-    
-    This decomposition exists if and only if :math:`A` is `diagonalizable`_.
-    This is the case when all its eigenvalues are different.
-    
-    Supports input of float, double, cfloat and cdouble dtypes.
-    Also supports batches of matrices, and if :attr:`A` is a batch of matrices then
-    the output has the same batch dimensions.
-    
-    .. note:: The eigenvalues and eigenvectors of a real matrix may be complex.
-    
-    
-    .. note:: When inputs are on a CUDA device, this function synchronizes that device with the CPU.
-    
-    
-    .. warning:: This function assumes that :attr:`A` is `diagonalizable`_ (for example, when all the
-                 eigenvalues are different). If it is not diagonalizable, the returned
-                 eigenvalues will be correct but :math:`A \neq V \operatorname{diag}(\Lambda)V^{-1}`.
-    
-    .. warning:: The returned eigenvectors are normalized to have norm `1`.
-                 Even then, the eigenvectors of a matrix are not unique, nor are they continuous with respect to
-                 :attr:`A`. Due to this lack of uniqueness, different hardware and software may compute
-                 different eigenvectors.
-    
-                 This non-uniqueness is caused by the fact that multiplying an eigenvector by
-                 by :math:`e^{i \phi}, \phi \in \mathbb{R}` produces another set of valid eigenvectors
-                 of the matrix.  For this reason, the loss function shall not depend on the phase of the
-                 eigenvectors, as this quantity is not well-defined.
-                 This is checked when computing the gradients of this function. As such,
-                 when inputs are on a CUDA device, the computation of the gradients
-                 of this function synchronizes that device with the CPU.
-    
-    
-    .. warning:: Gradients computed using the `eigenvectors` tensor will only be finite when
-                 :attr:`A` has distinct eigenvalues.
-                 Furthermore, if the distance between any two eigenvalues is close to zero,
-                 the gradient will be numerically unstable, as it depends on the eigenvalues
-                 :math:`\lambda_i` through the computation of
-                 :math:`\frac{1}{\min_{i \neq j} \lambda_i - \lambda_j}`.
-    
-    .. seealso::
-    
-            :func:`torch.linalg.eigvals` computes only the eigenvalues.
-            Unlike :func:`torch.linalg.eig`, the gradients of :func:`~eigvals` are always
-            numerically stable.
-    
-            :func:`torch.linalg.eigh` for a (faster) function that computes the eigenvalue decomposition
-            for Hermitian and symmetric matrices.
-    
-            :func:`torch.linalg.svd` for a function that computes another type of spectral
-            decomposition that works on matrices of any shape.
-    
-            :func:`torch.linalg.qr` for another (much faster) decomposition that works on matrices of
-            any shape.
-    
-    Args:
-        A (Tensor): tensor of shape `(*, n, n)` where `*` is zero or more batch dimensions
-                    consisting of diagonalizable matrices.
-    
-    Keyword args:
-        out (tuple, optional): output tuple of two tensors. Ignored if `None`. Default: `None`.
-    
-    Returns:
-        A named tuple `(eigenvalues, eigenvectors)` which corresponds to :math:`\Lambda` and :math:`V` above.
-    
-        `eigenvalues` and `eigenvectors` will always be complex-valued, even when :attr:`A` is real. The eigenvectors
-        will be given by the columns of `eigenvectors`.
-    
-    Examples::
-    
-        &gt;&gt;&gt; A = torch.randn(2, 2, dtype=torch.complex128)
-        &gt;&gt;&gt; A
-        tensor([[ 0.9828+0.3889j, -0.4617+0.3010j],
-                [ 0.1662-0.7435j, -0.6139+0.0562j]], dtype=torch.complex128)
-        &gt;&gt;&gt; L, V = torch.linalg.eig(A)
-        &gt;&gt;&gt; L
-        tensor([ 1.1226+0.5738j, -0.7537-0.1286j], dtype=torch.complex128)
-        &gt;&gt;&gt; V
-        tensor([[ 0.9218+0.0000j,  0.1882-0.2220j],
-                [-0.0270-0.3867j,  0.9567+0.0000j]], dtype=torch.complex128)
-        &gt;&gt;&gt; torch.dist(V @ torch.diag(L) @ torch.linalg.inv(V), A)
-        tensor(7.7119e-16, dtype=torch.float64)
-    
-        &gt;&gt;&gt; A = torch.randn(3, 2, 2, dtype=torch.float64)
-        &gt;&gt;&gt; L, V = torch.linalg.eig(A)
-        &gt;&gt;&gt; torch.dist(V @ torch.diag_embed(L) @ torch.linalg.inv(V), A)
-        tensor(3.2841e-16, dtype=torch.float64)
-    
-    .. _diagonalizable:
-        https://en.wikipedia.org/wiki/Diagonalizable_matrix#Definition
-</code></pre>
+<pre><code>Accuracy: 0.9298245614035088</code></pre>
 </div>
 </div>
 
