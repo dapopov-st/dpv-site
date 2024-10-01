@@ -207,7 +207,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li>The goal of this is to practice building basic ML algorithms from scratch in numpy/PyTorch. I use <a href="https://www.youtube.com/playlist?list=PLqnslRFeH2Upcrywf-u2etjdxxkL8nl7E">Machine Learning from Scratch</a> series as a starting point, generally watching the first part of the video to review the setup, then building the algorithms out myself, looking at the repo for test cases/if stuck.</li>
 </ul>
-<div id="cell-2" class="cell" data-execution_count="2">
+<div id="cell-2" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -1338,21 +1338,45 @@ Shape of transformed X: torch.Size([150, 2])</code></pre>
 <section id="decision-tree" class="level2">
 <h2 class="anchored" data-anchor-id="decision-tree">Decision Tree</h2>
 <ul>
-<li>Training:
+<li><p>Training:</p>
 <ul>
 <li>Calculate information gain (IG) with each possible split. IG = Entropy(parent) - weighted avg of Entropy(children). Entropy = - Sum(p(X)*log(p(X))), where p(X)=(#x/n)</li>
 <li>Divide set with that feature and value that gives the greatest IG</li>
 <li>Divide tree and do the same for all created branches</li>
 <li>… repeat until reach stopping criteria (max depth, min # samples, min impurity decrease).</li>
 </ul></li>
-<li>Testing:
+<li><p>Testing:</p>
 <ul>
 <li>Follow the tree until you reach a leaf node</li>
 <li>Return the most common class label</li>
 </ul></li>
-<li>Not implementing this in PyTorch since it’s a mostly iterative algorithm and don’t expect a gain from GPU parallelization.</li>
+<li><p>Not implementing this in PyTorch since it’s a mostly iterative algorithm and don’t expect a gain from GPU parallelization.</p></li>
+<li><p>Code overview:</p>
+<ul>
+<li>Make a <em>Node</em> class (along with feature, threshold, left, right, value properties) along including a is_leaf_node helper identifying nodes with a value as leaf nodes.</li>
+<li>Make a <em>DecisionTree</em> class containing min_samples_split, max_depth, n_feats, and root properties, as well as the rest of the functionality.
+<ul>
+<li>The <em>fit</em> method would just make sure self.n_feats is set correctly by not exceeding self.n_feats passed at initialization and call the *_fit* recursive helper.</li>
+<li>The *_fit* method
+<ul>
+<li>Gets n_labels via <code>len(np.unique(y))</code> from y, n_samples, n_feats from X.shape.</li>
+<li>Gets the leaf_value via collections.Counter to use for base case of returning Node(value=leaf_value) if depth or min samples split conditions are met (or there’s just one label).<br>
+</li>
+<li>Finds indices of features to split on via <code>np.random.choice</code> and calls *_best_criteria* method, which iteratively finds max gain along with best_feat_idx, best_thresh by looping through indices and thresholds via <code>np.unique(X_col)</code>. It uses *_information_gain* and <em>entropy</em> helpers (see below) for finding the max gain.</li>
+<li>best_feat_idx and best_thresh are used to *_split* X at best_feat_idx based on best_thresh. The *_split* method simply calls <code>np.argwhere</code> to find the left_idxs and right_idxs.</li>
+<li>Then left = self._fit(X[left_idxs, :], y[left_idxs], depth + 1), and right is defined similarly. Return Node(feature=best_feat_idx, threshold=best_thresh, left=left, right=right)</li>
+<li>Information Gain is Entropy(parent) - weighted avg of Entropy(children). Use *_split* to get left_idxs and right_idxs along with a simple weighted average calculations, just make sure to return 0 if left_idxs or right_idxs are empty.<br>
+</li>
+<li>Entropy = - Sum(p(Y)*log(p(Y))), where p(Y)=(#y/n) can be computed via <code>np.bincount(y)</code></li>
+</ul></li>
+<li>The <em>predict</em> method calls *_traverse_tree* for each example x in X, starting traversal at the root.
+<ul>
+<li>*_traverse_tree* is recursive, traversing at node.left if x[node.feature] &lt;= node.threshold, similarly for right. Keep example x the same, of course, since traverse from root to leaf node for each example. Base case is node.leaf_node(), in which case return node.value.</li>
+</ul></li>
+</ul></li>
+</ul></li>
 </ul>
-<div id="cell-50" class="cell" data-execution_count="28">
+<div id="cell-51" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Node:</span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, feature<span class="op">=</span><span class="va">None</span>, threshold<span class="op">=</span><span class="va">None</span>, left<span class="op">=</span><span class="va">None</span>, right<span class="op">=</span><span class="va">None</span>, <span class="op">*</span>, value<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
@@ -1382,85 +1406,85 @@ Shape of transformed X: torch.Size([150, 2])</code></pre>
 <span id="cb49-27"><a href="#cb49-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb49-28"><a href="#cb49-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, y):</span>
 <span id="cb49-29"><a href="#cb49-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb49-30"><a href="#cb49-30" aria-hidden="true" tabindex="-1"></a><span class="co">        Fit the decision tree to the data.</span></span>
+<span id="cb49-30"><a href="#cb49-30" aria-hidden="true" tabindex="-1"></a><span class="co">        Fit the decision tree to the data by calling the _fit helper.</span></span>
 <span id="cb49-31"><a href="#cb49-31" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
 <span id="cb49-32"><a href="#cb49-32" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_feats <span class="op">=</span> X.shape[<span class="dv">1</span>] <span class="cf">if</span> <span class="kw">not</span> <span class="va">self</span>.n_feats <span class="cf">else</span> <span class="bu">min</span>(X.shape[<span class="dv">1</span>], <span class="va">self</span>.n_feats)</span>
-<span id="cb49-33"><a href="#cb49-33" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.root <span class="op">=</span> <span class="va">self</span>._grow_tree(X, y)</span>
+<span id="cb49-33"><a href="#cb49-33" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.root <span class="op">=</span> <span class="va">self</span>._fit(X, y)</span>
 <span id="cb49-34"><a href="#cb49-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-35"><a href="#cb49-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X):</span>
+<span id="cb49-35"><a href="#cb49-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _fit(<span class="va">self</span>, X, y, depth<span class="op">=</span><span class="dv">0</span>):</span>
 <span id="cb49-36"><a href="#cb49-36" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb49-37"><a href="#cb49-37" aria-hidden="true" tabindex="-1"></a><span class="co">        Predict the class labels for the input data.</span></span>
+<span id="cb49-37"><a href="#cb49-37" aria-hidden="true" tabindex="-1"></a><span class="co">        Recursively grow the decision tree using _best_criteria and _split helpers. </span></span>
 <span id="cb49-38"><a href="#cb49-38" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb49-39"><a href="#cb49-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.array([<span class="va">self</span>._traverse_tree(x, <span class="va">self</span>.root) <span class="cf">for</span> x <span class="kw">in</span> X])</span>
-<span id="cb49-40"><a href="#cb49-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-41"><a href="#cb49-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _grow_tree(<span class="va">self</span>, X, y, depth<span class="op">=</span><span class="dv">0</span>):</span>
-<span id="cb49-42"><a href="#cb49-42" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb49-43"><a href="#cb49-43" aria-hidden="true" tabindex="-1"></a><span class="co">        Recursively grow the decision tree.</span></span>
-<span id="cb49-44"><a href="#cb49-44" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb49-45"><a href="#cb49-45" aria-hidden="true" tabindex="-1"></a>        n_labels <span class="op">=</span> <span class="bu">len</span>(np.unique(y))</span>
-<span id="cb49-46"><a href="#cb49-46" aria-hidden="true" tabindex="-1"></a>        n_samples, n_feats <span class="op">=</span> X.shape</span>
-<span id="cb49-47"><a href="#cb49-47" aria-hidden="true" tabindex="-1"></a>        leaf_value <span class="op">=</span> collections.Counter(y).most_common(<span class="dv">1</span>)[<span class="dv">0</span>][<span class="dv">0</span>]</span>
-<span id="cb49-48"><a href="#cb49-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-49"><a href="#cb49-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check stopping criteria</span></span>
-<span id="cb49-50"><a href="#cb49-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> depth <span class="op">&gt;=</span> <span class="va">self</span>.max_depth <span class="kw">or</span> n_samples <span class="op">&lt;</span> <span class="va">self</span>.min_samples_split <span class="kw">or</span> n_labels <span class="op">==</span> <span class="dv">1</span>:</span>
-<span id="cb49-51"><a href="#cb49-51" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Node(value<span class="op">=</span>leaf_value)</span>
-<span id="cb49-52"><a href="#cb49-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-53"><a href="#cb49-53" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Find the best split</span></span>
-<span id="cb49-54"><a href="#cb49-54" aria-hidden="true" tabindex="-1"></a>        feat_idxs <span class="op">=</span> np.random.choice(n_feats, size<span class="op">=</span><span class="va">self</span>.n_feats, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb49-55"><a href="#cb49-55" aria-hidden="true" tabindex="-1"></a>        best_feat_idx, best_thresh <span class="op">=</span> <span class="va">self</span>._best_criteria(X, y, feat_idxs)</span>
+<span id="cb49-39"><a href="#cb49-39" aria-hidden="true" tabindex="-1"></a>        n_labels <span class="op">=</span> <span class="bu">len</span>(np.unique(y))</span>
+<span id="cb49-40"><a href="#cb49-40" aria-hidden="true" tabindex="-1"></a>        n_samples, n_feats <span class="op">=</span> X.shape</span>
+<span id="cb49-41"><a href="#cb49-41" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb49-42"><a href="#cb49-42" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check stopping criteria</span></span>
+<span id="cb49-43"><a href="#cb49-43" aria-hidden="true" tabindex="-1"></a>        leaf_value <span class="op">=</span> collections.Counter(y).most_common(<span class="dv">1</span>)[<span class="dv">0</span>][<span class="dv">0</span>]</span>
+<span id="cb49-44"><a href="#cb49-44" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> depth <span class="op">&gt;=</span> <span class="va">self</span>.max_depth <span class="kw">or</span> n_samples <span class="op">&lt;</span> <span class="va">self</span>.min_samples_split <span class="kw">or</span> n_labels <span class="op">==</span> <span class="dv">1</span>:</span>
+<span id="cb49-45"><a href="#cb49-45" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Node(value<span class="op">=</span>leaf_value)</span>
+<span id="cb49-46"><a href="#cb49-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-47"><a href="#cb49-47" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Find the best split</span></span>
+<span id="cb49-48"><a href="#cb49-48" aria-hidden="true" tabindex="-1"></a>        feat_idxs <span class="op">=</span> np.random.choice(n_feats, size<span class="op">=</span><span class="va">self</span>.n_feats, replace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb49-49"><a href="#cb49-49" aria-hidden="true" tabindex="-1"></a>        best_feat_idx, best_thresh <span class="op">=</span> <span class="va">self</span>._best_criteria(X, y, feat_idxs)</span>
+<span id="cb49-50"><a href="#cb49-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-51"><a href="#cb49-51" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create child nodes recursively</span></span>
+<span id="cb49-52"><a href="#cb49-52" aria-hidden="true" tabindex="-1"></a>        left_idxs, right_idxs <span class="op">=</span> <span class="va">self</span>._split(X[:, best_feat_idx], best_thresh)</span>
+<span id="cb49-53"><a href="#cb49-53" aria-hidden="true" tabindex="-1"></a>        left <span class="op">=</span> <span class="va">self</span>._fit(X[left_idxs, :], y[left_idxs], depth <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb49-54"><a href="#cb49-54" aria-hidden="true" tabindex="-1"></a>        right <span class="op">=</span> <span class="va">self</span>._fit(X[right_idxs, :], y[right_idxs], depth <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb49-55"><a href="#cb49-55" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Node(feature<span class="op">=</span>best_feat_idx, threshold<span class="op">=</span>best_thresh, left<span class="op">=</span>left, right<span class="op">=</span>right)</span>
 <span id="cb49-56"><a href="#cb49-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-57"><a href="#cb49-57" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create child nodes recursively</span></span>
-<span id="cb49-58"><a href="#cb49-58" aria-hidden="true" tabindex="-1"></a>        left_idxs, right_idxs <span class="op">=</span> <span class="va">self</span>._split(X[:, best_feat_idx], best_thresh)</span>
-<span id="cb49-59"><a href="#cb49-59" aria-hidden="true" tabindex="-1"></a>        left <span class="op">=</span> <span class="va">self</span>._grow_tree(X[left_idxs, :], y[left_idxs], depth <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb49-60"><a href="#cb49-60" aria-hidden="true" tabindex="-1"></a>        right <span class="op">=</span> <span class="va">self</span>._grow_tree(X[right_idxs, :], y[right_idxs], depth <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb49-61"><a href="#cb49-61" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Node(feature<span class="op">=</span>best_feat_idx, threshold<span class="op">=</span>best_thresh, left<span class="op">=</span>left, right<span class="op">=</span>right)</span>
-<span id="cb49-62"><a href="#cb49-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-63"><a href="#cb49-63" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _best_criteria(<span class="va">self</span>, X, y, feat_idxs):</span>
-<span id="cb49-64"><a href="#cb49-64" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb49-65"><a href="#cb49-65" aria-hidden="true" tabindex="-1"></a><span class="co">        Find the best split criteria.</span></span>
-<span id="cb49-66"><a href="#cb49-66" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb49-67"><a href="#cb49-67" aria-hidden="true" tabindex="-1"></a>        max_gain <span class="op">=</span> <span class="op">-</span><span class="bu">float</span>(<span class="st">'inf'</span>)</span>
-<span id="cb49-68"><a href="#cb49-68" aria-hidden="true" tabindex="-1"></a>        best_feat_idx, best_thresh <span class="op">=</span> <span class="va">None</span>, <span class="va">None</span></span>
-<span id="cb49-69"><a href="#cb49-69" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> feat_idx <span class="kw">in</span> feat_idxs:</span>
-<span id="cb49-70"><a href="#cb49-70" aria-hidden="true" tabindex="-1"></a>            X_col <span class="op">=</span> X[:, feat_idx]</span>
-<span id="cb49-71"><a href="#cb49-71" aria-hidden="true" tabindex="-1"></a>            thresholds <span class="op">=</span> np.unique(X_col)</span>
-<span id="cb49-72"><a href="#cb49-72" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> thresh <span class="kw">in</span> thresholds:</span>
-<span id="cb49-73"><a href="#cb49-73" aria-hidden="true" tabindex="-1"></a>                gain <span class="op">=</span> <span class="va">self</span>._information_gain(y, X_col, thresh)</span>
-<span id="cb49-74"><a href="#cb49-74" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> gain <span class="op">&gt;</span> max_gain:</span>
-<span id="cb49-75"><a href="#cb49-75" aria-hidden="true" tabindex="-1"></a>                    max_gain, best_feat_idx, best_thresh <span class="op">=</span> gain, feat_idx, thresh</span>
-<span id="cb49-76"><a href="#cb49-76" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> best_feat_idx, best_thresh</span>
-<span id="cb49-77"><a href="#cb49-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-78"><a href="#cb49-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">@staticmethod</span></span>
-<span id="cb49-79"><a href="#cb49-79" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> entropy(y):</span>
-<span id="cb49-80"><a href="#cb49-80" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb49-81"><a href="#cb49-81" aria-hidden="true" tabindex="-1"></a><span class="co">        Calculate the entropy of a label array.</span></span>
-<span id="cb49-82"><a href="#cb49-82" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb49-83"><a href="#cb49-83" aria-hidden="true" tabindex="-1"></a>        hist <span class="op">=</span> np.bincount(y)</span>
-<span id="cb49-84"><a href="#cb49-84" aria-hidden="true" tabindex="-1"></a>        ps <span class="op">=</span> hist <span class="op">/</span> <span class="bu">len</span>(y)</span>
-<span id="cb49-85"><a href="#cb49-85" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">-</span>np.<span class="bu">sum</span>([p <span class="op">*</span> np.log2(p) <span class="cf">for</span> p <span class="kw">in</span> ps <span class="cf">if</span> p <span class="op">&gt;</span> <span class="dv">0</span>])</span>
-<span id="cb49-86"><a href="#cb49-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-87"><a href="#cb49-87" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _information_gain(<span class="va">self</span>, y, X_column, split_thresh):</span>
-<span id="cb49-88"><a href="#cb49-88" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb49-89"><a href="#cb49-89" aria-hidden="true" tabindex="-1"></a><span class="co">        Calculate the information gain of a split.</span></span>
-<span id="cb49-90"><a href="#cb49-90" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb49-91"><a href="#cb49-91" aria-hidden="true" tabindex="-1"></a>        parent_entropy <span class="op">=</span> DecisionTree.entropy(y)</span>
-<span id="cb49-92"><a href="#cb49-92" aria-hidden="true" tabindex="-1"></a>        left_idxs, right_idxs <span class="op">=</span> <span class="va">self</span>._split(X_column, split_thresh)</span>
-<span id="cb49-93"><a href="#cb49-93" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(left_idxs) <span class="op">==</span> <span class="dv">0</span> <span class="kw">or</span> <span class="bu">len</span>(right_idxs) <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb49-94"><a href="#cb49-94" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">0</span></span>
-<span id="cb49-95"><a href="#cb49-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-96"><a href="#cb49-96" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> <span class="bu">len</span>(y)</span>
-<span id="cb49-97"><a href="#cb49-97" aria-hidden="true" tabindex="-1"></a>        n_left, n_right <span class="op">=</span> <span class="bu">len</span>(left_idxs), <span class="bu">len</span>(right_idxs)</span>
-<span id="cb49-98"><a href="#cb49-98" aria-hidden="true" tabindex="-1"></a>        e_left, e_right <span class="op">=</span> DecisionTree.entropy(y[left_idxs]), DecisionTree.entropy(y[right_idxs])</span>
-<span id="cb49-99"><a href="#cb49-99" aria-hidden="true" tabindex="-1"></a>        children_entropy <span class="op">=</span> (n_left <span class="op">*</span> e_left <span class="op">+</span> n_right <span class="op">*</span> e_right) <span class="op">/</span> n</span>
-<span id="cb49-100"><a href="#cb49-100" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> parent_entropy <span class="op">-</span> children_entropy</span>
-<span id="cb49-101"><a href="#cb49-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-102"><a href="#cb49-102" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _split(<span class="va">self</span>, X_column, split_thresh):</span>
-<span id="cb49-103"><a href="#cb49-103" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb49-104"><a href="#cb49-104" aria-hidden="true" tabindex="-1"></a><span class="co">        Split the data based on the split threshold.</span></span>
-<span id="cb49-105"><a href="#cb49-105" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb49-106"><a href="#cb49-106" aria-hidden="true" tabindex="-1"></a>        left_idxs <span class="op">=</span> np.argwhere(X_column <span class="op">&lt;=</span> split_thresh).flatten()</span>
-<span id="cb49-107"><a href="#cb49-107" aria-hidden="true" tabindex="-1"></a>        right_idxs <span class="op">=</span> np.argwhere(X_column <span class="op">&gt;</span> split_thresh).flatten()</span>
-<span id="cb49-108"><a href="#cb49-108" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> left_idxs, right_idxs</span>
+<span id="cb49-57"><a href="#cb49-57" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _best_criteria(<span class="va">self</span>, X, y, feat_idxs):</span>
+<span id="cb49-58"><a href="#cb49-58" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-59"><a href="#cb49-59" aria-hidden="true" tabindex="-1"></a><span class="co">        Find the best split criteria.</span></span>
+<span id="cb49-60"><a href="#cb49-60" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-61"><a href="#cb49-61" aria-hidden="true" tabindex="-1"></a>        max_gain <span class="op">=</span> <span class="op">-</span><span class="bu">float</span>(<span class="st">'inf'</span>)</span>
+<span id="cb49-62"><a href="#cb49-62" aria-hidden="true" tabindex="-1"></a>        best_feat_idx, best_thresh <span class="op">=</span> <span class="va">None</span>, <span class="va">None</span></span>
+<span id="cb49-63"><a href="#cb49-63" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> feat_idx <span class="kw">in</span> feat_idxs:</span>
+<span id="cb49-64"><a href="#cb49-64" aria-hidden="true" tabindex="-1"></a>            X_col <span class="op">=</span> X[:, feat_idx]</span>
+<span id="cb49-65"><a href="#cb49-65" aria-hidden="true" tabindex="-1"></a>            thresholds <span class="op">=</span> np.unique(X_col)</span>
+<span id="cb49-66"><a href="#cb49-66" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> thresh <span class="kw">in</span> thresholds:</span>
+<span id="cb49-67"><a href="#cb49-67" aria-hidden="true" tabindex="-1"></a>                gain <span class="op">=</span> <span class="va">self</span>._information_gain(y, X_col, thresh)</span>
+<span id="cb49-68"><a href="#cb49-68" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> gain <span class="op">&gt;</span> max_gain:</span>
+<span id="cb49-69"><a href="#cb49-69" aria-hidden="true" tabindex="-1"></a>                    max_gain, best_feat_idx, best_thresh <span class="op">=</span> gain, feat_idx, thresh</span>
+<span id="cb49-70"><a href="#cb49-70" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> best_feat_idx, best_thresh</span>
+<span id="cb49-71"><a href="#cb49-71" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb49-72"><a href="#cb49-72" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _split(<span class="va">self</span>, X_column, split_thresh):</span>
+<span id="cb49-73"><a href="#cb49-73" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-74"><a href="#cb49-74" aria-hidden="true" tabindex="-1"></a><span class="co">        Split the data based on the split threshold.</span></span>
+<span id="cb49-75"><a href="#cb49-75" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-76"><a href="#cb49-76" aria-hidden="true" tabindex="-1"></a>        left_idxs <span class="op">=</span> np.argwhere(X_column <span class="op">&lt;=</span> split_thresh).flatten()</span>
+<span id="cb49-77"><a href="#cb49-77" aria-hidden="true" tabindex="-1"></a>        right_idxs <span class="op">=</span> np.argwhere(X_column <span class="op">&gt;</span> split_thresh).flatten()</span>
+<span id="cb49-78"><a href="#cb49-78" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> left_idxs, right_idxs</span>
+<span id="cb49-79"><a href="#cb49-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-80"><a href="#cb49-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">@staticmethod</span></span>
+<span id="cb49-81"><a href="#cb49-81" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> entropy(y):</span>
+<span id="cb49-82"><a href="#cb49-82" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-83"><a href="#cb49-83" aria-hidden="true" tabindex="-1"></a><span class="co">        Calculate the entropy of a label array.</span></span>
+<span id="cb49-84"><a href="#cb49-84" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-85"><a href="#cb49-85" aria-hidden="true" tabindex="-1"></a>        hist <span class="op">=</span> np.bincount(y)</span>
+<span id="cb49-86"><a href="#cb49-86" aria-hidden="true" tabindex="-1"></a>        ps <span class="op">=</span> hist <span class="op">/</span> <span class="bu">len</span>(y)</span>
+<span id="cb49-87"><a href="#cb49-87" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">-</span>np.<span class="bu">sum</span>([p <span class="op">*</span> np.log2(p) <span class="cf">for</span> p <span class="kw">in</span> ps <span class="cf">if</span> p <span class="op">&gt;</span> <span class="dv">0</span>])</span>
+<span id="cb49-88"><a href="#cb49-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-89"><a href="#cb49-89" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _information_gain(<span class="va">self</span>, y, X_column, split_thresh):</span>
+<span id="cb49-90"><a href="#cb49-90" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-91"><a href="#cb49-91" aria-hidden="true" tabindex="-1"></a><span class="co">        Calculate the information gain of a split.</span></span>
+<span id="cb49-92"><a href="#cb49-92" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-93"><a href="#cb49-93" aria-hidden="true" tabindex="-1"></a>        parent_entropy <span class="op">=</span> DecisionTree.entropy(y)</span>
+<span id="cb49-94"><a href="#cb49-94" aria-hidden="true" tabindex="-1"></a>        left_idxs, right_idxs <span class="op">=</span> <span class="va">self</span>._split(X_column, split_thresh)</span>
+<span id="cb49-95"><a href="#cb49-95" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(left_idxs) <span class="op">==</span> <span class="dv">0</span> <span class="kw">or</span> <span class="bu">len</span>(right_idxs) <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb49-96"><a href="#cb49-96" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">0</span></span>
+<span id="cb49-97"><a href="#cb49-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-98"><a href="#cb49-98" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> <span class="bu">len</span>(y)</span>
+<span id="cb49-99"><a href="#cb49-99" aria-hidden="true" tabindex="-1"></a>        n_left, n_right <span class="op">=</span> <span class="bu">len</span>(left_idxs), <span class="bu">len</span>(right_idxs)</span>
+<span id="cb49-100"><a href="#cb49-100" aria-hidden="true" tabindex="-1"></a>        e_left, e_right <span class="op">=</span> DecisionTree.entropy(y[left_idxs]), DecisionTree.entropy(y[right_idxs])</span>
+<span id="cb49-101"><a href="#cb49-101" aria-hidden="true" tabindex="-1"></a>        children_entropy <span class="op">=</span> (n_left <span class="op">*</span> e_left <span class="op">+</span> n_right <span class="op">*</span> e_right) <span class="op">/</span> n</span>
+<span id="cb49-102"><a href="#cb49-102" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> parent_entropy <span class="op">-</span> children_entropy</span>
+<span id="cb49-103"><a href="#cb49-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-104"><a href="#cb49-104" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X):</span>
+<span id="cb49-105"><a href="#cb49-105" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb49-106"><a href="#cb49-106" aria-hidden="true" tabindex="-1"></a><span class="co">        Predict the class labels for the input data.</span></span>
+<span id="cb49-107"><a href="#cb49-107" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb49-108"><a href="#cb49-108" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.array([<span class="va">self</span>._traverse_tree(x, <span class="va">self</span>.root) <span class="cf">for</span> x <span class="kw">in</span> X])</span>
 <span id="cb49-109"><a href="#cb49-109" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb49-110"><a href="#cb49-110" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _traverse_tree(<span class="va">self</span>, x, node):</span>
 <span id="cb49-111"><a href="#cb49-111" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
@@ -1502,6 +1526,79 @@ Shape of transformed X: torch.Size([150, 2])</code></pre>
 <span id="cb49-147"><a href="#cb49-147" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Accuracy:"</span>, acc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Accuracy: 0.9298245614035088</code></pre>
+</div>
+</div>
+</section>
+<section id="random-forest" class="level2">
+<h2 class="anchored" data-anchor-id="random-forest">Random Forest</h2>
+<ul>
+<li>Deviating from <a href="https://github.com/patrickloeber/MLfromscratch/blob/master/mlfromscratch/random_forest.py">mlfromscratch/random_forest.py</a> implementation by adding max_samples, which is customary in standard random forest implementations such as scikit’s. This allows the forest to get a greater sample variety during bootstrapping by making the rows selection random, in addition to feature selection, which is random for each decision tree.</li>
+<li><em>fit</em> method loops over self.n_trees, taking a random sample of rows via <code>np.random.choice</code>, making X_sample and y_sample with it, constructing each <em>DecisionTree</em>, then fitting it on the samples. It appends each fitted tree to self.trees.<br>
+</li>
+<li><em>predict</em> method constructs an array of predictions from each individual tree predictions, swaps axes with <code>np.swapaxes</code> since we want all predictions for each sample to be grouped together, then returns array of most common labels for each pred (using the same logic as finding most common label for each decision tree).</li>
+</ul>
+<div id="cell-54" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> RandomForest:</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, n_trees<span class="op">=</span><span class="dv">10</span>, min_samples_split<span class="op">=</span><span class="dv">2</span>, max_samples <span class="op">=</span> <span class="dv">10</span>, max_depth<span class="op">=</span><span class="dv">100</span>, n_feats<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_trees <span class="op">=</span> n_trees</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.min_samples_split <span class="op">=</span> min_samples_split</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.max_samples <span class="op">=</span> max_samples <span class="co"># add to be consistent with most implementations, including scikit's, choose total of max_samples from all samples for each tree</span></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.max_depth <span class="op">=</span> max_depth</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_feats <span class="op">=</span> n_feats</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.trees <span class="op">=</span> []</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, y):</span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.trees <span class="op">=</span> []</span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="va">self</span>.n_trees):</span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>            n_samples <span class="op">=</span> X.shape[<span class="dv">0</span>]</span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.max_samples <span class="op">=</span> <span class="bu">min</span>(X.shape[<span class="dv">1</span>], <span class="va">self</span>.max_samples)</span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>            bootstrap_examples_idxs <span class="op">=</span> np.random.choice(n_samples, <span class="va">self</span>.max_samples, replace<span class="op">=</span><span class="va">True</span>) <span class="co"># bootstrap samples -&gt; replace = True</span></span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>            X_sample, y_sample <span class="op">=</span> X[bootstrap_examples_idxs,:], y[bootstrap_examples_idxs] <span class="co"># unlike in tree, choosing ROWS/examples!  In tree, choose features.</span></span>
+<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>            tree <span class="op">=</span> DecisionTree(min_samples_split<span class="op">=</span><span class="va">self</span>.min_samples_split, max_depth<span class="op">=</span><span class="va">self</span>.max_depth, n_feats<span class="op">=</span><span class="va">self</span>.n_feats)</span>
+<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>            tree.fit(X_sample,y_sample)</span>
+<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.trees.append(tree)</span>
+<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X):</span>
+<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>        <span class="co"># will have [[x1_tree1_pred,x2_tree1_pred,x3_tree1_pred,...],[x1_tree2_pred,x2_tree2_pred,x3_tree2_pred,...],...]</span></span>
+<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># want [[x1_tree1_pred,x1_tree2_pred,x1_tree3_pred,...],[x2_tree1_pred,x2_tree2_pred,x2_tree3_pred,...],...] -&gt; np.swapaxes</span></span>
+<span id="cb51-25"><a href="#cb51-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># In fit, each tree has been fit on the training data, now use tree's own fit method to make the prediction on new data.</span></span>
+<span id="cb51-26"><a href="#cb51-26" aria-hidden="true" tabindex="-1"></a>        preds <span class="op">=</span> np.array([tree.predict(X) <span class="cf">for</span> tree <span class="kw">in</span> <span class="va">self</span>.trees])</span>
+<span id="cb51-27"><a href="#cb51-27" aria-hidden="true" tabindex="-1"></a>        preds <span class="op">=</span> np.swapaxes(preds,<span class="dv">0</span>,<span class="dv">1</span>)</span>
+<span id="cb51-28"><a href="#cb51-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.array([<span class="va">self</span>.most_common_label(pred) <span class="cf">for</span> pred <span class="kw">in</span> preds])</span>
+<span id="cb51-29"><a href="#cb51-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-30"><a href="#cb51-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> most_common_label(<span class="va">self</span>,y):</span>
+<span id="cb51-31"><a href="#cb51-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> collections.Counter(y).most_common(<span class="dv">1</span>)[<span class="dv">0</span>][<span class="dv">0</span>]</span>
+<span id="cb51-32"><a href="#cb51-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-33"><a href="#cb51-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-34"><a href="#cb51-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Testing</span></span>
+<span id="cb51-35"><a href="#cb51-35" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb51-36"><a href="#cb51-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imports</span></span>
+<span id="cb51-37"><a href="#cb51-37" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb51-38"><a href="#cb51-38" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb51-39"><a href="#cb51-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-40"><a href="#cb51-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> accuracy(y_true, y_pred):</span>
+<span id="cb51-41"><a href="#cb51-41" aria-hidden="true" tabindex="-1"></a>        accuracy <span class="op">=</span> np.<span class="bu">sum</span>(y_true <span class="op">==</span> y_pred) <span class="op">/</span> <span class="bu">len</span>(y_true)</span>
+<span id="cb51-42"><a href="#cb51-42" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> accuracy</span>
+<span id="cb51-43"><a href="#cb51-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-44"><a href="#cb51-44" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> datasets.load_breast_cancer()</span>
+<span id="cb51-45"><a href="#cb51-45" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> data.data</span>
+<span id="cb51-46"><a href="#cb51-46" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> data.target</span>
+<span id="cb51-47"><a href="#cb51-47" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(X.shape)</span>
+<span id="cb51-48"><a href="#cb51-48" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb51-49"><a href="#cb51-49" aria-hidden="true" tabindex="-1"></a>        X, y, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">1234</span></span>
+<span id="cb51-50"><a href="#cb51-50" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb51-51"><a href="#cb51-51" aria-hidden="true" tabindex="-1"></a>    np.random.seed(<span class="dv">117</span>)</span>
+<span id="cb51-52"><a href="#cb51-52" aria-hidden="true" tabindex="-1"></a>    clf <span class="op">=</span> RandomForest(n_trees<span class="op">=</span><span class="dv">5</span>, max_depth<span class="op">=</span><span class="dv">10</span>, max_samples<span class="op">=</span><span class="dv">25</span>) <span class="co">#simple data, hard to surpass DecisionTree accuracy</span></span>
+<span id="cb51-53"><a href="#cb51-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-54"><a href="#cb51-54" aria-hidden="true" tabindex="-1"></a>    clf.fit(X_train, y_train)</span>
+<span id="cb51-55"><a href="#cb51-55" aria-hidden="true" tabindex="-1"></a>    y_pred <span class="op">=</span> clf.predict(X_test)</span>
+<span id="cb51-56"><a href="#cb51-56" aria-hidden="true" tabindex="-1"></a>    acc <span class="op">=</span> accuracy(y_test, y_pred)</span>
+<span id="cb51-57"><a href="#cb51-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-58"><a href="#cb51-58" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Accuracy:"</span>, acc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(569, 30)
+Accuracy: 0.9298245614035088</code></pre>
 </div>
 </div>
 
