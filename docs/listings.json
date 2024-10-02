@@ -14,7 +14,8 @@
     "items": [
       "/notes/ml-algos-numpy-torch.html",
       "/notes/ImplementingDbscan.html",
-      "/notes/AcceleratingMatrixMultiplication.html"
+      "/notes/AcceleratingMatrixMultiplication.html",
+      "/notes/Backprop.html"
     ]
   },
   {

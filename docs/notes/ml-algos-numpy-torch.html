@@ -105,7 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top quarto-banner">
@@ -196,9 +196,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
 <!-- main -->
-<main class="content quarto-banner-title-block" id="quarto-document-content">
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
 
 
 
@@ -1599,6 +1600,289 @@ Shape of transformed X: torch.Size([150, 2])</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>(569, 30)
 Accuracy: 0.9298245614035088</code></pre>
+</div>
+</div>
+</section>
+<section id="svm" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="svm">SVM</h2>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="ml-algos-numpy-torch_files/figure-html/cell-56-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">SVM Objective, source: https://www.youtube.com/watch?v=T9UcK-TxQGw</figcaption>
+</figure>
+</div>
+<ul>
+<li>Training:
+<ul>
+<li>Initialize the weights</li>
+<li>Make sure y is in set([-1,1])</li>
+<li>Apply grad update rules for n iterations
+<ul>
+<li>If y (wx-b)&gt;=1, dw = 2 lambda w, db = 0</li>
+<li>Else, dw = 2 lambda w - y x, db = y</li>
+</ul></li>
+</ul></li>
+<li>Prediction:
+<ul>
+<li>Calculate y = sign(wx-b)</li>
+</ul></li>
+</ul>
+<div id="cell-58" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SVM:</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, learning_rate<span class="op">=</span><span class="fl">0.001</span>, lambda_param<span class="op">=</span><span class="fl">0.01</span>, n_iters<span class="op">=</span><span class="dv">1000</span>):</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lr <span class="op">=</span> learning_rate</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lambda_param <span class="op">=</span> lambda_param</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_iters <span class="op">=</span> n_iters</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.w <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.b <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, y):</span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>        n_feats <span class="op">=</span> X.shape[<span class="dv">1</span>]</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.w, <span class="va">self</span>.b <span class="op">=</span> np.zeros(n_feats), <span class="dv">0</span></span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> np.where(y <span class="op">&lt;=</span><span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="va">self</span>.n_iters):</span>
+<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> idx, x_i <span class="kw">in</span> <span class="bu">enumerate</span>(X):</span>
+<span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a>                margin <span class="op">=</span> y[idx]<span class="op">*</span>(np.dot(x_i,<span class="va">self</span>.w)<span class="op">-</span><span class="va">self</span>.b)</span>
+<span id="cb53-19"><a href="#cb53-19" aria-hidden="true" tabindex="-1"></a>                dw <span class="op">=</span> np.where(margin<span class="op">&gt;=</span><span class="dv">1</span>, <span class="dv">2</span><span class="op">*</span><span class="va">self</span>.lambda_param<span class="op">*</span><span class="va">self</span>.w, <span class="dv">2</span><span class="op">*</span><span class="va">self</span>.lambda_param<span class="op">*</span><span class="va">self</span>.w <span class="op">-</span> np.dot(y[idx],x_i))</span>
+<span id="cb53-20"><a href="#cb53-20" aria-hidden="true" tabindex="-1"></a>                db <span class="op">=</span> np.where(margin<span class="op">&lt;</span><span class="dv">1</span>, <span class="dv">0</span>, y[idx])</span>
+<span id="cb53-21"><a href="#cb53-21" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.w <span class="op">-=</span> <span class="va">self</span>.lr <span class="op">*</span> dw</span>
+<span id="cb53-22"><a href="#cb53-22" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.b <span class="op">-=</span> <span class="va">self</span>.lr <span class="op">*</span> db</span>
+<span id="cb53-23"><a href="#cb53-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-24"><a href="#cb53-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-25"><a href="#cb53-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X):</span>
+<span id="cb53-26"><a href="#cb53-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.sign(X <span class="op">@</span> <span class="va">self</span>.w<span class="op">+</span><span class="va">self</span>.b)</span>
+<span id="cb53-27"><a href="#cb53-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-28"><a href="#cb53-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Testing</span></span>
+<span id="cb53-29"><a href="#cb53-29" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb53-30"><a href="#cb53-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imports</span></span>
+<span id="cb53-31"><a href="#cb53-31" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb53-32"><a href="#cb53-32" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb53-33"><a href="#cb53-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-34"><a href="#cb53-34" aria-hidden="true" tabindex="-1"></a>    X, y <span class="op">=</span> datasets.make_blobs(</span>
+<span id="cb53-35"><a href="#cb53-35" aria-hidden="true" tabindex="-1"></a>        n_samples<span class="op">=</span><span class="dv">50</span>, n_features<span class="op">=</span><span class="dv">2</span>, centers<span class="op">=</span><span class="dv">2</span>, cluster_std<span class="op">=</span><span class="fl">1.05</span>, random_state<span class="op">=</span><span class="dv">40</span></span>
+<span id="cb53-36"><a href="#cb53-36" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb53-37"><a href="#cb53-37" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> np.where(y <span class="op">==</span> <span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb53-38"><a href="#cb53-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-39"><a href="#cb53-39" aria-hidden="true" tabindex="-1"></a>    clf <span class="op">=</span> SVM()</span>
+<span id="cb53-40"><a href="#cb53-40" aria-hidden="true" tabindex="-1"></a>    clf.fit(X, y)</span>
+<span id="cb53-41"><a href="#cb53-41" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> clf.predict(X)</span>
+<span id="cb53-42"><a href="#cb53-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-43"><a href="#cb53-43" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(clf.w, clf.b)</span>
+<span id="cb53-44"><a href="#cb53-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-45"><a href="#cb53-45" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> visualize_svm():</span>
+<span id="cb53-46"><a href="#cb53-46" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> get_hyperplane_value(x, w, b, offset):</span>
+<span id="cb53-47"><a href="#cb53-47" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> (<span class="op">-</span>w[<span class="dv">0</span>] <span class="op">*</span> x <span class="op">+</span> b <span class="op">+</span> offset) <span class="op">/</span> w[<span class="dv">1</span>]</span>
+<span id="cb53-48"><a href="#cb53-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-49"><a href="#cb53-49" aria-hidden="true" tabindex="-1"></a>        fig <span class="op">=</span> plt.figure()</span>
+<span id="cb53-50"><a href="#cb53-50" aria-hidden="true" tabindex="-1"></a>        ax <span class="op">=</span> fig.add_subplot(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb53-51"><a href="#cb53-51" aria-hidden="true" tabindex="-1"></a>        plt.scatter(X[:, <span class="dv">0</span>], X[:, <span class="dv">1</span>], marker<span class="op">=</span><span class="st">"o"</span>, c<span class="op">=</span>y)</span>
+<span id="cb53-52"><a href="#cb53-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-53"><a href="#cb53-53" aria-hidden="true" tabindex="-1"></a>        x0_1 <span class="op">=</span> np.amin(X[:, <span class="dv">0</span>])</span>
+<span id="cb53-54"><a href="#cb53-54" aria-hidden="true" tabindex="-1"></a>        x0_2 <span class="op">=</span> np.amax(X[:, <span class="dv">0</span>])</span>
+<span id="cb53-55"><a href="#cb53-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-56"><a href="#cb53-56" aria-hidden="true" tabindex="-1"></a>        x1_1 <span class="op">=</span> get_hyperplane_value(x0_1, clf.w, clf.b, <span class="dv">0</span>)</span>
+<span id="cb53-57"><a href="#cb53-57" aria-hidden="true" tabindex="-1"></a>        x1_2 <span class="op">=</span> get_hyperplane_value(x0_2, clf.w, clf.b, <span class="dv">0</span>)</span>
+<span id="cb53-58"><a href="#cb53-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-59"><a href="#cb53-59" aria-hidden="true" tabindex="-1"></a>        x1_1_m <span class="op">=</span> get_hyperplane_value(x0_1, clf.w, clf.b, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb53-60"><a href="#cb53-60" aria-hidden="true" tabindex="-1"></a>        x1_2_m <span class="op">=</span> get_hyperplane_value(x0_2, clf.w, clf.b, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb53-61"><a href="#cb53-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-62"><a href="#cb53-62" aria-hidden="true" tabindex="-1"></a>        x1_1_p <span class="op">=</span> get_hyperplane_value(x0_1, clf.w, clf.b, <span class="dv">1</span>)</span>
+<span id="cb53-63"><a href="#cb53-63" aria-hidden="true" tabindex="-1"></a>        x1_2_p <span class="op">=</span> get_hyperplane_value(x0_2, clf.w, clf.b, <span class="dv">1</span>)</span>
+<span id="cb53-64"><a href="#cb53-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-65"><a href="#cb53-65" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1, x1_2], <span class="st">"y--"</span>)</span>
+<span id="cb53-66"><a href="#cb53-66" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], <span class="st">"k"</span>)</span>
+<span id="cb53-67"><a href="#cb53-67" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1_p, x1_2_p], <span class="st">"k"</span>)</span>
+<span id="cb53-68"><a href="#cb53-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-69"><a href="#cb53-69" aria-hidden="true" tabindex="-1"></a>        x1_min <span class="op">=</span> np.amin(X[:, <span class="dv">1</span>])</span>
+<span id="cb53-70"><a href="#cb53-70" aria-hidden="true" tabindex="-1"></a>        x1_max <span class="op">=</span> np.amax(X[:, <span class="dv">1</span>])</span>
+<span id="cb53-71"><a href="#cb53-71" aria-hidden="true" tabindex="-1"></a>        ax.set_ylim([x1_min <span class="op">-</span> <span class="dv">3</span>, x1_max <span class="op">+</span> <span class="dv">3</span>])</span>
+<span id="cb53-72"><a href="#cb53-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-73"><a href="#cb53-73" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
+<span id="cb53-74"><a href="#cb53-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-75"><a href="#cb53-75" aria-hidden="true" tabindex="-1"></a>    visualize_svm()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0.65500741 0.14190535] 0.17900000000000013</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ml-algos-numpy-torch_files/figure-html/cell-32-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-59" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SVMVectorized:</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, learning_rate<span class="op">=</span><span class="fl">0.001</span>, lambda_param<span class="op">=</span><span class="fl">0.01</span>, n_iters<span class="op">=</span><span class="dv">1000</span>):</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lr <span class="op">=</span> learning_rate</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lambda_param <span class="op">=</span> lambda_param</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_iters <span class="op">=</span> n_iters</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.w <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.b <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, y):</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>        n_feats <span class="op">=</span> X.shape[<span class="dv">1</span>]</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.w, <span class="va">self</span>.b <span class="op">=</span> np.zeros(n_feats), <span class="dv">0</span></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> np.where(y <span class="op">&lt;=</span> <span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="va">self</span>.n_iters):</span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>            margins <span class="op">=</span> y <span class="op">*</span> (X <span class="op">@</span> <span class="va">self</span>.w<span class="op">-</span><span class="va">self</span>.b)</span>
+<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>            misclassified <span class="op">=</span> margins <span class="op">&lt;</span> <span class="dv">1</span> </span>
+<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.w <span class="op">-=</span> <span class="va">self</span>.lr<span class="op">*</span>(<span class="dv">2</span><span class="op">*</span><span class="va">self</span>.lambda_param<span class="op">*</span><span class="va">self</span>.w <span class="op">-</span> np.dot(misclassified<span class="op">*</span>y,X)) <span class="co">#correctly classified examples have hinge loss 0</span></span>
+<span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.b <span class="op">-=</span> <span class="va">self</span>.lr<span class="op">*</span>np.<span class="bu">sum</span>(misclassified<span class="op">*</span>y)</span>
+<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X):</span>
+<span id="cb55-22"><a href="#cb55-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.sign(X <span class="op">@</span> <span class="va">self</span>.w <span class="op">-</span><span class="va">self</span>.b)</span>
+<span id="cb55-23"><a href="#cb55-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-24"><a href="#cb55-24" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb55-25"><a href="#cb55-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imports</span></span>
+<span id="cb55-26"><a href="#cb55-26" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb55-27"><a href="#cb55-27" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb55-28"><a href="#cb55-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-29"><a href="#cb55-29" aria-hidden="true" tabindex="-1"></a>    X, y <span class="op">=</span> datasets.make_blobs(</span>
+<span id="cb55-30"><a href="#cb55-30" aria-hidden="true" tabindex="-1"></a>        n_samples<span class="op">=</span><span class="dv">50</span>, n_features<span class="op">=</span><span class="dv">2</span>, centers<span class="op">=</span><span class="dv">2</span>, cluster_std<span class="op">=</span><span class="fl">1.05</span>, random_state<span class="op">=</span><span class="dv">40</span></span>
+<span id="cb55-31"><a href="#cb55-31" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb55-32"><a href="#cb55-32" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> np.where(y <span class="op">==</span> <span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb55-33"><a href="#cb55-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-34"><a href="#cb55-34" aria-hidden="true" tabindex="-1"></a>    clf <span class="op">=</span> SVMVectorized()</span>
+<span id="cb55-35"><a href="#cb55-35" aria-hidden="true" tabindex="-1"></a>    clf.fit(X, y)</span>
+<span id="cb55-36"><a href="#cb55-36" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> clf.predict(X)</span>
+<span id="cb55-37"><a href="#cb55-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-38"><a href="#cb55-38" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(clf.w, clf.b)</span>
+<span id="cb55-39"><a href="#cb55-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-40"><a href="#cb55-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> visualize_svm():</span>
+<span id="cb55-41"><a href="#cb55-41" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> get_hyperplane_value(x, w, b, offset):</span>
+<span id="cb55-42"><a href="#cb55-42" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> (<span class="op">-</span>w[<span class="dv">0</span>] <span class="op">*</span> x <span class="op">+</span> b <span class="op">+</span> offset) <span class="op">/</span> w[<span class="dv">1</span>]</span>
+<span id="cb55-43"><a href="#cb55-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-44"><a href="#cb55-44" aria-hidden="true" tabindex="-1"></a>        fig <span class="op">=</span> plt.figure()</span>
+<span id="cb55-45"><a href="#cb55-45" aria-hidden="true" tabindex="-1"></a>        ax <span class="op">=</span> fig.add_subplot(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb55-46"><a href="#cb55-46" aria-hidden="true" tabindex="-1"></a>        plt.scatter(X[:, <span class="dv">0</span>], X[:, <span class="dv">1</span>], marker<span class="op">=</span><span class="st">"o"</span>, c<span class="op">=</span>y)</span>
+<span id="cb55-47"><a href="#cb55-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-48"><a href="#cb55-48" aria-hidden="true" tabindex="-1"></a>        x0_1 <span class="op">=</span> np.amin(X[:, <span class="dv">0</span>])</span>
+<span id="cb55-49"><a href="#cb55-49" aria-hidden="true" tabindex="-1"></a>        x0_2 <span class="op">=</span> np.amax(X[:, <span class="dv">0</span>])</span>
+<span id="cb55-50"><a href="#cb55-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-51"><a href="#cb55-51" aria-hidden="true" tabindex="-1"></a>        x1_1 <span class="op">=</span> get_hyperplane_value(x0_1, clf.w, clf.b, <span class="dv">0</span>)</span>
+<span id="cb55-52"><a href="#cb55-52" aria-hidden="true" tabindex="-1"></a>        x1_2 <span class="op">=</span> get_hyperplane_value(x0_2, clf.w, clf.b, <span class="dv">0</span>)</span>
+<span id="cb55-53"><a href="#cb55-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-54"><a href="#cb55-54" aria-hidden="true" tabindex="-1"></a>        x1_1_m <span class="op">=</span> get_hyperplane_value(x0_1, clf.w, clf.b, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb55-55"><a href="#cb55-55" aria-hidden="true" tabindex="-1"></a>        x1_2_m <span class="op">=</span> get_hyperplane_value(x0_2, clf.w, clf.b, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb55-56"><a href="#cb55-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-57"><a href="#cb55-57" aria-hidden="true" tabindex="-1"></a>        x1_1_p <span class="op">=</span> get_hyperplane_value(x0_1, clf.w, clf.b, <span class="dv">1</span>)</span>
+<span id="cb55-58"><a href="#cb55-58" aria-hidden="true" tabindex="-1"></a>        x1_2_p <span class="op">=</span> get_hyperplane_value(x0_2, clf.w, clf.b, <span class="dv">1</span>)</span>
+<span id="cb55-59"><a href="#cb55-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-60"><a href="#cb55-60" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1, x1_2], <span class="st">"y--"</span>)</span>
+<span id="cb55-61"><a href="#cb55-61" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], <span class="st">"k"</span>)</span>
+<span id="cb55-62"><a href="#cb55-62" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1_p, x1_2_p], <span class="st">"k"</span>)</span>
+<span id="cb55-63"><a href="#cb55-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-64"><a href="#cb55-64" aria-hidden="true" tabindex="-1"></a>        x1_min <span class="op">=</span> np.amin(X[:, <span class="dv">1</span>])</span>
+<span id="cb55-65"><a href="#cb55-65" aria-hidden="true" tabindex="-1"></a>        x1_max <span class="op">=</span> np.amax(X[:, <span class="dv">1</span>])</span>
+<span id="cb55-66"><a href="#cb55-66" aria-hidden="true" tabindex="-1"></a>        ax.set_ylim([x1_min <span class="op">-</span> <span class="dv">3</span>, x1_max <span class="op">+</span> <span class="dv">3</span>])</span>
+<span id="cb55-67"><a href="#cb55-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-68"><a href="#cb55-68" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
+<span id="cb55-69"><a href="#cb55-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-70"><a href="#cb55-70" aria-hidden="true" tabindex="-1"></a>    visualize_svm()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0.60926001 0.16851888] -0.054000000000000034</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ml-algos-numpy-torch_files/figure-html/cell-33-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-60" class="cell" data-execution_count="42">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SVMTorch(nn.Module):</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, input_dim, lambda_param<span class="op">=</span><span class="fl">0.01</span>):</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lin <span class="op">=</span> nn.Linear(input_dim,<span class="dv">1</span>)</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lambda_param <span class="op">=</span> lambda_param</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, X):</span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.lin(X)</span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> hinge_loss(<span class="va">self</span>, y_pred, y):</span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>        h_loss <span class="op">=</span> torch.mean(torch.clamp(<span class="dv">1</span><span class="op">-</span>y<span class="op">*</span>y_pred,<span class="bu">min</span><span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>        h_reg <span class="op">=</span> <span class="va">self</span>.lambda_param<span class="op">*</span><span class="fl">0.5</span><span class="op">*</span>torch.linalg.vector_norm(<span class="va">self</span>.lin.weight, <span class="bu">ord</span><span class="op">=</span><span class="dv">2</span>)<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> h_reg <span class="op">+</span> h_loss</span>
+<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb57-14"><a href="#cb57-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-15"><a href="#cb57-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-16"><a href="#cb57-16" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb57-17"><a href="#cb57-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imports</span></span>
+<span id="cb57-18"><a href="#cb57-18" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb57-19"><a href="#cb57-19" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb57-20"><a href="#cb57-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-21"><a href="#cb57-21" aria-hidden="true" tabindex="-1"></a>    X, y <span class="op">=</span> datasets.make_blobs(</span>
+<span id="cb57-22"><a href="#cb57-22" aria-hidden="true" tabindex="-1"></a>        n_samples<span class="op">=</span><span class="dv">50</span>, n_features<span class="op">=</span><span class="dv">2</span>, centers<span class="op">=</span><span class="dv">2</span>, cluster_std<span class="op">=</span><span class="fl">1.05</span>, random_state<span class="op">=</span><span class="dv">40</span></span>
+<span id="cb57-23"><a href="#cb57-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb57-24"><a href="#cb57-24" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> np.where(y <span class="op">==</span> <span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb57-25"><a href="#cb57-25" aria-hidden="true" tabindex="-1"></a>    X, y <span class="op">=</span> torch.tensor(X, dtype<span class="op">=</span>torch.float32), torch.tensor(y, dtype<span class="op">=</span>torch.float32)</span>
+<span id="cb57-26"><a href="#cb57-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-27"><a href="#cb57-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># training loop</span></span>
+<span id="cb57-28"><a href="#cb57-28" aria-hidden="true" tabindex="-1"></a>    n_iters, lr, lambda_param <span class="op">=</span> <span class="dv">1000</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span></span>
+<span id="cb57-29"><a href="#cb57-29" aria-hidden="true" tabindex="-1"></a>    clf <span class="op">=</span> SVMTorch(input_dim<span class="op">=</span>X.shape[<span class="dv">1</span>], lambda_param<span class="op">=</span>lambda_param)</span>
+<span id="cb57-30"><a href="#cb57-30" aria-hidden="true" tabindex="-1"></a>    optimizer <span class="op">=</span> torch.optim.SGD(params <span class="op">=</span> clf.parameters(), lr<span class="op">=</span>lr)</span>
+<span id="cb57-31"><a href="#cb57-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_iters):</span>
+<span id="cb57-32"><a href="#cb57-32" aria-hidden="true" tabindex="-1"></a>        optimizer.zero_grad()</span>
+<span id="cb57-33"><a href="#cb57-33" aria-hidden="true" tabindex="-1"></a>        y_pred <span class="op">=</span> clf.forward(X).squeeze()</span>
+<span id="cb57-34"><a href="#cb57-34" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> clf.hinge_loss(y_pred,y)</span>
+<span id="cb57-35"><a href="#cb57-35" aria-hidden="true" tabindex="-1"></a>        loss.backward()</span>
+<span id="cb57-36"><a href="#cb57-36" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="cb57-37"><a href="#cb57-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># preds</span></span>
+<span id="cb57-38"><a href="#cb57-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb57-39"><a href="#cb57-39" aria-hidden="true" tabindex="-1"></a>        predictions <span class="op">=</span> torch.sign(X <span class="op">@</span> clf.lin.weight.T <span class="op">-</span> clf.lin.bias)</span>
+<span id="cb57-40"><a href="#cb57-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-41"><a href="#cb57-41" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(clf.lin.weight, clf.lin.bias)</span>
+<span id="cb57-42"><a href="#cb57-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-43"><a href="#cb57-43" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> visualize_svm(X,y,clf):</span>
+<span id="cb57-44"><a href="#cb57-44" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> get_hyperplane_value(x, w, b, offset):</span>
+<span id="cb57-45"><a href="#cb57-45" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> (<span class="op">-</span>w[<span class="dv">0</span>] <span class="op">*</span> x <span class="op">+</span> b <span class="op">+</span> offset) <span class="op">/</span> w[<span class="dv">1</span>]</span>
+<span id="cb57-46"><a href="#cb57-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-47"><a href="#cb57-47" aria-hidden="true" tabindex="-1"></a>        fig <span class="op">=</span> plt.figure()</span>
+<span id="cb57-48"><a href="#cb57-48" aria-hidden="true" tabindex="-1"></a>        ax <span class="op">=</span> fig.add_subplot(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb57-49"><a href="#cb57-49" aria-hidden="true" tabindex="-1"></a>        X, y <span class="op">=</span> X.cpu().numpy(), y.cpu().numpy()</span>
+<span id="cb57-50"><a href="#cb57-50" aria-hidden="true" tabindex="-1"></a>        w, b <span class="op">=</span> clf.lin.weight.cpu().detach().numpy().flatten(), clf.lin.bias.cpu().detach().numpy().flatten()</span>
+<span id="cb57-51"><a href="#cb57-51" aria-hidden="true" tabindex="-1"></a>        plt.scatter(X[:, <span class="dv">0</span>], X[:, <span class="dv">1</span>], marker<span class="op">=</span><span class="st">"o"</span>, c<span class="op">=</span>y)</span>
+<span id="cb57-52"><a href="#cb57-52" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb57-53"><a href="#cb57-53" aria-hidden="true" tabindex="-1"></a>        x0_1 <span class="op">=</span> np.amin(X[:, <span class="dv">0</span>])</span>
+<span id="cb57-54"><a href="#cb57-54" aria-hidden="true" tabindex="-1"></a>        x0_2 <span class="op">=</span> np.amax(X[:, <span class="dv">0</span>])</span>
+<span id="cb57-55"><a href="#cb57-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-56"><a href="#cb57-56" aria-hidden="true" tabindex="-1"></a>        x1_1 <span class="op">=</span> get_hyperplane_value(x0_1, w, b, <span class="dv">0</span>)</span>
+<span id="cb57-57"><a href="#cb57-57" aria-hidden="true" tabindex="-1"></a>        x1_2 <span class="op">=</span> get_hyperplane_value(x0_2, w, b, <span class="dv">0</span>)</span>
+<span id="cb57-58"><a href="#cb57-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-59"><a href="#cb57-59" aria-hidden="true" tabindex="-1"></a>        x1_1_m <span class="op">=</span> get_hyperplane_value(x0_1, w, b, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb57-60"><a href="#cb57-60" aria-hidden="true" tabindex="-1"></a>        x1_2_m <span class="op">=</span> get_hyperplane_value(x0_2, w, b, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb57-61"><a href="#cb57-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-62"><a href="#cb57-62" aria-hidden="true" tabindex="-1"></a>        x1_1_p <span class="op">=</span> get_hyperplane_value(x0_1, w, b, <span class="dv">1</span>)</span>
+<span id="cb57-63"><a href="#cb57-63" aria-hidden="true" tabindex="-1"></a>        x1_2_p <span class="op">=</span> get_hyperplane_value(x0_2, w, b, <span class="dv">1</span>)</span>
+<span id="cb57-64"><a href="#cb57-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-65"><a href="#cb57-65" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1, x1_2], <span class="st">"y--"</span>)</span>
+<span id="cb57-66"><a href="#cb57-66" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], <span class="st">"k"</span>)</span>
+<span id="cb57-67"><a href="#cb57-67" aria-hidden="true" tabindex="-1"></a>        ax.plot([x0_1, x0_2], [x1_1_p, x1_2_p], <span class="st">"k"</span>)</span>
+<span id="cb57-68"><a href="#cb57-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-69"><a href="#cb57-69" aria-hidden="true" tabindex="-1"></a>        x1_min <span class="op">=</span> np.amin(X[:, <span class="dv">1</span>])</span>
+<span id="cb57-70"><a href="#cb57-70" aria-hidden="true" tabindex="-1"></a>        x1_max <span class="op">=</span> np.amax(X[:, <span class="dv">1</span>])</span>
+<span id="cb57-71"><a href="#cb57-71" aria-hidden="true" tabindex="-1"></a>        ax.set_ylim([x1_min <span class="op">-</span> <span class="dv">3</span>, x1_max <span class="op">+</span> <span class="dv">3</span>])</span>
+<span id="cb57-72"><a href="#cb57-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-73"><a href="#cb57-73" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
+<span id="cb57-74"><a href="#cb57-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-75"><a href="#cb57-75" aria-hidden="true" tabindex="-1"></a>    visualize_svm(X,y,clf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Parameter containing:
+tensor([[0.7446, 0.2005]], requires_grad=True) Parameter containing:
+tensor([-0.3815], requires_grad=True)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ml-algos-numpy-torch_files/figure-html/cell-34-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 
