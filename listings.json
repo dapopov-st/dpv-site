@@ -1,20 +1,10 @@
 [
   {
-    "listing": "/projects.html",
-    "items": [
-      "/projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
-      "/projects/indiv_projects/project-bird/project-bird.html",
-      "/projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
-      "/projects/indiv_projects/inventory-classes/inventory-classes.html",
-      "/projects/indiv_projects/publication/bulletin-publication.html"
-    ]
-  },
-  {
     "listing": "/notes.html",
     "items": [
       "/notes/ml-algos-numpy-torch.html",
-      "/notes/Linux.html",
       "/notes/LlmBasicsAndRecipes.html",
+      "/notes/Linux.html",
       "/notes/ImplementingDbscan.html",
       "/notes/AcceleratingMatrixMultiplication.html",
       "/notes/Backprop.html"
@@ -30,6 +20,16 @@
       "/blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
       "/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
       "/blog/posts/kto-optimization/kto-optimization.html"
+    ]
+  },
+  {
+    "listing": "/projects.html",
+    "items": [
+      "/projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
+      "/projects/indiv_projects/project-bird/project-bird.html",
+      "/projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
+      "/projects/indiv_projects/inventory-classes/inventory-classes.html",
+      "/projects/indiv_projects/publication/bulletin-publication.html"
     ]
   }
 ]
