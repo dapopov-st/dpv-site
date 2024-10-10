@@ -3,6 +3,7 @@
     "listing": "/notes.html",
     "items": [
       "/notes/ml-algos-numpy-torch.html",
+      "/notes/FastAPI.html",
       "/notes/LlmBasicsAndRecipes.html",
       "/notes/Linux.html",
       "/notes/ImplementingDbscan.html",
