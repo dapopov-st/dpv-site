@@ -56,6 +56,7 @@ project:
 execute:
   freeze: true
   cache: true
+  cache-dir: .quarto_cache
 
 format:
   html:
