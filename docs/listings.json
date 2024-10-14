@@ -13,9 +13,10 @@
     "listing": "/notes.html",
     "items": [
       "/notes/ml-algos-numpy-torch.html",
-      "/notes/FastAPI.html",
-      "/notes/Linux.html",
       "/notes/LlmBasicsAndRecipes.html",
+      "/notes/Linux.html",
+      "/notes/FastAPI.html",
+      "/notes/Docker.html",
       "/notes/ImplementingDbscan.html",
       "/notes/AcceleratingMatrixMultiplication.html",
       "/notes/Backprop.html"
