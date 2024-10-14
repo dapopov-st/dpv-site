@@ -1,0 +1,14 @@
+Hello from Docker!
+Time: 1728925318.5788105Hello from Docker!
+Time: 1728925615.515953Hello from Docker!
+Time: 1728925628.2824082Hello from Docker!
+Time: 1728925632.2294526Hello from Docker!
+Time: 1728925991.0967584
+Hello from Docker!
+Time: 1728925994.947172
+Hello from Docker!
+Time: 1728925998.8360426
+Hello from Docker!
+Time: 1728926219.9561825
+Hello from Docker!
+Time: 1728926228.923076
