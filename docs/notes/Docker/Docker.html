@@ -292,8 +292,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>docker run <span class="op">--</span>rm <span class="op">-</span>it <span class="op">--</span>name my<span class="op">-</span>python<span class="op">-</span>app<span class="op">-</span>container <span class="op">-</span>v $(pwd):<span class="op">/</span>app my<span class="op">-</span>python<span class="op">-</span>app <span class="op">/</span><span class="bu">bin</span><span class="op">/</span>bash</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="following-learn-docker-in-a-month-of-lunches-by-elton-stoneman" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="following-learn-docker-in-a-month-of-lunches-by-elton-stoneman">Following <em>Learn Docker in a Month of Lunches</em> by Elton Stoneman</h2>
+<section id="ch.2-understanding-docker-and-hello-world" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="ch.2-understanding-docker-and-hello-world">Ch.2: Understanding Docker and Hello World</h3>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Docker_files/figure-html/cell-23-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<ul>
+<li><p>Note that each container shares the operating system of the host computer!</p></li>
+<li><p><code>docker container ls</code>: lists running containers; add –all to see exited containers</p></li>
+<li><p><code>docker container logs {start_of_container_id}</code>: displays log entries collected by container</p></li>
+<li><p><code>docker container stats {start_of_container_id}</code>: displays stats about CPU, memory, network, and disk the container is using</p></li>
+<li><p><code>docker container inspect {start_of_container_id}</code>: displays low level details of the container</p></li>
+<li><p>Notes on ‘Exited’ containers: i.) They no longer consume CPU time or memory, ii.) They still take up disk space and can be restarted, can also check logs and copy files to/from container’s filesystem.</p></li>
+<li><p><code>docker container run --detach --publish 8088:80 diamol/ch02-hello-diamol-web</code>:</p>
+<ul>
+<li>–detach starts the container in the background and shows container id</li>
+<li>–publish publishes a port from the container to the computer. When Docker is installed, it injects itself into computer’s networking layer. Publishing means Docker will listen to network traffic on computer port and send it to the container.<br>
+<img src="Docker_files/figure-html/cell-26-1-image.png" class="img-fluid" alt="image.png"></li>
+</ul></li>
+<li><p><code>docker container rm --force $(docker container ls --all --quiet)</code>: remove all containers, use with caution since it does not ask for confirmation.</p></li>
+<li><p>CLI sends requests to Docker API, which then interacts with the Docker Engine.</p></li>
+<li><p>Exercise: replace index.html inside the container to change website front matter.</p>
+<ul>
+<li>Used <code>docker container</code> to find <code>cp</code> from among the available commands.</li>
+<li>Used <code>docker exec jovial_meninsky ls -R</code> to list container’s file system info.</li>
+<li>Had to find absolute path since relative paths would not work -&gt; <code>docker exec jovial_meninsky pwd</code> for path prefix</li>
+<li>Solution: docker container cp diamol/ch02/exercises/hello-diamol-web/html/index.html jovial_meninsky:/usr/local/apache2/htdocs/index.html Successfully copied 2.05kB to jovial_meninsky:/usr/local/apache2/htdocs/index.html</li>
+</ul></li>
+</ul>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
