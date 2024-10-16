@@ -204,12 +204,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
+<section id="basics" class="level2">
+<h2 class="anchored" data-anchor-id="basics">Basics</h2>
 <ul>
 <li>Build APIs based on standard Python type hints</li>
 <li>Automatically generate interactive documentation</li>
 <li>Fast to code, fewer bugs</li>
 </ul>
-<div id="cell-2" class="cell" data-execution_count="3">
+<div id="cell-3" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#! pip install fastapi</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#! pip install "uvicorn[standard]"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -234,7 +236,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Then can go to /books endpoint to see the books printed.</li>
 </ul></li>
 </ul>
-<div id="cell-4" class="cell" data-execution_count="6">
+<div id="cell-5" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> enum <span class="im">import</span> Enum</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> typing <span class="im">as</span> t</span>
@@ -308,8 +310,94 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> get_books():</span>
 <span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> books_db</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="notes-following-building-data-science-applications-with-fastapi-by-françois-voron" class="level2">
+<h2 class="anchored" data-anchor-id="notes-following-building-data-science-applications-with-fastapi-by-françois-voron">Notes following “Building Data Science Applications with FastAPI” by François Voron</h2>
+<section id="chapter-2-python-specificities---asyncio" class="level3">
+<h3 class="anchored" data-anchor-id="chapter-2-python-specificities---asyncio">Chapter 2: Python specificities -&gt; asyncio</h3>
+<p>Q: What’s the difference between WSGI and ASGI gateways as it pertains to Django and FastAPI? WSGI (Web Server Gateway Interface) and ASGI (Asynchronous Server Gateway Interface) are two different specifications for Python web servers and applications. They serve as interfaces between web servers and web applications or frameworks. Here’s a detailed comparison of WSGI and ASGI, particularly in the context of Django and FastAPI:</p>
+<ul>
+<li>WSGI (Web Server Gateway Interface) Synchronous:</li>
+</ul>
+<p>WSGI is designed for synchronous web applications. It handles one request at a time per worker, which can lead to inefficiencies when dealing with I/O-bound operations like database queries or external API calls. Django:</p>
+<p>Django is traditionally a WSGI-based framework. It works well for most web applications but can struggle with real-time features like WebSockets or long-polling due to its synchronous nature. Common WSGI servers for Django include Gunicorn and uWSGI. Concurrency:</p>
+<p>WSGI applications handle concurrency by using multiple worker processes or threads. Each worker handles one request at a time. Deployment:</p>
+<p>WSGI applications are typically deployed using WSGI servers like Gunicorn, uWSGI, or mod_wsgi (for Apache). - ASGI (Asynchronous Server Gateway Interface) Asynchronous:</p>
+<p>ASGI is designed for asynchronous web applications. It supports both synchronous and asynchronous code, allowing for more efficient handling of I/O-bound operations and real-time features. FastAPI:</p>
+<p>FastAPI is an ASGI-based framework. It is built from the ground up to support asynchronous programming, making it ideal for applications that require high concurrency, real-time communication, or WebSockets. Common ASGI servers for FastAPI include Uvicorn and Daphne. Concurrency:</p>
+<p>ASGI applications can handle many requests concurrently using asynchronous I/O. This allows for more efficient use of resources, especially for I/O-bound tasks. Deployment:</p>
+<p>ASGI applications are typically deployed using ASGI servers like Uvicorn, Daphne, or Hypercorn.</p>
+<div id="cell-9" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!pip install nest_asyncio # run asyncio within Jupyter's already running even loop</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Requirement already satisfied: nest_asyncio in /home/mainuser/anaconda3/envs/mintonano/lib/python3.11/site-packages (1.6.0)</code></pre>
+</div>
+</div>
+<div id="cell-10" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import asyncio</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># async def printer(name: str, times: int)-&gt;None:</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     for i in range(times):</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#         print(name)</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#         await asyncio.sleep(1)</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># async def main():</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#     await asyncio.gather(</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#         printer("A",3),</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#         printer("B",3)</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     )</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># asyncio.run(main())</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co"># adopting code since Jupyter has it's own event loop</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> asyncio</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> nest_asyncio</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply nest_asyncio to allow nested event loops</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>nest_asyncio.<span class="bu">apply</span>()</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> printer(name: <span class="bu">str</span>, times: <span class="bu">int</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(times):</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(name)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">await</span> asyncio.sleep(<span class="dv">1</span>)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> main():</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> asyncio.gather(</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        printer(<span class="st">"A"</span>, <span class="dv">3</span>),</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        printer(<span class="st">"B"</span>, <span class="dv">3</span>)</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Await the main coroutine directly</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> main()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>A
+B
+A
+B
+A
+B</code></pre>
+</div>
+</div>
+<ul>
+<li><p>asyncio.sleep(1) was added since <em>writing code in a coroutine doesn’t necessarily mean it will not block</em>. Computations are blocking! I/O opps will not block or we could use multiprocessing.</p></li>
+<li><p>Path parameters and their validation</p></li>
+</ul>
+<div id="cell-13" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, Path</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="at">@app.get</span>(<span class="st">'/license-plates/</span><span class="sc">{license}</span><span class="st">'</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> get_license_plate(<span class="bu">id</span>: <span class="bu">int</span> <span class="op">=</span> Path(...,regex<span class="op">=</span><span class="vs">r"^\w</span><span class="sc">{2}</span><span class="vs">-\d</span><span class="sc">{3}</span><span class="vs">-\w</span><span class="sc">{2}</span><span class="vs">"</span>)):</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {<span class="st">"license"</span>:license}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/tmp/ipykernel_6460/3090869963.py:5: DeprecationWarning: `regex` has been deprecated, please use `pattern` instead
+  async def get_license_plate(id: int = Path(...,regex=r"^\w{2}-\d{3}-\w{2}")):</code></pre>
+</div>
+</div>
+<ul>
+<li>In FastAPI, … above indicate that we don’t want a default value. RegEx validates French license plates like AB-123-CD.</li>
+</ul>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
