@@ -323,8 +323,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Used <code>docker container</code> to find <code>cp</code> from among the available commands.</li>
 <li>Used <code>docker exec jovial_meninsky ls -R</code> to list container’s file system info.</li>
 <li>Had to find absolute path since relative paths would not work -&gt; <code>docker exec jovial_meninsky pwd</code> for path prefix</li>
-<li>Solution: docker container cp diamol/ch02/exercises/hello-diamol-web/html/index.html jovial_meninsky:/usr/local/apache2/htdocs/index.html Successfully copied 2.05kB to jovial_meninsky:/usr/local/apache2/htdocs/index.html</li>
+<li>Solution: <code>docker container cp diamol/ch02/exercises/hello-diamol-web/html/index.html jovial_meninsky:/usr/local/apache2/htdocs/index.html</code> Successfully copied 2.05kB to jovial_meninsky:/usr/local/apache2/htdocs/index.html</li>
 </ul></li>
+</ul>
+</section>
+<section id="building-your-own-docker-images-with-dockerfile" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="building-your-own-docker-images-with-dockerfile">Building your own docker images with Dockerfile</h3>
+<ul>
+<li><p><code>docker container run</code> will download image locally if it’s not on the machine because software distribution is built into the Docker platform. Or can use <code>docker image pull</code>.</p></li>
+<li><p>Docker images may be packaged with default set of config values, but you should be able to provide different config settings when running a container (using environment variables for example, which are just key/value pairs provided by the operating system). For example, replace TARGET environment variable with google.com below:</p>
+<ul>
+<li>docker container run –env TARGET=google.com diamol/ch03-web-ping</li>
+</ul></li>
+<li><p>From a directory containing a <em>Dockerfile</em>, build an image with current directory as context via:</p>
+<ul>
+<li><code>docker image build --tag web-ping .</code></li>
+</ul></li>
+<li><p>Process for running apps with Docker:</p>
+<ul>
+<li>Write <em>Dockerfile</em> with steps to package the app</li>
+<li>Collect the resources that need to go into Docker image</li>
+<li>Decide how you want users of image to configure app behavior</li>
+</ul></li>
+<li><p>Image layers can be shared between different images and different containers. <img src="Docker_files/figure-html/cell-32-1-image.png" class="img-fluid" alt="image.png"></p></li>
+<li><p>Notice how each gcr and mintonano image are listed at 17.4GB yet <code>docker system df</code> lists total usage at less than 18GB: This is because the layers between these two large images are shared!</p></li>
+</ul>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Docker_files/figure-html/cell-33-2-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<ul>
+<li>Because image layers can be shared, they can’t be edited (read-only).</li>
+<li>If contents/commands of a given step change, the following steps will be re-executed; previous layers are used from cache. Docker knows that previous layers didn’t change because their hash hasn’t changed (hash is made from instructions and files being copied).</li>
+<li>Optimize the file by moving parts unlikely to change towards the top and combining commands:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Docker_files/figure-html/cell-33-1-image-2.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image-2.png</figcaption>
+</figure>
+</div>
+<ul>
+<li><p>Lab 3: Modifying contents of Docker container without modifying Dockerfile. <img src="Docker_files/figure-html/cell-34-1-image.png" class="img-fluid" alt="image.png"></p></li>
+<li><p>Note that I ran <code>docker commit</code> while the diamol/ch03-lab was running, before typing exit. Then can go to the newly created container that now has new contents.</p></li>
 </ul>
 
 
