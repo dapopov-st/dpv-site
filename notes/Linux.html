@@ -170,10 +170,14 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>so which nvcc yields /usr/bin/nvcc while importing trl got</p>
-<pre><code>"name": "RuntimeError",
-"message": "Failed to import trl.trainer.sft_trainer because of the following error (look up to see its traceback):</code></pre>
+<ul>
+<li><p>so which nvcc yields /usr/bin/nvcc while importing trl got</p>
+<p>“name”: “RuntimeError”, “message”: “Failed to import trl.trainer.sft_trainer because of the following error (look up to see its traceback):</p></li>
+</ul>
 <p>FileNotFoundError: [Errno 2] No such file or directory: ‘/usr/local/cuda/bin/nvcc’ - Fixed by making a symbolic link: sudo mkdir -p /usr/local/cuda/bin /usr/local/bin$ sudo ln -s /usr/bin/nvcc /usr/local/cuda/bin/nvcc</p>
+<ul>
+<li>All of the sudden lost GPU, could not figure it out, when tried to purge, saw: sudo apt-get purge nvidia<em> sudo apt-get autoremove sudo apt-get autoclean [sudo] password for mainuser: E: dpkg was interrupted, you must manually run ‘sudo dpkg –configure -a’ to correct the problem. E: dpkg was interrupted, you must manually run ‘sudo dpkg –configure -a’ to correct the problem. Reading package lists… Done Building dependency tree… Done Reading state information… Done </em>When I reran the recommended command, the drivers were alive and well!*</li>
+</ul>
 
 
 
