@@ -773,6 +773,585 @@ B</code></pre>
 <li>Run as follows: <code>curl -X POST "http://127.0.0.1:8000/predict/" -H "Content-Type: application/json" -d '{"text": "I love FastAPI!"}'</code></li>
 <li>Will return something like the following: <code>{     "prediction": 1 }</code></li>
 </ul>
+</section>
+</section>
+<section id="asyncawait-syntax-for-llm-calls-that-are-io-bound" class="level3">
+<h3 class="anchored" data-anchor-id="asyncawait-syntax-for-llm-calls-that-are-io-bound">async/await syntax for LLM calls that are I/O-bound</h3>
+<div id="cell-46" class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, HTTPException, Depends</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> httpx</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>OPENAI_API_KEY <span class="op">=</span> os.getenv(<span class="st">"OPENAI_API_KEY"</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>HUGGINGFACE_API_KEY <span class="op">=</span> os.getenv(<span class="st">"HUGGINGFACE_API_KEY"</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> OpenAIRequest(BaseModel):</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    prompt: <span class="bu">str</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> HuggingFaceRequest(BaseModel):</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    prompt: <span class="bu">str</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> OpenAIResponse(BaseModel):</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">id</span>: <span class="bu">str</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">object</span>: <span class="bu">str</span></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>    created: <span class="bu">int</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>    model: <span class="bu">str</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    choices: <span class="bu">list</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> HuggingFaceResponse(BaseModel):</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>    generated_text: <span class="bu">str</span></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a><span class="at">@app.post</span>(<span class="st">"/openai-generate/"</span>, response_model<span class="op">=</span>OpenAIResponse) <span class="co">#respone should conform to the given Pydantic model</span></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> openai_generate(request: OpenAIRequest):</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>    url <span class="op">=</span> <span class="st">"https://api.openai.com/v1/completions"</span></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    headers <span class="op">=</span> {</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Authorization"</span>: <span class="ss">f"Bearer </span><span class="sc">{</span>OPENAI_API_KEY<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Content-Type"</span>: <span class="st">"application/json"</span>,</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> {</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>        <span class="st">"model"</span>: <span class="st">"text-davinci-003"</span>,</span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>        <span class="st">"prompt"</span>: request.prompt,</span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a>        <span class="st">"max_tokens"</span>: <span class="dv">100</span>,</span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="cf">with</span> httpx.AsyncClient() <span class="im">as</span> client: <span class="co">#always async with context managers</span></span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> <span class="cf">await</span> client.post(url, headers<span class="op">=</span>headers, json<span class="op">=</span>data)</span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>            response.raise_for_status()  <span class="co"># Raises an error for 4xx/5xx responses</span></span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> response.json()</span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> httpx.HTTPStatusError <span class="im">as</span> exc:</span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> HTTPException(status_code<span class="op">=</span>exc.response.status_code, detail<span class="op">=</span>exc.response.text)</span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a><span class="at">@app.post</span>(<span class="st">"/huggingface-generate"</span>, response_model<span class="op">=</span>HuggingFaceResponse)</span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> huggingface_generate(request: HuggingFaceRequest):</span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a>    url <span class="op">=</span> <span class="st">"https://api-inference.huggingface.co/models/gpt2"</span></span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a>    headers <span class="op">=</span> {</span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Authorization"</span>: <span class="ss">f"Bearer </span><span class="sc">{</span>HUGGINGFACE_API_KEY<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> {</span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a>        <span class="st">"inputs"</span>: request.prompt,</span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a>        <span class="st">"options"</span>: {<span class="st">"use_cache"</span>: <span class="va">False</span>},</span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>    }    </span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="cf">with</span> httpx.AsyncClient() <span class="im">as</span> client:</span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> <span class="cf">await</span> client.post(url, headers <span class="op">=</span> headers, json<span class="op">=</span>data)</span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>            response.raise_for_status()</span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> {<span class="st">"generated_text"</span>: response.json()[<span class="dv">0</span>][<span class="st">'generated_text'</span>]}</span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> httpx.HTTPStatusError <span class="im">as</span> exc:</span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> HTTPException(status_code<span class="op">=</span>exc.response.status_code, detail<span class="op">=</span>exc.response.text)</span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a><span class="co"># To run the app: uvicorn your_file_name:app --reload</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="custom-error-handling" class="level3">
+<h3 class="anchored" data-anchor-id="custom-error-handling">Custom error handling</h3>
+<div id="cell-48" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, HTTPException, Depends, Request</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.responses <span class="im">import</span> JSONResponse</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> httpx</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Load environment variables from .env file</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>LLM_API_KEY <span class="op">=</span> os.getenv(<span class="st">"LLM_API_KEY"</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LLMError(<span class="pp">Exception</span>):</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, message: <span class="bu">str</span>):</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.message <span class="op">=</span> message</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a><span class="at">@app.exception_handler</span>(LLMError)</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> llm_exception_handler(request: Request, exc: LLMError):</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> JSONResponse(</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>        status_code<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>        content<span class="op">=</span>{<span class="st">"message"</span>:<span class="ss">f"LLM error occurred: </span><span class="sc">{</span>exc<span class="sc">.</span>message<span class="sc">}</span><span class="ss">"</span>}</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GenerateRequest(BaseModel):</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>    prompt: <span class="bu">str</span></span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GenerateResponse(BaseModel):</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>    generated_text: <span class="bu">str</span></span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a><span class="at">@app.post</span>(<span class="st">"/generate"</span>, response_model<span class="op">=</span>GenerateResponse)</span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> generate(request: GenerateRequest):</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> request.prompt:</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> HTTPException(status_code<span class="op">=</span><span class="dv">400</span>, detail<span class="op">=</span><span class="st">"Prompt cannot be empty!"</span>)</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>    url <span class="op">=</span> <span class="st">"https://api.llm.example/generate"</span></span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>    headers <span class="op">=</span> {</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Authorization"</span>: <span class="ss">f"Bearer </span><span class="sc">{</span>LLM_API_KEY<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Content-Type"</span>: <span class="st">"application/json"</span>,</span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> {<span class="st">"prompt"</span>: request.prompt}</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="cf">with</span> httpx.AsyncClient() <span class="im">as</span> client:</span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> <span class="cf">await</span> client.post(url, headers<span class="op">=</span>headers, json<span class="op">=</span>data)</span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>            response.raise_for_status()  <span class="co"># Raise an error for 4xx/5xx responses</span></span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a>            response_data <span class="op">=</span> response.json()</span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> {<span class="st">"generated_text"</span>: response_data.get(<span class="st">"generated_text"</span>, <span class="st">""</span>)}</span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> httpx.HTTPStatusError <span class="im">as</span> exc:</span>
+<span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> LLMError(message <span class="op">=</span> exc.response.text)</span>
+<span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> exc:</span>
+<span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> LLMError(message<span class="op">=</span><span class="bu">str</span>(exc))</span>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-53"><a href="#cb22-53" aria-hidden="true" tabindex="-1"></a><span class="co"># To run the app: uvicorn your_file_name:app --reload</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="serving-static-files-like-html-css-js-with-fastapi-jinja2js" class="level3">
+<h3 class="anchored" data-anchor-id="serving-static-files-like-html-css-js-with-fastapi-jinja2js">Serving static files (like HTML, CSS, JS) with FastAPI: Jinja2+JS</h3>
+<div id="cell-50" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Given the following file structure</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># /my_fastapi_app</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ├── app.py               # Your FastAPI application</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ├── static               # Directory for static files</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># │   ├── css</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co"># │   │   └── styles.css</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co"># │   ├── js</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="co"># │   │   └── script.js</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="co"># │   └── index.html</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># └── requirements.txt</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-51" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># index.html</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;!</span>DOCTYPE html<span class="op">&gt;</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>html lang<span class="op">=</span><span class="st">"en"</span><span class="op">&gt;</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>head<span class="op">&gt;</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>meta charset<span class="op">=</span><span class="st">"UTF-8"</span><span class="op">&gt;</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>meta name<span class="op">=</span><span class="st">"viewport"</span> content<span class="op">=</span><span class="st">"width=device-width, initial-scale=1.0"</span><span class="op">&gt;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>title<span class="op">&gt;</span>{{ title }}<span class="op">&lt;/</span>title<span class="op">&gt;</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"stylesheet"</span> href<span class="op">=</span><span class="st">"/static/css/styles.css"</span><span class="op">&gt;</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;/</span>head<span class="op">&gt;</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>body<span class="op">&gt;</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>h1<span class="op">&gt;</span>{{ title }}<span class="op">&lt;/</span>h1<span class="op">&gt;</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>p<span class="op">&gt;</span>{{ description }}<span class="op">&lt;/</span>p<span class="op">&gt;</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>form <span class="bu">id</span><span class="op">=</span><span class="st">"generate-form"</span><span class="op">&gt;</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;</span>label <span class="cf">for</span><span class="op">=</span><span class="st">"prompt"</span><span class="op">&gt;</span>Enter your prompt:<span class="op">&lt;/</span>label<span class="op">&gt;</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;</span><span class="bu">input</span> <span class="bu">type</span><span class="op">=</span><span class="st">"text"</span> <span class="bu">id</span><span class="op">=</span><span class="st">"prompt"</span> name<span class="op">=</span><span class="st">"prompt"</span> required<span class="op">&gt;</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;</span>button <span class="bu">type</span><span class="op">=</span><span class="st">"submit"</span><span class="op">&gt;</span>Generate<span class="op">&lt;/</span>button<span class="op">&gt;</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;/</span>form<span class="op">&gt;</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>div <span class="bu">id</span><span class="op">=</span><span class="st">"result"</span><span class="op">&gt;&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>script src<span class="op">=</span><span class="st">"/static/js/scripts.js"</span><span class="op">&gt;&lt;/</span>script<span class="op">&gt;</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;/</span>body<span class="op">&gt;</span></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;/</span>html<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-52" class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># script.js</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>document.getElementById(<span class="st">'generate-form'</span>).addEventListener(<span class="st">'submit'</span>, <span class="cf">async</span> (event) <span class="op">=&gt;</span> {</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    event.preventDefault()<span class="op">;</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    const prompt <span class="op">=</span> document.getElementById(<span class="st">'prompt'</span>).value<span class="op">;</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    const response <span class="op">=</span> <span class="cf">await</span> fetch(<span class="st">'/generate'</span>, {</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>        method: <span class="st">'POST'</span>,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>        headers: {</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>            <span class="st">'Content-Type'</span>: <span class="st">'application/json'</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>        body: JSON.stringify({ prompt })</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    const data <span class="op">=</span> <span class="cf">await</span> response.json()<span class="op">;</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    document.getElementById(<span class="st">'result'</span>).innerText <span class="op">=</span> data.generated_text<span class="op">;</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-53" class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, Request</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.responses <span class="im">import</span> HTMLResponse</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.templating <span class="im">import</span> Jinja2Templates</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co">#mount the static directory</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>app.mount(<span class="st">"/static"</span>,StaticFiles(directory<span class="op">=</span><span class="st">"static"</span>),name<span class="op">=</span><span class="st">'static'</span>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="co"># @app.get("/",response_class=HTMLResponse)</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="co"># async def read_index():</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     with open("static/index.html") as f:</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co">#         return f.read()</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Or better, serve HTML templates more dynamically:</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>templates <span class="op">=</span> Jinja2Templates(directory<span class="op">=</span><span class="st">"templates"</span>)</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a><span class="at">@app.get</span>(<span class="st">"/"</span>, response_class<span class="op">=</span>HTMLResponse)</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> read_root(request: Request):</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>    context <span class="op">=</span> {</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"request"</span>: request,</span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"title"</span>: <span class="st">"LLM Text Generator"</span>,</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"description"</span>: <span class="st">"Generate text using a large language model."</span></span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> templates.TemplateResponse(<span class="st">"index.html"</span>, context)</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a><span class="co"># To run the app: uvicorn main:app --reload</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>When you navigate to http://127.0.0.1:8000/, it will serve your index.html file.</li>
+<li><code>app.mount</code>: specify URL path+directory for static files, allowing FastAPI to handle requests to those files automatically.</li>
+</ul>
+</section>
+<section id="serving-static-files-like-html-css-js-with-fastapi-jinja2htmx" class="level3">
+<h3 class="anchored" data-anchor-id="serving-static-files-like-html-css-js-with-fastapi-jinja2htmx">Serving static files (like HTML, CSS, JS) with FastAPI: Jinja2+HTMX</h3>
+<div id="cell-56" class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, Request, Form</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.responses <span class="im">import</span> HTMLResponse</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.templating <span class="im">import</span> Jinja2Templates</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.staticfiles <span class="im">import</span> StaticFiles</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> httpx</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Load environment variables from .env file</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Mount the static directory</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>app.mount(<span class="st">"/static"</span>, StaticFiles(directory<span class="op">=</span><span class="st">"static"</span>), name<span class="op">=</span><span class="st">"static"</span>)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Serve HTML templates</span></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>templates <span class="op">=</span> Jinja2Templates(directory<span class="op">=</span><span class="st">"templates"</span>)</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a><span class="at">@app.get</span>(<span class="st">'/'</span>, response_class<span class="op">=</span>HTMLResponse)</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> read_root(request:Request):</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>    context <span class="op">=</span> {</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"request"</span>:request,</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">"title"</span>: <span class="st">"LLM Text Generator"</span>,</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>        <span class="st">"description"</span>: <span class="st">"Generate text using a language model."</span></span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> templates.TemplateResponse(<span class="st">"index.html"</span>, context)</span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a><span class="at">@app.post</span>(<span class="st">"/generate"</span>,response_class<span class="op">=</span>HTMLResponse)</span>
+<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> generate_text(request: Request, prompt: <span class="bu">str</span> <span class="op">=</span> Form(...))</span>
+<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> prompt:</span>
+<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> HTMLResponse(<span class="st">"&lt;div id='result'&gt;&lt;p&gt;Error: Error: Prompt cannot be empty!&lt;/p&gt;&lt;/div&gt;"</span>)</span>
+<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a>        url <span class="op">=</span> <span class="st">"https://api.llm.example/generate"</span></span>
+<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a>    headers <span class="op">=</span> {</span>
+<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Authorization"</span>: <span class="ss">f"Bearer </span><span class="sc">{</span>os<span class="sc">.</span>getenv(<span class="st">'LLM_API_KEY'</span>)<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Content-Type"</span>: <span class="st">"application/json"</span>,</span>
+<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> {<span class="st">"prompt"</span>: prompt}</span>
+<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-40"><a href="#cb27-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="cf">with</span> httpx.AsyncClient() <span class="im">as</span> client:</span>
+<span id="cb27-41"><a href="#cb27-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb27-42"><a href="#cb27-42" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> <span class="cf">await</span> client.post(url, headers<span class="op">=</span>headers, json<span class="op">=</span>data)</span>
+<span id="cb27-43"><a href="#cb27-43" aria-hidden="true" tabindex="-1"></a>            response.raise_for_status()  <span class="co"># Raise an error for 4xx/5xx responses</span></span>
+<span id="cb27-44"><a href="#cb27-44" aria-hidden="true" tabindex="-1"></a>            response_data <span class="op">=</span> response.json()</span>
+<span id="cb27-45"><a href="#cb27-45" aria-hidden="true" tabindex="-1"></a>            generated_text <span class="op">=</span> response_data.get(<span class="st">"generated_text"</span>, <span class="st">""</span>)</span>
+<span id="cb27-46"><a href="#cb27-46" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> HTMLResponse(<span class="ss">f"&lt;div id='result'&gt;&lt;h2&gt;Generated Text:&lt;/h2&gt;&lt;p&gt;</span><span class="sc">{</span>generated_text<span class="sc">}</span><span class="ss">&lt;/p&gt;&lt;/div&gt;"</span>) <span class="co"># update the #result endpoint</span></span>
+<span id="cb27-47"><a href="#cb27-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> httpx.HTTPStatusError <span class="im">as</span> exc:</span>
+<span id="cb27-48"><a href="#cb27-48" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> HTMLResponse(<span class="ss">f"&lt;div id='result'&gt;&lt;p&gt;Error: </span><span class="sc">{</span>exc<span class="sc">.</span>response<span class="sc">.</span>text<span class="sc">}</span><span class="ss">&lt;/p&gt;&lt;/div&gt;"</span>)</span>
+<span id="cb27-49"><a href="#cb27-49" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> exc:</span>
+<span id="cb27-50"><a href="#cb27-50" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> HTMLResponse(<span class="ss">f"&lt;div id='result'&gt;&lt;p&gt;Error: </span><span class="sc">{</span><span class="bu">str</span>(exc)<span class="sc">}</span><span class="ss">&lt;/p&gt;&lt;/div&gt;"</span>)</span>
+<span id="cb27-51"><a href="#cb27-51" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><p>No longer any JavaScript found in the directory, all taken care of with HTMX as follows:</p>
+<ul>
+<li>HTML Template with HTMX:
+<ul>
+<li>The index.html template includes the HTMX library by adding a <code>&lt;script&gt;</code> tag that loads HTMX from a CDN.</li>
+<li>The form uses HTMX attributes (hx-post, hx-target, hx-swap) to handle form submission and update the result dynamically:</li>
+<li>hx-post=“/generate”: Sends a POST request to the /generate endpoint when the form is submitted.</li>
+<li>hx-target=“#result”: Specifies the element (#result) to update with the server’s response.</li>
+<li>hx-swap=“innerHTML”: Replaces the inner HTML of the target element with the server’s response.</li>
+</ul></li>
+<li>FastAPI Endpoint:
+<ul>
+<li>The /generate endpoint processes the form submission, interacts with the LLM API, and returns an HTML response with the generated text or an error message.</li>
+<li>The response is an HTMLResponse that updates the #result element in the HTML template.*</li>
+</ul></li>
+</ul></li>
+</ul>
+<div id="cell-58" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ├── main.py</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ├── static</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co"># │   ├── css</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co"># │   │   └── styles.css</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co"># └── templates</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="co">#     └── index.html</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="co"># templates/index.htmx</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;!</span>DOCTYPE html<span class="op">&gt;</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>html lang<span class="op">=</span><span class="st">"en"</span><span class="op">&gt;</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>head<span class="op">&gt;</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>meta charset<span class="op">=</span><span class="st">"UTF-8"</span><span class="op">&gt;</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>meta name<span class="op">=</span><span class="st">"viewport"</span> content<span class="op">=</span><span class="st">"width=device-width, initial-scale=1.0"</span><span class="op">&gt;</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>title<span class="op">&gt;</span>{{ title }}<span class="op">&lt;/</span>title<span class="op">&gt;</span></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"stylesheet"</span> href<span class="op">=</span><span class="st">"/static/css/styles.css"</span><span class="op">&gt;</span></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>script src<span class="op">=</span><span class="st">"https://unpkg.com/htmx.org@1.6.1"</span><span class="op">&gt;&lt;/</span>script<span class="op">&gt;</span></span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;/</span>head<span class="op">&gt;</span></span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>body<span class="op">&gt;</span></span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>h1<span class="op">&gt;</span>{{ title }}<span class="op">&lt;/</span>h1<span class="op">&gt;</span></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>p<span class="op">&gt;</span>{{ description }}<span class="op">&lt;/</span>p<span class="op">&gt;</span></span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>form hx<span class="op">-</span>post<span class="op">=</span><span class="st">"/generate"</span> hx<span class="op">-</span>target<span class="op">=</span><span class="st">"#result"</span> hx<span class="op">-</span>swap<span class="op">=</span><span class="st">"innerHTML"</span><span class="op">&gt;</span></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;</span>label <span class="cf">for</span><span class="op">=</span><span class="st">"prompt"</span><span class="op">&gt;</span>Enter your prompt:<span class="op">&lt;/</span>label<span class="op">&gt;</span></span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;</span><span class="bu">input</span> <span class="bu">type</span><span class="op">=</span><span class="st">"text"</span> <span class="bu">id</span><span class="op">=</span><span class="st">"prompt"</span> name<span class="op">=</span><span class="st">"prompt"</span> required<span class="op">&gt;</span></span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;</span>button <span class="bu">type</span><span class="op">=</span><span class="st">"submit"</span><span class="op">&gt;</span>Generate<span class="op">&lt;/</span>button<span class="op">&gt;</span></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;/</span>form<span class="op">&gt;</span></span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">&lt;</span>div <span class="bu">id</span><span class="op">=</span><span class="st">"result"</span><span class="op">&gt;&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;/</span>body<span class="op">&gt;</span></span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;/</span>html<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="packaging-with-docker" class="level3">
+<h3 class="anchored" data-anchor-id="packaging-with-docker">Packaging with Docker</h3>
+<div id="cell-60" class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>.</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>├── Dockerfile</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>├── main.py</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>├── requirements.txt</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>├── static</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>│   ├── css</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>│   │   └── styles.css</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>└── templates</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    └── index.html</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>templates/index.html remains the same file compatible with HTMX</li>
+</ul>
+<div id="cell-62" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># requirements.txt</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>fastapi</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>uvicorn</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>torch<span class="op">==</span><span class="fl">1.9.0</span><span class="op">+</span>cu111  <span class="co"># Ensure this matches the CUDA version in the Docker image</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>transformers</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>python<span class="op">-</span>dotenv</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>google<span class="op">-</span>cloud<span class="op">-</span>storage</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>For GPU support…</li>
+</ul>
+<p>Install NVIDIA Docker: Install the NVIDIA Docker runtime on your host machine.</p>
+<p>Modify the Dockerfile: Use a base image that includes CUDA and cuDNN libraries.</p>
+<p>Update the Docker Run Command: Use the –gpus flag to allocate GPU resources to the container.</p>
+<p>Ensure PyTorch is Installed with CUDA Support: Make sure the PyTorch version installed in the container supports CUDA.</p>
+<div id="cell-64" class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the official NVIDIA CUDA runtime as a parent image</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>FROM nvidia<span class="op">/</span>cuda:<span class="fl">11.3.1</span><span class="op">-</span>cudnn8<span class="op">-</span>runtime<span class="op">-</span>ubuntu20<span class="fl">.04</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the working directory in the container</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>WORKDIR <span class="op">/</span>app</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy the current directory contents into the container at /app</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>COPY . <span class="op">/</span>app</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Install any needed packages specified in requirements.txt</span></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>RUN apt<span class="op">-</span>get update <span class="op">&amp;&amp;</span> apt<span class="op">-</span>get install <span class="op">-</span>y <span class="op">\</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    python3<span class="op">-</span>pip <span class="op">\</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;&amp;</span> rm <span class="op">-</span>rf <span class="op">/</span>var<span class="op">/</span>lib<span class="op">/</span>apt<span class="op">/</span>lists<span class="op">/*</span></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>RUN pip3 install <span class="op">--</span>no<span class="op">-</span>cache<span class="op">-</span><span class="bu">dir</span> <span class="op">-</span>r requirements.txt</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Expose port 80 to the outside world</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>EXPOSE <span class="dv">80</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the FastAPI application</span></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>CMD [<span class="st">"uvicorn"</span>, <span class="st">"main:app"</span>, <span class="st">"--host"</span>, <span class="st">"0.0.0.0"</span>, <span class="st">"--port"</span>, <span class="st">"80"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-65" class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, Request, Form</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.responses <span class="im">import</span> HTMLResponse</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.templating <span class="im">import</span> Jinja2Templates</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.staticfiles <span class="im">import</span> StaticFiles</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoModelForCausalLM, AutoTokenizer</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Load environment variables from .env file</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Mount the static directory</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>app.mount(<span class="st">"/static"</span>, StaticFiles(directory<span class="op">=</span><span class="st">"static"</span>), name<span class="op">=</span><span class="st">"static"</span>)</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Serve HTML templates</span></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>templates <span class="op">=</span> Jinja2Templates(directory<span class="op">=</span><span class="st">"templates"</span>)</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model and tokenizer from a shared storage location or model server</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>model_name <span class="op">=</span> os.getenv(<span class="st">"MODEL_NAME"</span>, <span class="st">"gpt2"</span>)  <span class="co"># Replace with your model path or name</span></span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(model_name)</span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForCausalLM.from_pretrained(model_name)</span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>model.to(<span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span>)</span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a><span class="at">@app.get</span>(<span class="st">"/"</span>, response_class<span class="op">=</span>HTMLResponse)</span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> read_root(request: Request):</span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>    context <span class="op">=</span> {</span>
+<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a>        <span class="st">"request"</span>: request,</span>
+<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">"title"</span>: <span class="st">"LLM Text Generator"</span>,</span>
+<span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">"description"</span>: <span class="st">"Generate text using a large language model."</span></span>
+<span id="cb32-33"><a href="#cb32-33" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb32-34"><a href="#cb32-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> templates.TemplateResponse(<span class="st">"index.html"</span>, context)</span>
+<span id="cb32-35"><a href="#cb32-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-36"><a href="#cb32-36" aria-hidden="true" tabindex="-1"></a><span class="at">@app.post</span>(<span class="st">"/generate"</span>, response_class<span class="op">=</span>HTMLResponse)</span>
+<span id="cb32-37"><a href="#cb32-37" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> generate_text(request: Request, prompt: <span class="bu">str</span> <span class="op">=</span> Form(...)):</span>
+<span id="cb32-38"><a href="#cb32-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> prompt:</span>
+<span id="cb32-39"><a href="#cb32-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> HTMLResponse(<span class="st">"&lt;div id='result'&gt;&lt;p&gt;Error: Prompt cannot be empty!&lt;/p&gt;&lt;/div&gt;"</span>)</span>
+<span id="cb32-40"><a href="#cb32-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-41"><a href="#cb32-41" aria-hidden="true" tabindex="-1"></a>    inputs <span class="op">=</span> tokenizer(prompt, return_tensors<span class="op">=</span><span class="st">"pt"</span>).to(<span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span>)</span>
+<span id="cb32-42"><a href="#cb32-42" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> model.generate(inputs[<span class="st">"input_ids"</span>], max_length<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb32-43"><a href="#cb32-43" aria-hidden="true" tabindex="-1"></a>    generated_text <span class="op">=</span> tokenizer.decode(outputs[<span class="dv">0</span>], skip_special_tokens<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb32-44"><a href="#cb32-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-45"><a href="#cb32-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> HTMLResponse(<span class="ss">f"&lt;div id='result'&gt;&lt;h2&gt;Generated Text:&lt;/h2&gt;&lt;p&gt;</span><span class="sc">{</span>generated_text<span class="sc">}</span><span class="ss">&lt;/p&gt;&lt;/div&gt;"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-66" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span> bash</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>docker build <span class="op">-</span>t my<span class="op">-</span>fastapi<span class="op">-</span>app .</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>docker run <span class="op">--</span>gpus <span class="bu">all</span> <span class="op">--</span>env<span class="op">-</span><span class="bu">file</span> .env <span class="op">-</span>d <span class="op">-</span>p <span class="dv">80</span>:<span class="dv">80</span> <span class="op">--</span>name my<span class="op">-</span>fastapi<span class="op">-</span>container my<span class="op">-</span>fastapi<span class="op">-</span>app</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="deploying-on-gcp" class="level3">
+<h3 class="anchored" data-anchor-id="deploying-on-gcp">Deploying on GCP</h3>
+<p>Step 1: Set Up GCP Project: Create a GCP project and enable necessary APIs.</p>
+<p>Step 2: Install and Configure Google Cloud SDK: Install the Google Cloud SDK and authenticate.</p>
+<p>Step 3:Build and Push Docker Image to GCR: Build the Docker image and push it to Google Container Registry.</p>
+<p>Step 4:Create a GKE Cluster: Create a Kubernetes cluster on GKE.</p>
+<p>Step 5:Deploy the Application on GKE: Deploy the FastAPI application on the GKE cluster.</p>
+<p>Step 6:Set Up Google Cloud Storage: Store the model in GCS and access it from the application.</p>
+<section id="step-1-set-up-gcp-project-create-a-gcp-project-and-enable-necessary-apis." class="level4">
+<h4 class="anchored" data-anchor-id="step-1-set-up-gcp-project-create-a-gcp-project-and-enable-necessary-apis.">Step 1: Set Up GCP Project: Create a GCP project and enable necessary APIs.</h4>
+<p>Create a GCP Project: Go to the Google Cloud Console.</p>
+<p>Create a new project.</p>
+<p>Enable the following APIs: Kubernetes Engine API, Container Registry API, Cloud Storage API</p>
+</section>
+<section id="step-2-install-and-configure-google-cloud-sdk" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-install-and-configure-google-cloud-sdk">Step 2: Install and Configure Google Cloud SDK</h4>
+<p>Install Google Cloud SDK: https://cloud.google.com/sdk/docs/install</p>
+<p>Authenticate with GCP: <code>gcloud init; gcloud auth login</code></p>
+<p>Set the Project: <code>gcloud config set project YOUR_PROJECT_ID</code></p>
+</section>
+<section id="step-3-build-and-push-docker-image-to-gcr" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-build-and-push-docker-image-to-gcr">Step 3: Build and Push Docker Image to GCR</h4>
+<p><code>docker build -t gcr.io/YOUR_PROJECT_ID/my-fastapi-app .</code></p>
+<p><code>docker push gcr.io/YOUR_PROJECT_ID/my-fastapi-app</code></p>
+</section>
+<section id="step-4create-a-gke-cluster." class="level4">
+<h4 class="anchored" data-anchor-id="step-4create-a-gke-cluster.">Step 4:Create a GKE Cluster.</h4>
+<p><code>gcloud container clusters create my-cluster --num-nodes=3</code></p>
+<p><code>gcloud container clusters get-credentials my-cluster</code></p>
+</section>
+<section id="step-5deploy-the-application-on-gke-deploy-the-fastapi-application-on-the-gke-cluster." class="level4">
+<h4 class="anchored" data-anchor-id="step-5deploy-the-application-on-gke-deploy-the-fastapi-application-on-the-gke-cluster.">Step 5:Deploy the Application on GKE: Deploy the FastAPI application on the GKE cluster.</h4>
+<ul>
+<li>Create a Kubernetes Deployment <code>deployment.yaml</code></li>
+</ul>
+<div id="cell-74" class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">## deployment.yaml</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>apiVersion: apps<span class="op">/</span>v1</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>kind: Deployment</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>metadata:</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  name: my<span class="op">-</span>fastapi<span class="op">-</span>app</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>spec:</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  replicas: <span class="dv">3</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  selector:</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    matchLabels:</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>      app: my<span class="op">-</span>fastapi<span class="op">-</span>app</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  template:</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>    metadata:</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>      labels:</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>        app: my<span class="op">-</span>fastapi<span class="op">-</span>app</span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>    spec:</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>      containers:</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>      <span class="op">-</span> name: my<span class="op">-</span>fastapi<span class="op">-</span>app</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>        image: gcr.io<span class="op">/</span>YOUR_PROJECT_ID<span class="op">/</span>my<span class="op">-</span>fastapi<span class="op">-</span>app</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>        ports:</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">-</span> containerPort: <span class="dv">80</span></span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>        env:</span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>        <span class="op">-</span> name: MODEL_NAME</span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>          value: <span class="st">"gs://YOUR_BUCKET_NAME/model"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>Create a Kubernetes Service <code>service.yaml</code></li>
+</ul>
+<div id="cell-76" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>apiVersion: v1</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>kind: Service</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>metadata:</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  name: my<span class="op">-</span>fastapi<span class="op">-</span>app</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>spec:</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="bu">type</span>: LoadBalancer</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  selector:</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    app: my<span class="op">-</span>fastapi<span class="op">-</span>app</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  ports:</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">-</span> protocol: TCP</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>      port: <span class="dv">80</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>      targetPort: <span class="dv">80</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>Deploy to GKE</li>
+</ul>
+<p><code>kubectl apply -f deployment.yaml</code></p>
+<p><code>kubectl apply -f service.yaml</code></p>
+</section>
+<section id="step-6-set-up-google-cloud-storage-upload-model-to-bucket-update-main.py-to-load-model-from-gcs" class="level4">
+<h4 class="anchored" data-anchor-id="step-6-set-up-google-cloud-storage-upload-model-to-bucket-update-main.py-to-load-model-from-gcs">Step 6: Set up Google Cloud Storage, upload model to bucket, update main.py to load model from GCS</h4>
+<p><code>gsutil mb gs://YOUR_BUCKET_NAME</code></p>
+<p><code>gsutil cp model/* gs://YOUR_BUCKET_NAME/model/</code></p>
+<div id="cell-81" class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, Request, Form</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.responses <span class="im">import</span> HTMLResponse</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.templating <span class="im">import</span> Jinja2Templates</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.staticfiles <span class="im">import</span> StaticFiles</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoModelForCausalLM, AutoTokenizer</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> google.cloud <span class="im">import</span> storage</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Load environment variables from .env file</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Mount the static directory</span></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>app.mount(<span class="st">"/static"</span>, StaticFiles(directory<span class="op">=</span><span class="st">"static"</span>), name<span class="op">=</span><span class="st">"static"</span>)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Serve HTML templates</span></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>templates <span class="op">=</span> Jinja2Templates(directory<span class="op">=</span><span class="st">"templates"</span>)</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model and tokenizer from GCS</span></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> download_blob(bucket_name, source_blob_name, destination_file_name):</span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>    storage_client <span class="op">=</span> storage.Client()</span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>    bucket <span class="op">=</span> storage_client.bucket(bucket_name)</span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>    blob <span class="op">=</span> bucket.blob(source_blob_name)</span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>    blob.download_to_filename(destination_file_name)</span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>model_path <span class="op">=</span> <span class="st">"/app/model"</span></span>
+<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a>os.makedirs(model_path, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>download_blob(<span class="st">"YOUR_BUCKET_NAME"</span>, <span class="st">"model/pytorch_model.bin"</span>, <span class="ss">f"</span><span class="sc">{</span>model_path<span class="sc">}</span><span class="ss">/pytorch_model.bin"</span>)</span>
+<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>download_blob(<span class="st">"YOUR_BUCKET_NAME"</span>, <span class="st">"model/config.json"</span>, <span class="ss">f"</span><span class="sc">{</span>model_path<span class="sc">}</span><span class="ss">/config.json"</span>)</span>
+<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a>download_blob(<span class="st">"YOUR_BUCKET_NAME"</span>, <span class="st">"model/tokenizer_config.json"</span>, <span class="ss">f"</span><span class="sc">{</span>model_path<span class="sc">}</span><span class="ss">/tokenizer_config.json"</span>)</span>
+<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-35"><a href="#cb36-35" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(model_path)</span>
+<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForCausalLM.from_pretrained(model_path)</span>
+<span id="cb36-37"><a href="#cb36-37" aria-hidden="true" tabindex="-1"></a>model.to(<span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span>)</span>
+<span id="cb36-38"><a href="#cb36-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-39"><a href="#cb36-39" aria-hidden="true" tabindex="-1"></a><span class="at">@app.get</span>(<span class="st">"/"</span>, response_class<span class="op">=</span>HTMLResponse)</span>
+<span id="cb36-40"><a href="#cb36-40" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> read_root(request: Request):</span>
+<span id="cb36-41"><a href="#cb36-41" aria-hidden="true" tabindex="-1"></a>    context <span class="op">=</span> {</span>
+<span id="cb36-42"><a href="#cb36-42" aria-hidden="true" tabindex="-1"></a>        <span class="st">"request"</span>: request,</span>
+<span id="cb36-43"><a href="#cb36-43" aria-hidden="true" tabindex="-1"></a>        <span class="st">"title"</span>: <span class="st">"LLM Text Generator"</span>,</span>
+<span id="cb36-44"><a href="#cb36-44" aria-hidden="true" tabindex="-1"></a>        <span class="st">"description"</span>: <span class="st">"Generate text using a large language model."</span></span>
+<span id="cb36-45"><a href="#cb36-45" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb36-46"><a href="#cb36-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> templates.TemplateResponse(<span class="st">"index.html"</span>, context)</span>
+<span id="cb36-47"><a href="#cb36-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-48"><a href="#cb36-48" aria-hidden="true" tabindex="-1"></a><span class="at">@app.post</span>(<span class="st">"/generate"</span>, response_class<span class="op">=</span>HTMLResponse)</span>
+<span id="cb36-49"><a href="#cb36-49" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> generate_text(request: Request, prompt: <span class="bu">str</span> <span class="op">=</span> Form(...)):</span>
+<span id="cb36-50"><a href="#cb36-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> prompt:</span>
+<span id="cb36-51"><a href="#cb36-51" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> HTMLResponse(<span class="st">"&lt;div id='result'&gt;&lt;p&gt;Error: Prompt cannot be empty!&lt;/p&gt;&lt;/div&gt;"</span>)</span>
+<span id="cb36-52"><a href="#cb36-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-53"><a href="#cb36-53" aria-hidden="true" tabindex="-1"></a>    inputs <span class="op">=</span> tokenizer(prompt, return_tensors<span class="op">=</span><span class="st">"pt"</span>).to(<span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span>)</span>
+<span id="cb36-54"><a href="#cb36-54" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> model.generate(inputs[<span class="st">"input_ids"</span>], max_length<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb36-55"><a href="#cb36-55" aria-hidden="true" tabindex="-1"></a>    generated_text <span class="op">=</span> tokenizer.decode(outputs[<span class="dv">0</span>], skip_special_tokens<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb36-56"><a href="#cb36-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-57"><a href="#cb36-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> HTMLResponse(<span class="ss">f"&lt;div id='result'&gt;&lt;h2&gt;Generated Text:&lt;/h2&gt;&lt;p&gt;</span><span class="sc">{</span>generated_text<span class="sc">}</span><span class="ss">&lt;/p&gt;&lt;/div&gt;"</span>)</span>
+<span id="cb36-58"><a href="#cb36-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-59"><a href="#cb36-59" aria-hidden="true" tabindex="-1"></a><span class="co"># To run the app: uvicorn main:app --reload</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
 </section>
