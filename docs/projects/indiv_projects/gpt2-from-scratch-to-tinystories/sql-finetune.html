@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2024-09-10">
+<meta name="description" content="Building the GPT-2 transformer from scratch">
 
-<title>Dmitriy’s Projects – Dmitriy Popov-Velasco</title>
+<title>GPT-2 From Scratch to Tiny Stories – Dmitriy Popov-Velasco</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,24 +25,22 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./favicon.ico" rel="icon">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -67,65 +67,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-project-listings .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-description','listing-image',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-project-listings'] = new List('listing-project-listings', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -136,7 +78,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../../index.html">
     <span class="navbar-title">Dmitriy Popov-Velasco</span>
     </a>
   </div>
@@ -147,19 +89,19 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="../../../index.html"> 
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./posts.html"> 
+    <a class="nav-link" href="../../../posts.html"> 
 <span class="menu-text">Blogs</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./projects.html" aria-current="page"> 
+    <a class="nav-link" href="../../../projects.html"> 
 <span class="menu-text">Projects</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./notes.html"> 
+    <a class="nav-link" href="../../../notes.html"> 
 <span class="menu-text">Notes</span></a>
   </li>  
 </ul>
@@ -190,21 +132,36 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(8)</span></div><div class="category" data-category="Docker">Docker <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Economics">Economics <span class="quarto-category-count">(1)</span></div><div class="category" data-category="GCP">GCP <span class="quarto-category-count">(2)</span></div><div class="category" data-category="Hugging Face">Hugging Face <span class="quarto-category-count">(1)</span></div><div class="category" data-category="LLMs">LLMs <span class="quarto-category-count">(3)</span></div><div class="category" data-category="ML Deployment">ML Deployment <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Machine Learning">Machine Learning <span class="quarto-category-count">(2)</span></div><div class="category" data-category="Math">Math <span class="quarto-category-count">(1)</span></div><div class="category" data-category="PyTorch">PyTorch <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Python">Python <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Unit Testing">Unit Testing <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Unsupervised Learning">Unsupervised Learning <span class="quarto-category-count">(1)</span></div></div></div>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Dmitriy’s Projects</h1>
-</div>
+<h1 class="title">GPT-2 From Scratch to Tiny Stories</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">LLMs</div>
+    <div class="quarto-category">PyTorch</div>
+  </div>
+  </div>
 
+<div>
+  <div class="description">
+    Building the GPT-2 transformer from scratch
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 10, 2024</p>
+    </div>
+  </div>
   
     
   </div>
@@ -214,217 +171,25 @@ window.Quarto = {
 </header>
 
 
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="transformer_orig500.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">Source: Attention is all you need by Vaswani et al.</figcaption>
+</figure>
+</div>
+<p>The goal of this project is to build a GPT-2 transformer from scratch in PyTorch, making speed and memory optimizations, training a custom tokenizer (and discussing it’s mechanics), further tuning the model parameters to work best for TinyStories training on two 3090s, and finally generating stories from the trained model.</p>
+<ul>
+<li><p>Part 1: Build GPT2.ipynb builds the foundational GPT-2 architecture, mostly following Andrej Karpathy.</p></li>
+<li><p>Part 2: Optimize GPT-2.ipynb optimizes GPT-2 training process, again following Andrej Karpathy, with adjustments made for dual-3090 setup.</p></li>
+<li><p>Part 3: Train GPT-2.ipynb trains a custom Hugging Face tokenizer and performs custom training on Tiny Stories dataset roneneldan/TinyStories. Once trained from scratch, GPT-2 is able to generate coherent stories for children.</p></li>
+<li><p>Part 4: Tokenization mechanics overview.ipynb describes tokenization mechanics and challenges.</p></li>
+<li><p>Each part is described in a corresponding blog post <a href="https://dpopovvelasco.dev/posts.html">here</a>.</p></li>
+<li><p><a href="https://github.com/dapopov-st/gpt2-from-scratch-to-tiny-stories/">GitHub link</a></p></li>
+</ul>
 
 
 
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-project-listings">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="LLMs,Hugging Face" data-listing-date-sort="1728532800000" data-listing-file-modified-sort="1731713966828" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="644">
-<div class="thumbnail">
-<p><a href="./projects/indiv_projects/sql-finetune/sql-finetune.html" class="no-external"></a></p><a href="./projects/indiv_projects/sql-finetune/sql-finetune.html" class="no-external">
-<p><img loading="lazy" src="./projects/indiv_projects/sql-finetune/tau-bootis-b500.jpg" class="thumbnail-image" alt="Tau bootis exoplanet"></p>
-</a><p><a href="./projects/indiv_projects/sql-finetune/sql-finetune.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./projects/indiv_projects/sql-finetune/sql-finetune.html" class="no-external">Sample-efficient SQL fine-tuning</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./projects/indiv_projects/sql-finetune/sql-finetune.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./projects/indiv_projects/sql-finetune/sql-finetune.html" class="no-external">Sample-efficient LLM fine-tuning on a SQL database.</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./projects/indiv_projects/sql-finetune/sql-finetune.html" class="no-external">
-<div class="listing-date">
-Oct 10, 2024
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="LLMs,PyTorch" data-listing-date-sort="1725940800000" data-listing-file-modified-sort="1731713974135" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="144">
-<div class="thumbnail">
-<p><a href="./projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html" class="no-external"></a></p><a href="./projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html" class="no-external">
-<p><img loading="lazy" src="./projects/indiv_projects/gpt2-from-scratch-to-tinystories/transformer_orig500.png" class="thumbnail-image" alt="GPT-2 from scratch"></p>
-</a><p><a href="./projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html" class="no-external">GPT-2 From Scratch to Tiny Stories</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html" class="no-external">Building the GPT-2 transformer from scratch</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html" class="no-external">
-<div class="listing-date">
-Sep 10, 2024
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="LLMs" data-listing-date-sort="1717128000000" data-listing-file-modified-sort="1726151705712" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="114">
-<div class="thumbnail">
-<p><a href="./projects/indiv_projects/arxiv/arxiv-llms-assistant.html" class="no-external"></a></p><a href="./projects/indiv_projects/arxiv/arxiv-llms-assistant.html" class="no-external">
-<p><img loading="lazy" src="./projects/indiv_projects/arxiv/arxiv-llms500.png" class="thumbnail-image" alt="arXiv LLM assistant components diagram"></p>
-</a><p><a href="./projects/indiv_projects/arxiv/arxiv-llms-assistant.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./projects/indiv_projects/arxiv/arxiv-llms-assistant.html" class="no-external">arXiv LLMs Assistant</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./projects/indiv_projects/arxiv/arxiv-llms-assistant.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./projects/indiv_projects/arxiv/arxiv-llms-assistant.html" class="no-external">arXiv-llms-assistant is a ‘public’ version of a project submitted as part of an AI competition at LS Direct, demonstrating the use and evaluation of RAG with on-prem data as a way to capitalize on applications of gen AI to privacy-restricted domains.</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./projects/indiv_projects/arxiv/arxiv-llms-assistant.html" class="no-external">
-<div class="listing-date">
-May 31, 2024
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="3" data-categories="GCP" data-listing-date-sort="1714449600000" data-listing-file-modified-sort="1726251180731" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="114">
-<div class="thumbnail">
-<p><a href="./projects/indiv_projects/project-bird/project-bird.html" class="no-external"></a></p><a href="./projects/indiv_projects/project-bird/project-bird.html" class="no-external">
-<p><img loading="lazy" src="./projects/indiv_projects/project-bird/project_bird500.png" class="thumbnail-image" alt="Project Bird"></p>
-</a><p><a href="./projects/indiv_projects/project-bird/project-bird.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./projects/indiv_projects/project-bird/project-bird.html" class="no-external">Project Bird</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./projects/indiv_projects/project-bird/project-bird.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./projects/indiv_projects/project-bird/project-bird.html" class="no-external">GCP ETL project to pull data from eBird API 2.0 and display a map of recent bird observations in a given area - a small side project to practice GCP skills and see more birds.</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./projects/indiv_projects/project-bird/project-bird.html" class="no-external">
-<div class="listing-date">
-Apr 30, 2024
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="4" data-categories="Machine Learning,Unsupervised Learning,GCP" data-listing-date-sort="1666065600000" data-listing-file-modified-sort="1726251466206" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="44">
-<div class="thumbnail">
-<p><a href="./projects/indiv_projects/detecting-anomalies/detecting-anomalies.html" class="no-external"></a></p><a href="./projects/indiv_projects/detecting-anomalies/detecting-anomalies.html" class="no-external">
-<p><img loading="lazy" src="./projects/indiv_projects/detecting-anomalies/anomalies_img500.png" class="thumbnail-image" alt="Detecting anomalies in a statewide housing market with alternative data"></p>
-</a><p><a href="./projects/indiv_projects/detecting-anomalies/detecting-anomalies.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./projects/indiv_projects/detecting-anomalies/detecting-anomalies.html" class="no-external">Detecting anomalies in a statewide housing market with alternative data</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./projects/indiv_projects/detecting-anomalies/detecting-anomalies.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./projects/indiv_projects/detecting-anomalies/detecting-anomalies.html" class="no-external">Unsupervised learning (TDA) project to detect housing market anomalies built with Zach Stone for Haystacks.ai.</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./projects/indiv_projects/detecting-anomalies/detecting-anomalies.html" class="no-external">
-<div class="listing-date">
-Oct 18, 2022
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="5" data-categories="Machine Learning,ML Deployment" data-listing-date-sort="1661745600000">
-<div class="thumbnail">
-<p><a href="https://github.com/dapopov-st/housing-price-predictions" class="no-external"></a></p><a href="https://github.com/dapopov-st/housing-price-predictions" class="no-external">
-<p><img loading="lazy" src="./projects/images/ames_img_500.png" class="thumbnail-image" alt="Investing in student housing with ML"></p>
-</a><p><a href="https://github.com/dapopov-st/housing-price-predictions" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="https://github.com/dapopov-st/housing-price-predictions" class="no-external">Investing in student housing with ML</a>
-</h3>
-<div class="listing-subtitle">
-<a href="https://github.com/dapopov-st/housing-price-predictions" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="https://github.com/dapopov-st/housing-price-predictions" class="no-external">Kaggle-style supervised learning </a>
-</div>
-</div>
-<div class="metadata">
-<a href="https://github.com/dapopov-st/housing-price-predictions" class="no-external">
-<div class="listing-date">
-Aug 29, 2022
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="6" data-categories="Python,Docker,Unit Testing" data-listing-date-sort="1646888400000" data-listing-file-modified-sort="1726249781766" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="38">
-<div class="thumbnail">
-<p><a href="./projects/indiv_projects/inventory-classes/inventory-classes.html" class="no-external"></a></p><a href="./projects/indiv_projects/inventory-classes/inventory-classes.html" class="no-external">
-<p><img loading="lazy" src="./projects/indiv_projects/inventory-classes/inventory_classes500.png" class="thumbnail-image" alt="Inventory classes with pytest and pdoc"></p>
-</a><p><a href="./projects/indiv_projects/inventory-classes/inventory-classes.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./projects/indiv_projects/inventory-classes/inventory-classes.html" class="no-external">Inventory classes with pytest and pdoc</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./projects/indiv_projects/inventory-classes/inventory-classes.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./projects/indiv_projects/inventory-classes/inventory-classes.html" class="no-external">Inventory application for a tech video channel featuring computer builds with inventory classes in object-oriented Python, 90%+ coverage tests with pytest, comprehensive API documentation with pdoc, and packaging inside Docker.</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./projects/indiv_projects/inventory-classes/inventory-classes.html" class="no-external">
-<div class="listing-date">
-Mar 10, 2022
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="7" data-categories="Math,Economics" data-listing-date-sort="1393995600000" data-listing-file-modified-sort="1726248985665" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="130">
-<div class="thumbnail">
-<p><a href="./projects/indiv_projects/publication/bulletin-publication.html" class="no-external"></a></p><a href="./projects/indiv_projects/publication/bulletin-publication.html" class="no-external">
-<p><img loading="lazy" src="./projects/indiv_projects/publication/econ_paper500.png" class="thumbnail-image" alt="bulletin-paper"></p>
-</a><p><a href="./projects/indiv_projects/publication/bulletin-publication.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./projects/indiv_projects/publication/bulletin-publication.html" class="no-external">COMPARATIVE STATICS OF A MONOPOLISTIC FIRM FACING RATE-OF-RETURN AND COMMAND-AND-CONTROL POLLUTION CONSTRAINTS</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./projects/indiv_projects/publication/bulletin-publication.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./projects/indiv_projects/publication/bulletin-publication.html" class="no-external">A paper I co-authored in mathematical economics/economic theory.</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./projects/indiv_projects/publication/bulletin-publication.html" class="no-external">
-<div class="listing-date">
-Mar 5, 2014
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
