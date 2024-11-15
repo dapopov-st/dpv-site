@@ -2,110 +2,114 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://dpopovvelasco.dev/notes.html</loc>
-    <lastmod>2024-11-15T23:27:38.338Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.267Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/index.html</loc>
-    <lastmod>2024-11-15T23:27:38.338Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.267Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/posts.html</loc>
-    <lastmod>2024-11-15T23:27:38.362Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.295Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes/Docker/Docker.html</loc>
-    <lastmod>2024-11-15T23:27:38.354Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.287Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes/LlmBasicsAndRecipes.html</loc>
-    <lastmod>2024-11-15T23:27:38.358Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.287Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes/AcceleratingMatrixMultiplication.html</loc>
-    <lastmod>2024-11-15T23:27:38.338Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.267Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes/ImplementingDbscan.html</loc>
-    <lastmod>2024-11-15T23:27:38.358Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.287Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/projects/indiv_projects/project-bird/project-bird.html</loc>
-    <lastmod>2024-11-15T23:27:38.378Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.311Z</lastmod>
   </url>
   <url>
-    <loc>https://dpopovvelasco.dev/projects/indiv_projects/publication/bulletin-publication.html</loc>
-    <lastmod>2024-11-15T23:27:38.382Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/projects/indiv_projects/inventory-classes/inventory-classes.html</loc>
-    <lastmod>2024-11-15T23:27:38.374Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html</loc>
-    <lastmod>2024-11-15T23:27:38.242Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 3: Train GPT-2.html</loc>
-    <lastmod>2024-11-15T23:27:38.262Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 1: Build GPT-2.html</loc>
-    <lastmod>2024-11-15T23:27:38.242Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html</loc>
-    <lastmod>2024-11-15T23:27:38.274Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Optimize GPT-2.html</loc>
-    <lastmod>2024-11-15T23:27:38.254Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 4: Tokenization mechanics and challenges.html</loc>
-    <lastmod>2024-11-15T23:27:38.270Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/blog/posts/kto-optimization/kto-optimization.html</loc>
-    <lastmod>2024-11-15T23:27:38.274Z</lastmod>
-  </url>
-  <url>
-    <loc>https://dpopovvelasco.dev/projects/indiv_projects/arxiv/arxiv-llms-assistant.html</loc>
-    <lastmod>2024-11-15T23:27:38.370Z</lastmod>
+    <loc>https://dpopovvelasco.dev/projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html</loc>
+    <lastmod>2024-11-15T23:48:49.307Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/projects/indiv_projects/sql-finetune/sql-finetune.html</loc>
-    <lastmod>2024-11-15T23:27:38.382Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.315Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/projects/indiv_projects/arxiv/arxiv-llms-assistant.html</loc>
+    <lastmod>2024-11-15T23:48:49.299Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/kto-optimization/kto-optimization.html</loc>
+    <lastmod>2024-11-15T23:48:49.203Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 4: Tokenization mechanics and challenges.html</loc>
+    <lastmod>2024-11-15T23:48:49.199Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 2: Optimize GPT-2.html</loc>
+    <lastmod>2024-11-15T23:48:49.187Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html</loc>
+    <lastmod>2024-11-15T23:48:49.203Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 1: Build GPT-2.html</loc>
+    <lastmod>2024-11-15T23:48:49.171Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/gpt2-from-from-scratch-to-tiny-stories/Part 3: Train GPT-2.html</loc>
+    <lastmod>2024-11-15T23:48:49.195Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html</loc>
+    <lastmod>2024-11-15T23:48:49.171Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/projects/indiv_projects/inventory-classes/inventory-classes.html</loc>
+    <lastmod>2024-11-15T23:48:49.307Z</lastmod>
+  </url>
+  <url>
+    <loc>https://dpopovvelasco.dev/projects/indiv_projects/publication/bulletin-publication.html</loc>
+    <lastmod>2024-11-15T23:48:49.315Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/projects/indiv_projects/detecting-anomalies/detecting-anomalies.html</loc>
-    <lastmod>2024-11-15T23:27:38.374Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.307Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes/Backprop.html</loc>
-    <lastmod>2024-11-15T23:27:38.346Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.275Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes/FastAPI.html</loc>
-    <lastmod>2024-11-15T23:27:38.354Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.287Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes/ml-algos-numpy-torch.html</loc>
-    <lastmod>2024-11-15T23:27:38.362Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.295Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/notes/Linux.html</loc>
-    <lastmod>2024-11-15T23:27:38.358Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.287Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/projects.html</loc>
-    <lastmod>2024-11-15T23:27:38.362Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.295Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/backups/investing-in-student-housing/investing-in-student-housing.html</loc>
-    <lastmod>2024-11-15T23:27:38.242Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.171Z</lastmod>
   </url>
   <url>
     <loc>https://dpopovvelasco.dev/contact.html</loc>
-    <lastmod>2024-11-15T23:27:38.274Z</lastmod>
+    <lastmod>2024-11-15T23:48:49.203Z</lastmod>
   </url>
 </urlset>
