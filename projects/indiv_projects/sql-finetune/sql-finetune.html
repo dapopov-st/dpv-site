@@ -6,9 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Some of my notes and learnings…">
+<meta name="dcterms.date" content="2024-10-10">
+<meta name="description" content="A sample-efficient LLM fine-tuning project.">
 
-<title>Dmitriy’s Notes – Dmitriy Popov-Velasco</title>
+<title>Sample-efficient SQL fine-tuning – Dmitriy Popov-Velasco</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -24,24 +25,22 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./favicon.ico" rel="icon">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -68,65 +67,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-notes-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-notes-listing'] = new List('listing-notes-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -137,7 +78,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../../index.html">
     <span class="navbar-title">Dmitriy Popov-Velasco</span>
     </a>
   </div>
@@ -148,19 +89,19 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="../../../index.html"> 
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./posts.html"> 
+    <a class="nav-link" href="../../../posts.html"> 
 <span class="menu-text">Blogs</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./projects.html"> 
+    <a class="nav-link" href="../../../projects.html"> 
 <span class="menu-text">Projects</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./notes.html" aria-current="page"> 
+    <a class="nav-link" href="../../../notes.html"> 
 <span class="menu-text">Notes</span></a>
   </li>  
 </ul>
@@ -191,19 +132,23 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(8)</span></div><div class="category" data-category="Linux">Linux <span class="quarto-category-count">(1)</span></div><div class="category" data-category="NNs">NNs <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Programming">Programming <span class="quarto-category-count">(2)</span></div><div class="category" data-category="PyTorch">PyTorch <span class="quarto-category-count">(4)</span></div></div></div>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Dmitriy’s Notes</h1>
-</div>
+<h1 class="title">Sample-efficient SQL fine-tuning</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">LLMs</div>
+    <div class="quarto-category">Hugging Face</div>
+  </div>
+  </div>
 
 <div>
   <div class="description">
-    Some of my notes and learnings…
+    A sample-efficient LLM fine-tuning project.
   </div>
 </div>
 
@@ -211,6 +156,12 @@ window.Quarto = {
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 10, 2024</p>
+    </div>
+  </div>
   
     
   </div>
@@ -220,82 +171,29 @@ window.Quarto = {
 </header>
 
 
-
-
-
-
-<div class="quarto-listing quarto-listing-container-table" id="listing-notes-listing">
-<div class="listing-actions-group">
-   <div class="input-group input-group-sm quarto-listing-sort">
-     <span class="input-group-text"><i class="bi bi-sort-down"></i></span>
-     <select id="listing-notes-listing-sort" class="form-select" aria-label="Order By" onchange="window['quarto-listings']['listing-notes-listing'].sort(this.options[this.selectedIndex].value, { order: this.options[this.selectedIndex].getAttribute('data-direction')})">
-       <option value="" disabled="" selected="" hidden="">Order By</option>
-       <option value="index" data-direction="asc">Default</option>
-         <option value="listing-title-sort" data-direction="asc">
-          Title
-        </option>
-     </select>
-  </div>
-    <div class="input-group input-group-sm quarto-listing-filter">
-      <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="text" class="search form-control" placeholder="Filter">
-    </div>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="tau-bootis-b500.jpg" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">Source: Image by the author</figcaption>
+</figure>
 </div>
-<table class="quarto-listing-table table">
-<thead>
-<tr>
-<th>
-<a class="sort" data-sort="listing-title-sort" onclick="if (this.classList.contains('sort-asc')) { this.classList.add('sort-desc'); this.classList.remove('sort-asc') } else { this.classList.add('sort-asc'); this.classList.remove('sort-desc')} return false;">Title</a>
-</th>
-</tr>
-</thead>
-<tbody class="list">
-<tr data-index="0" data-categories="PyTorch" data-listing-date-sort="1727740800000" data-listing-file-modified-sort="1731713258362" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1988" data-listing-title-sort="ML Algorithms in Numpy and PyTorch" data-listing-filename-sort="ml-algos-numpy-torch.ipynb">
-<td>
-<a href="./notes/ml-algos-numpy-torch.html" class="title listing-title">ML Algorithms in Numpy and PyTorch</a>
-</td>
-</tr>
-<tr data-index="1" data-categories="Programming" data-listing-date-sort="1725148800000" data-listing-file-modified-sort="1731713258354" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2053" data-listing-title-sort="FastAPI notes" data-listing-filename-sort="FastAPI.ipynb">
-<td>
-<a href="./notes/FastAPI.html" class="title listing-title">FastAPI notes</a>
-</td>
-</tr>
-<tr data-index="2" data-categories="PyTorch" data-listing-date-sort="1725148800000" data-listing-file-modified-sort="1731713258358" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="227" data-listing-title-sort="LLMs/PyTorch Basics and Recipes" data-listing-filename-sort="LlmBasicsAndRecipes.ipynb">
-<td>
-<a href="./notes/LlmBasicsAndRecipes.html" class="title listing-title">LLMs/PyTorch Basics and Recipes</a>
-</td>
-</tr>
-<tr data-index="3" data-categories="Linux" data-listing-date-sort="1725148800000" data-listing-file-modified-sort="1731713258358" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="125" data-listing-title-sort="Linux notes" data-listing-filename-sort="Linux.ipynb">
-<td>
-<a href="./notes/Linux.html" class="title listing-title">Linux notes</a>
-</td>
-</tr>
-<tr data-index="4" data-categories="Programming" data-listing-date-sort="1722470400000" data-listing-file-modified-sort="1731713258354" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="888" data-listing-title-sort="Docker notes" data-listing-filename-sort="Docker.ipynb">
-<td>
-<a href="./notes/Docker/Docker.html" class="title listing-title">Docker notes</a>
-</td>
-</tr>
-<tr data-index="5" data-categories="PyTorch" data-listing-date-sort="1704067200000" data-listing-file-modified-sort="1731713258358" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="856" data-listing-title-sort="Implementing DBSCAN" data-listing-filename-sort="ImplementingDbscan.ipynb">
-<td>
-<a href="./notes/ImplementingDbscan.html" class="title listing-title">Implementing DBSCAN</a>
-</td>
-</tr>
-<tr data-index="6" data-categories="PyTorch" data-listing-date-sort="1704067200000" data-listing-file-modified-sort="1731713258338" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1082" data-listing-title-sort="Speeding up matrix multiplication ~ 5 million times" data-listing-filename-sort="AcceleratingMatrixMultiplication.ipynb">
-<td>
-<a href="./notes/AcceleratingMatrixMultiplication.html" class="title listing-title">Speeding up matrix multiplication ~ 5 million times</a>
-</td>
-</tr>
-<tr data-index="7" data-categories="NNs" data-listing-date-sort="1696118400000" data-listing-file-modified-sort="1731713258346" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="14" data-listing-title-sort="Backpropagation from scratch" data-listing-filename-sort="Backprop.ipynb">
-<td>
-<a href="./notes/Backprop.html" class="title listing-title">Backpropagation from scratch</a>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+<ul>
+<li><p>The goal is to focus on sample efficiency and to use a handful of high quality examples to fine tune smaller LLMs on a database. The hope is that the models get used to domain-specific language, adhere better to SQLite standards, and generate SQL that would answer questions about the database with high accuracy. A database about exoplanets was chosen, but the process generalizes to text-to-SQL fine tuning on an arbitrary database.</p></li>
+<li><p>Data: A small custom dataset of 50 training examples and 10 validation examples was created based on https://www.kaggle.com/datasets/adityamishraml/nasaexoplanets/data. SQLite table exoplanets was made from the data, along with a reference_planets table made by inserting (name, mass) VALUES (‘Jupiter’, 1.898e27) and (name, mass) VALUES (‘Earth’, 5.972e24). The mass_wrt column in exoplanets maps to the mass column in reference_planets, allowing for more complex queries involving joins. The data is now available on Hugging Face Datasets at dpv/exoplanets-sql. See exo_to_sql.ipynb for some of the test functions developed: the goal is to test the queries by running them against the database and i.) recording the execution rate and ii.) obtaining the result accuracy for queries in the validation data set.</p></li>
+<li><p>Fine tuning premai-io/prem-1B-SQL: execution rate is 70-80% (up from 50%) and accuracy is around 30% (up from 10%) with premsql within 10 epochs/2 minutes of fine tuning all of the model weights in full precision. The big unknown is the exact the prompt format used by premsql, which I could not exactly determine. Perhaps fixing this could lead to much better results. See notebook Fine_tune_premsql.ipynb for details.</p></li>
+<li><p>Fine tuning meta-llama/Llama-3.2-3B-Instruct with LoRA: execution rate starts at 80-90% percent for the original model, but the results are not accurate (no full matches, but did not investigate close matches). Fine tuning on the exoplanets data set took less than 2 minutes and still results in a 90% execution rate but now also a result accuracy of 70% (with affordances granted to differences in column names/multiple ways to interpret one of the questions). In addition, the original model with weights in full precision took over 6.5 minutes to generate 10 queries whereas the fine tuned LoRA version took 12 seconds per 10 queries. See notebook Fine_tune_llama3.ipynb for details.</p></li>
+<li><p>meta-llama/Llama-3.2-3B-Instruct full fine tune: Full fine tune trained stably but did not markedly improve results. Interestingly, ‘INTERVAL’ was still used in generated query after 15 epochs, but not after 25 epochs of fine tuning. This suggests that doing stage 1 SQLite fine tune and longer training are possible substitutes. See Fine_tune_llama3_fullft.ipynb.</p></li>
+<li><p>meta-llama/Llama-3.1-8B-Instruct LoRA fine tune: As expected, the larger model was more accurate than smaller ones out of the box (getting 40% accuracy prior to fine tuning). LoRA fine tune of meta-llama/Llama-3.1-8B-Instruct for 20 epochs led to 50% execution accuracy and about 70% ‘fuzzy match’ accuracy (which gives affordances to differing column names and other minor differences), see Fine_tune_llama3_8b_longer_train.ipynb.</p></li>
+</ul>
+<p>Additional training with extra data and other observations:</p>
+<ul>
+<li><p>After identifying the validation examples that have proven to be the most difficult, I generated 10 more examples of a type resembling (but not too similar to) those examples. See https://huggingface.co/datasets/dpv/exoplanets-sql2 for data where these examples were added to the training set. As the rest of the approach, this runs the risk of overfitting to the validation set, of course. While in production it would be necessary to have a dedicated test set to rule this out, the approach nonetheless offers a path forward. With these examples, meta-llama/Llama-3.2-3B-Instruct fine tuned with LoRA gave similar performance, but DoRA yielded 100% execution rate and 80% accuracy (with affordances given to column name differences, for example). See Fine_tune_llama3_dora_extra10.ipynb. Additional possibility is to first fine tune the model on SQLite data (such as umesh16071973/SQLite_Training_Dataset from Hugging Face), yet it appears that even with a handful of examples, the model almost never makes mistakes in regards to using the correct SQL dialect.</p></li>
+<li><p><a href="https://github.com/dapopov-st/sql-finetune/">GitHub link</a></p></li>
+</ul>
+
+
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

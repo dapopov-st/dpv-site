@@ -27,6 +27,7 @@
   {
     "listing": "/projects.html",
     "items": [
+      "/projects/indiv_projects/sql-finetune/sql-finetune.html",
       "/projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
       "/projects/indiv_projects/project-bird/project-bird.html",
       "/projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
