@@ -614,7 +614,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 </section>
 </section>
-<section id="hugging-face" class="level2">
+<section id="hugging-face" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="hugging-face">Hugging Face</h2>
 <section id="tokenizer" class="level3">
 <h3 class="anchored" data-anchor-id="tokenizer">Tokenizer</h3>
@@ -724,8 +724,328 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb11-97"><a href="#cb11-97" aria-hidden="true" tabindex="-1"></a>pipe <span class="op">=</span> pipeline(task<span class="op">=</span><span class="st">"text-generation"</span>, model<span class="op">=</span>merged_model, tokenizer<span class="op">=</span>tokenizer)</span>
 <span id="cb11-98"><a href="#cb11-98" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(pipe(prompt)[<span class="dv">0</span>][<span class="st">"generated_text"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="accelerate-and-distributed-training" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="accelerate-and-distributed-training">Accelerate and Distributed Training</h3>
+<ul>
+<li>Notes below are based on <a href="https://parlance-labs.com/education/fine_tuning_course/workshop_2.html">Zack Mueller’s</a> talk</li>
+<li>Distributed Data Parallelism (DDP): full copy of the model exists on every device, but data is chunked between each GPU.</li>
+<li>Fully Sharded Data Parallelism (FSDP) &amp; Deepspeed (DS): Model and optimizer states are split across GPUs -&gt; Two GPUs act as a ‘single GPU’ for model training.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="LlmBasicsAndRecipes_files/figure-html/cell-35-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<ul>
+<li>sharding_strategy
+<ul>
+<li>FULL_SHARD: optimizer state, gradients, and parameters are sharded</li>
+<li>SHARD_GRAD_OP: shards optimizer states and gradients; model is split during forward pass, joined during backward pass. Reduces training vRAM a little.</li>
+<li>NO_SHARD: Normal DDP</li>
+<li>HYBRID_SHARD: includes optimizer states, gradients, and parameters but each node has the full model. Reduces multi-node communication.</li>
+</ul></li>
+<li>offload_params
+<ul>
+<li><code>fsdp_offload_params</code> allows gradients and model parameters to be offloaded into RAM. Can train much bigger model, but can be very slow.</li>
+</ul></li>
+<li>See https://huggingface.co/docs/accelerate/en/usage_guides/explore for script and config pairings for various settings.</li>
+</ul>
+<section id="main-commands-in-the-cli-interface" class="level4">
+<h4 class="anchored" data-anchor-id="main-commands-in-the-cli-interface">Main commands in the CLI interface</h4>
+<ul>
+<li><code>accelerate config</code>: configure the environment</li>
+<li><code>accelerate estimate-memory</code>: estimate vRAM requirements</li>
+<li><code>accelerate launch</code>: launch the script</li>
+</ul>
+</section>
+<section id="main-basic-script-modifications" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="main-basic-script-modifications">Main basic script modifications:</h4>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="LlmBasicsAndRecipes_files/figure-html/cell-40-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<div id="cell-41" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer, AutoModelForCausalLM</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> accelerate <span class="im">import</span> Accelerator <span class="co">#1 Import Accelerator</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AdamW</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>accelerator <span class="op">=</span> Accelerator() <span class="co">#2 Initialize the Accelerator</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> load_dataset(..., split<span class="op">=</span><span class="st">'train'</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>model_name <span class="op">=</span> ...</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> ...</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> ...</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>tokenized_dataset <span class="op">=</span> ...</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>train_dataloader <span class="op">=</span> ...</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="co">#3 Prepare everything with Accelerator</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>model, optimizer, train_dataloader <span class="op">=</span> accelerator.prepare(</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    AdamW(model.parameters(), lr<span class="op">=</span><span class="fl">5e-5</span>),</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    train_dataloader</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="co">#4 Training loop with accelerator.backward</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>model.train()</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">4</span>):</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> batch <span class="kw">in</span> tqdm(train_dataloader, desc<span class="op">=</span><span class="ss">f"Epoch </span><span class="sc">{</span>epoch<span class="sc">}</span><span class="ss">"</span>):</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>        outputs <span class="op">=</span> model(<span class="op">**</span>batch)</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> outputs.loss</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        accelerator.backward(loss) <span class="co">#4</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>        optimizer.zero_grad()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="register-for-checkpointing" class="level4">
+<h4 class="anchored" data-anchor-id="register-for-checkpointing">Register for checkpointing:</h4>
+<div id="cell-43" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> accelerate <span class="im">import</span> Accelerator</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>accelerator <span class="op">=</span> Accelerator(project_dir<span class="op">=</span><span class="st">"my/save/path"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>my_scheduler <span class="op">=</span> torch.optim.lr_scheduler.StepLR(my_optimizer, step_size<span class="op">=</span><span class="dv">1</span>, gamma<span class="op">=</span><span class="fl">0.99</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>my_model, my_optimizer, my_training_dataloader <span class="op">=</span> accelerator.prepare(my_model, my_optimizer, my_training_dataloader)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Register the model, optimizer, and LR scheduler for checkpointing</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>accelerator.register_for_checkpointing(my_model)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>accelerator.register_for_checkpointing(my_optimizer)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>accelerator.register_for_checkpointing(my_scheduler)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if a checkpoint exists and load it</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>checkpoint_dir <span class="op">=</span> <span class="st">"my/save/path/checkpointing/checkpoint_0"</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> os.path.exists(checkpoint_dir):</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    accelerator.load_state(checkpoint_dir)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Loaded checkpoint from </span><span class="sc">{</span>checkpoint_dir<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"No checkpoint found, starting from scratch"</span>)</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> accelerator.device</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>my_model.to(device)</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform training</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> batch <span class="kw">in</span> my_training_dataloader:</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>        my_optimizer.zero_grad()</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>        inputs, targets <span class="op">=</span> batch</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>        inputs <span class="op">=</span> inputs.to(device)</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>        targets <span class="op">=</span> targets.to(device)</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        outputs <span class="op">=</span> my_model(inputs)</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> my_loss_function(outputs, targets)</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>        accelerator.backward(loss)</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>        my_optimizer.step()</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>    my_scheduler.step()</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Save checkpoint at the end of each epoch</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> accelerator.is_main_process:</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        accelerator.save_state()</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Saved checkpoint at end of epoch </span><span class="sc">{</span>epoch <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the final model</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> accelerator.is_main_process:</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>    unwrapped_model <span class="op">=</span> accelerator.unwrap_model(my_model)</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    unwrapped_model.save_pretrained(<span class="st">"trained_model"</span>)</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>    tokenizer.save_pretrained(<span class="st">"trained_model"</span>)</span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>accelerator.wait_for_everyone()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>Basic script is below. Run it with <code>accelerate launch train.py</code>.</li>
+</ul>
+<div id="cell-45" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> argparse</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> (</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    AutoTokenizer,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    AutoModelForCausalLM,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    get_linear_schedule_with_warmup,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    AdamW,</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> accelerate <span class="im">import</span> Accelerator</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> main():</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Parse command-line arguments</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    parser <span class="op">=</span> argparse.ArgumentParser()</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    parser.add_argument(<span class="st">"--model_name"</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">str</span>, default<span class="op">=</span><span class="st">"gpt2"</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"Model name or path"</span>)</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    parser.add_argument(<span class="st">"--dataset_name"</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">str</span>, default<span class="op">=</span><span class="st">"wikitext"</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"Dataset name"</span>)</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    parser.add_argument(<span class="st">"--dataset_config"</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">str</span>, default<span class="op">=</span><span class="st">"wikitext-2-raw-v1"</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"Dataset config"</span>)</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    parser.add_argument(<span class="st">"--per_device_train_batch_size"</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">4</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"Batch size per device"</span>)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    parser.add_argument(<span class="st">"--num_train_epochs"</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">1</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"Number of training epochs"</span>)</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    args <span class="op">=</span> parser.parse_args()</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize Accelerator</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    accelerator <span class="op">=</span> Accelerator()</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    device <span class="op">=</span> accelerator.device</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load the tokenizer and model</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>    tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(args.model_name)</span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> tokenizer.pad_token <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>        tokenizer.pad_token <span class="op">=</span> tokenizer.eos_token  <span class="co"># Set pad_token to eos_token if not already set</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> AutoModelForCausalLM.from_pretrained(args.model_name)</span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>    model.to(device)</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load and preprocess the dataset</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>    raw_datasets <span class="op">=</span> load_dataset(args.dataset_name, args.dataset_config, split<span class="op">=</span><span class="st">"train"</span>)</span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> tokenize_function(examples):</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> tokenizer(examples[<span class="st">"text"</span>], truncation<span class="op">=</span><span class="va">True</span>, padding<span class="op">=</span><span class="st">"max_length"</span>, max_length<span class="op">=</span><span class="dv">128</span>)</span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>    tokenized_datasets <span class="op">=</span> raw_datasets.<span class="bu">map</span>(tokenize_function, batched<span class="op">=</span><span class="va">True</span>, remove_columns<span class="op">=</span>[<span class="st">"text"</span>])</span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>    tokenized_datasets.set_format(<span class="bu">type</span><span class="op">=</span><span class="st">"torch"</span>, columns<span class="op">=</span>[<span class="st">"input_ids"</span>, <span class="st">"attention_mask"</span>])</span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create DataLoader</span></span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>    train_dataloader <span class="op">=</span> DataLoader(tokenized_datasets, shuffle<span class="op">=</span><span class="va">True</span>, batch_size<span class="op">=</span>args.per_device_train_batch_size)</span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Prepare optimizer and scheduler</span></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>    optimizer <span class="op">=</span> AdamW(model.parameters(), lr<span class="op">=</span><span class="fl">5e-5</span>)</span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a>    num_update_steps_per_epoch <span class="op">=</span> <span class="bu">len</span>(train_dataloader)</span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>    max_train_steps <span class="op">=</span> args.num_train_epochs <span class="op">*</span> num_update_steps_per_epoch</span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a>    lr_scheduler <span class="op">=</span> get_linear_schedule_with_warmup(</span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>        optimizer, num_warmup_steps<span class="op">=</span><span class="dv">0</span>, num_training_steps<span class="op">=</span>max_train_steps</span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Prepare everything with Accelerator</span></span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a>    model, optimizer, train_dataloader, lr_scheduler <span class="op">=</span> accelerator.prepare(</span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a>        model, optimizer, train_dataloader, lr_scheduler</span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Training loop</span></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a>    model.train()</span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a>    progress_bar <span class="op">=</span> tqdm(<span class="bu">range</span>(max_train_steps), disable<span class="op">=</span><span class="kw">not</span> accelerator.is_local_main_process)</span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(args.num_train_epochs):</span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> step, batch <span class="kw">in</span> <span class="bu">enumerate</span>(train_dataloader):</span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a>            outputs <span class="op">=</span> model(<span class="op">**</span>batch, labels<span class="op">=</span>batch[<span class="st">"input_ids"</span>])</span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> outputs.loss</span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a>            accelerator.backward(loss)</span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a>            optimizer.step()</span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a>            lr_scheduler.step()</span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a>            optimizer.zero_grad()</span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a>            progress_bar.update(<span class="dv">1</span>)</span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> step <span class="op">%</span> <span class="dv">100</span> <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> accelerator.is_local_main_process:</span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a>                <span class="bu">print</span>(<span class="ss">f"Epoch </span><span class="sc">{</span>epoch<span class="sc">}</span><span class="ss">, Step </span><span class="sc">{</span>step<span class="sc">}</span><span class="ss">, Loss: </span><span class="sc">{</span>loss<span class="sc">.</span>detach()<span class="sc">.</span>item()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Save the model (only on the main process)</span></span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> accelerator.is_main_process:</span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a>        model.save_pretrained(<span class="st">"trained_model"</span>)</span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a>        tokenizer.save_pretrained(<span class="st">"trained_model"</span>)</span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a>    main()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="using-accelerate-config" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="using-accelerate-config">Using <code>accelerate config</code>:</h4>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="LlmBasicsAndRecipes_files/figure-html/cell-47-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<ul>
+<li>The yaml config will end up looking as follows:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="LlmBasicsAndRecipes_files/figure-html/cell-49-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<ul>
+<li>Basic DDP vs FSDP configs, will be used by <code>accelerate launch</code>:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="LlmBasicsAndRecipes_files/figure-html/cell-51-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+</section>
+<section id="logging-with-accelerate" class="level4">
+<h4 class="anchored" data-anchor-id="logging-with-accelerate">Logging with <code>accelerate</code>:</h4>
+<div id="cell-53" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> accelerate <span class="im">import</span> Accelerator</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>accelerator <span class="op">=</span> Accelerator(log_with<span class="op">=</span><span class="st">"all"</span>) <span class="co"># log_with='wandb'</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>config <span class="op">=</span> {</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"num_iterations"</span>: <span class="dv">5</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"learning_rate"</span>: <span class="fl">1e-2</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"loss_function"</span>: <span class="bu">str</span>(my_loss_function),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>accelerator.init_trackers(<span class="st">"example_project"</span>, config<span class="op">=</span>config)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>my_model, my_optimizer, my_training_dataloader <span class="op">=</span> accelerate.prepare(my_model, my_optimizer, my_training_dataloader)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> accelerator.device</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>my_model.to(device)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> iteration <span class="kw">in</span> config[<span class="st">"num_iterations"</span>]:</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> step, batch <span class="kw">in</span> my_training_dataloader:</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        my_optimizer.zero_grad()</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        inputs, targets <span class="op">=</span> batch</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>        inputs <span class="op">=</span> inputs.to(device)</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        targets <span class="op">=</span> targets.to(device)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        outputs <span class="op">=</span> my_model(inputs)</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> my_loss_function(outputs, targets)</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>        accelerator.backward(loss)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>        my_optimizer.step()</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>        accelerator.log({<span class="st">"training_loss"</span>: loss}, step<span class="op">=</span>step)</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>accelerator.end_training()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="handling-cuda-out-of-memory-with-find_executable_batch_size" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="handling-cuda-out-of-memory-with-find_executable_batch_size">Handling CUDA Out-of-Memory with <code>find_executable_batch_size</code></h4>
+<div id="cell-55" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> training_function(args):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    accelerator <span class="op">=</span> Accelerator()</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="op">+</span>   <span class="op">@</span>find_executable_batch_size(starting_batch_size<span class="op">=</span>args.batch_size)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="op">+</span>   <span class="kw">def</span> inner_training_loop(batch_size):</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="op">+</span>       <span class="kw">nonlocal</span> accelerator <span class="co"># Ensure they can be used in our context</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="op">+</span>       accelerator.free_memory() <span class="co"># Free all lingering references</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> get_model()</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>        model.to(accelerator.device)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        optimizer <span class="op">=</span> get_optimizer()</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        train_dataloader, eval_dataloader <span class="op">=</span> get_dataloaders(accelerator, batch_size)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        lr_scheduler <span class="op">=</span> get_scheduler(</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>            optimizer, </span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>            num_training_steps<span class="op">=</span><span class="bu">len</span>(train_dataloader)<span class="op">*</span>num_epochs</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        model, optimizer, train_dataloader, eval_dataloader, lr_scheduler <span class="op">=</span> accelerator.prepare(</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>            model, optimizer, train_dataloader, eval_dataloader, lr_scheduler</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        train(model, optimizer, train_dataloader, lr_scheduler)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        validate(model, eval_dataloader)</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="op">+</span>   inner_training_loop()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="LlmBasicsAndRecipes_files/figure-html/cell-56-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="LlmBasicsAndRecipes_files/figure-html/cell-57-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
 
 
+</section>
 </section>
 </section>
 
