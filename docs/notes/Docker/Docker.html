@@ -486,6 +486,75 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>COPY –from=builder /src/node_modules/ /app/node_modules/</strong>: Copies the <code>node_modules</code> directory from the <code>builder</code> stage to the <code>/app</code> directory in the final image. This ensures that the final image contains the necessary runtime dependencies without including the entire build context.</li>
 </ul>
 <p>By using these commands, the Dockerfile ensures that the final image is clean and contains only the necessary files to run the application, while keeping the build process and dependencies separate.</p>
+<ul>
+<li>Example of ‘refactoring’ Dockerfile from ~500MB -&gt; ~17MB on Linux.</li>
+</ul>
+<div id="cell-41" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>FROM diamol<span class="op">/</span>golang </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>WORKDIR web</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>COPY index.html .</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>COPY main.go .</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>RUN go build <span class="op">-</span>o <span class="op">/</span>web<span class="op">/</span>server</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>RUN chmod <span class="op">+</span>x <span class="op">/</span>web<span class="op">/</span>server</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>CMD [<span class="st">"/web/server"</span>]</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>ENV USER<span class="op">=</span>sixeyed</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>EXPOSE <span class="dv">80</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>The image built with this file includes the go compiler and other unnecessary build tools. In addition, any time we change index.html or anything prior to the RUN commands, the entire application will be rebuilt since RUN commands are in layers following these changes. The final-stage second image will not contain the build tools and if we change index.html, only the final layer will be rebuilt since others will come from cache.</li>
+</ul>
+<div id="cell-43" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>FROM diamol<span class="op">/</span>golang AS builder</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>COPY main.go .</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>RUN go build <span class="op">-</span>o <span class="op">/</span>server</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>RUN chmod <span class="op">+</span>x <span class="op">/</span>server</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># app</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>FROM diamol<span class="op">/</span>base</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>EXPOSE <span class="dv">80</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>CMD [<span class="st">"/web/server"</span>]</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>ENV USER<span class="op">=</span><span class="st">"sixeyed"</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>WORKDIR web</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>COPY <span class="op">--</span><span class="im">from</span><span class="op">=</span>builder <span class="op">/</span>server .</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>COPY index.html .</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="ch.-5-sharing-images-with-docker-hub-and-other-registries" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="ch.-5-sharing-images-with-docker-hub-and-other-registries">Ch. 5: Sharing images with Docker Hub and other registries</h3>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Docker_files/figure-html/cell-45-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<ul>
+<li>Pushing images to Docker Hub:
+<ul>
+<li>Set dockerId environment variable: <code>export dockerId="my-docker-id"</code> (used to log in to Docker Hub)</li>
+<li><code>docker login --username $dockerId</code></li>
+<li><code>docker image tag image-gallery $dockerId/image-gallery:v1</code> (note that tagging an image built locally will not rebuild the image, will just make another reference to the same image)</li>
+<li><code>docker image push $dockerId/image-gallery:v1</code></li>
+</ul></li>
+<li>Note that free version of Docker Hub only supports public repositories.</li>
+</ul>
+</section>
+<section id="other-notes" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="other-notes">Other Notes</h3>
+<ul>
+<li>Restarting docker service installed with snap:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Docker_files/figure-html/cell-54-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
 
 
 </section>
