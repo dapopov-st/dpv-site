@@ -555,6 +555,194 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <figcaption class="margin-caption">image.png</figcaption>
 </figure>
 </div>
+<section id="docker-under-the-hood-containerd---kernel-namespaces-cgroups-system-processes" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="docker-under-the-hood-containerd---kernel-namespaces-cgroups-system-processes">Docker under the hood: containerd -&gt; Kernel (Namespaces, Cgroups, system processes)</h4>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Docker_files/figure-html/cell-56-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="Docker_files/figure-html/cell-57-1-image.png" class="img-fluid figure-img"></p>
+<figcaption class="margin-caption">image.png</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="understanding-namespaces-and-cgroups-in-containerd" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-namespaces-and-cgroups-in-containerd">Understanding Namespaces and cgroups in <code>containerd</code></h3>
+<p><strong><code>containerd</code></strong> leverages Linux kernel features, specifically <strong>Namespaces</strong> and <strong>cgroups (control groups)</strong>, to provide container isolation and resource management. These technologies are fundamental to how containers operate securely and efficiently on a host system.</p>
+<hr>
+<section id="namespaces" class="level4">
+<h4 class="anchored" data-anchor-id="namespaces">1. <strong>Namespaces</strong></h4>
+<p><strong>Namespaces</strong> provide isolation for various system resources, ensuring that processes within a container are separated from those in other containers and the host system. Each namespace type isolates a specific resource.</p>
+<section id="types-of-namespaces-used-by-containerd" class="level5">
+<h5 class="anchored" data-anchor-id="types-of-namespaces-used-by-containerd"><strong>Types of Namespaces Used by <code>containerd</code>:</strong></h5>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 83%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Namespace Type</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>PID Namespace</strong></td>
+<td>Isolates the process IDs, so processes inside the container cannot see or interact with processes outside.</td>
+</tr>
+<tr class="even">
+<td><strong>NET Namespace</strong></td>
+<td>Isolates networking resources like network interfaces, IP addresses, and routing tables.</td>
+</tr>
+<tr class="odd">
+<td><strong>IPC Namespace</strong></td>
+<td>Isolates inter-process communication resources, such as shared memory and semaphores.</td>
+</tr>
+<tr class="even">
+<td><strong>UTS Namespace</strong></td>
+<td>Isolates hostname and domain name settings, allowing containers to have their own hostname.</td>
+</tr>
+<tr class="odd">
+<td><strong>MNT Namespace</strong></td>
+<td>Isolates mount points, ensuring the container has its own filesystem hierarchy.</td>
+</tr>
+<tr class="even">
+<td><strong>USER Namespace</strong></td>
+<td>Isolates user and group IDs, allowing containers to have a different set of user privileges.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="how-containerd-uses-namespaces" class="level5">
+<h5 class="anchored" data-anchor-id="how-containerd-uses-namespaces"><strong>How <code>containerd</code> Uses Namespaces:</strong></h5>
+<ul>
+<li><strong>Process Isolation</strong>: Ensures that container processes run independently without interfering with host or other container processes.</li>
+<li><strong>Network Isolation</strong>: Allows containers to have separate networking stacks, enabling features like port mapping and virtual networks.</li>
+<li><strong>Filesystem Isolation</strong>: Provides containers with their own root filesystem, preventing unauthorized access to the host filesystem.</li>
+<li><strong>Security</strong>: Enhances security by limiting the visibility and accessibility of system resources to containers.</li>
+</ul>
+</section>
+<section id="example-pid-namespace-isolation" class="level5">
+<h5 class="anchored" data-anchor-id="example-pid-namespace-isolation"><strong>Example: PID Namespace Isolation</strong></h5>
+<div class="sourceCode" id="cb14"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># On the host</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ps</span> aux</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Inside a container</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ps</span> aux</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># The container only sees its own processes, not those on the host.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+</section>
+</section>
+<section id="cgroups-control-groups" class="level4">
+<h4 class="anchored" data-anchor-id="cgroups-control-groups">2. <strong>cgroups (Control Groups)</strong></h4>
+<p><strong>cgroups</strong> manage and limit the resources (CPU, memory, disk I/O, network) that containers can consume. They ensure that containers operate within defined resource boundaries, preventing any single container from monopolizing system resources.</p>
+<section id="key-features-of-cgroups" class="level5">
+<h5 class="anchored" data-anchor-id="key-features-of-cgroups"><strong>Key Features of cgroups:</strong></h5>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 80%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Feature</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Resource Limiting</strong></td>
+<td>Sets maximum resource usage (e.g., CPU shares, memory limits) for containers.</td>
+</tr>
+<tr class="even">
+<td><strong>Prioritization</strong></td>
+<td>Allocates resources based on priority, ensuring critical containers receive necessary resources.</td>
+</tr>
+<tr class="odd">
+<td><strong>Accounting</strong></td>
+<td>Monitors and tracks resource usage by containers for reporting and analysis.</td>
+</tr>
+<tr class="even">
+<td><strong>Control</strong></td>
+<td>Provides mechanisms to freeze, resume, or modify resource allocations of running containers.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="how-containerd-uses-cgroups" class="level5">
+<h5 class="anchored" data-anchor-id="how-containerd-uses-cgroups"><strong>How <code>containerd</code> Uses cgroups:</strong></h5>
+<ul>
+<li><strong>Resource Allocation</strong>: Defines limits on CPU, memory, and other resources for each container to ensure fair distribution.</li>
+<li><strong>Performance Management</strong>: Prevents resource overuse by containers, maintaining overall system stability and performance.</li>
+<li><strong>Scalability</strong>: Enables efficient scaling of containers by managing resource distribution dynamically based on container demands.</li>
+</ul>
+</section>
+<section id="example-memory-limiting-with-cgroups" class="level5">
+<h5 class="anchored" data-anchor-id="example-memory-limiting-with-cgroups"><strong>Example: Memory Limiting with cgroups</strong></h5>
+<div class="sourceCode" id="cb15"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a memory limit for a container</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> limited-container <span class="at">--memory</span><span class="op">=</span><span class="st">"256m"</span> nginx</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify the memory limit using cgroups</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> /sys/fs/cgroup/memory/docker/<span class="op">&lt;</span>container-id<span class="op">&gt;</span>/memory.limit_in_bytes</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Output: 268435456 (256MB)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+</section>
+</section>
+<section id="integration-of-namespaces-and-cgroups-in-containerd" class="level4">
+<h4 class="anchored" data-anchor-id="integration-of-namespaces-and-cgroups-in-containerd">3. <strong>Integration of Namespaces and cgroups in <code>containerd</code></strong></h4>
+<p><strong><code>containerd</code></strong> orchestrates the creation and management of both Namespaces and cgroups to ensure containers are isolated and resource-constrained appropriately.</p>
+<section id="workflow-overview" class="level5">
+<h5 class="anchored" data-anchor-id="workflow-overview"><strong>Workflow Overview:</strong></h5>
+<ol type="1">
+<li><strong>Container Creation</strong>:
+<ul>
+<li><code>containerd</code> initiates the creation of a container using the specified image.</li>
+</ul></li>
+<li><strong>Namespace Setup</strong>:
+<ul>
+<li>Allocates and configures appropriate namespaces to isolate the container’s environment.</li>
+</ul></li>
+<li><strong>cgroups Configuration</strong>:
+<ul>
+<li>Assigns the container to specific cgroups with defined resource limits.</li>
+</ul></li>
+<li><strong>Process Execution</strong>:
+<ul>
+<li>Launches the container’s main process within the isolated namespaces and under the resource constraints of the cgroups.</li>
+</ul></li>
+<li><strong>Monitoring and Management</strong>:
+<ul>
+<li>Continuously monitors resource usage and enforces cgroup limits.</li>
+<li>Manages the lifecycle of the container, including starting, stopping, and deletion.</li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="benefits-of-using-namespaces-and-cgroups-with-containerd" class="level4">
+<h4 class="anchored" data-anchor-id="benefits-of-using-namespaces-and-cgroups-with-containerd">4. <strong>Benefits of Using Namespaces and cgroups with <code>containerd</code></strong></h4>
+<ul>
+<li><strong>Isolation</strong>: Ensures containers run securely and independently without affecting each other or the host system.</li>
+<li><strong>Resource Efficiency</strong>: Optimizes resource usage by enforcing limits and preventing overconsumption.</li>
+<li><strong>Scalability</strong>: Facilitates the deployment of multiple containers on a single host by managing resource distribution effectively.</li>
+<li><strong>Security</strong>: Enhances security by restricting containers’ access to system resources and isolating their environments.</li>
+<li><strong>Performance</strong>: Maintains system stability and performance by preventing resource contention among containers.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="summary-1" class="level3">
+<h3 class="anchored" data-anchor-id="summary-1">Summary</h3>
+<ul>
+<li><strong>Namespaces</strong>: Provide isolation for container processes by segregating various system resources, ensuring containers operate independently and securely.</li>
+<li><strong>cgroups</strong>: Manage and limit resource usage for containers, maintaining system stability and efficient resource distribution.</li>
+<li><strong><code>containerd</code></strong>: Utilizes both Namespaces and cgroups to orchestrate container lifecycles, ensuring isolation, security, and resource management.</li>
+</ul>
 
 
 </section>
