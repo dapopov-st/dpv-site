@@ -211,10 +211,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="batch-normalization">Batch Normalization</h3>
 <ul>
 <li>If affine, initialize gamma and beta</li>
-<li>Initialize running mean and variance buffers</li>
+<li>Initialize running mean and variance buffers. Note: For variance, set <code>unbiased=False</code>. This is because the biased estimator (dividing by N instead of N-1 in the variance formula) is MLE estimator of variance under iid and normally distributed assumptions. Also, the data will be normalized consistently even if batch size is 1.</li>
 <li>Get mean/var over nonchannel dimensions</li>
 <li>Update running mean and variance statistics using momentum running average without tracking gradients</li>
-<li>If training, use the computed mean/var; else use running mean/var</li>
+<li>If training, use the computed mean/var; else use running mean/var. Thus the running mean/var are computed on the fly for <em>inference</em> only.</li>
 <li>Normalize the input</li>
 <li>Apply gamma and beta if they’re there (affine)</li>
 <li>Return normalized input</li>
@@ -259,34 +259,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>            <span class="co"># During inference, we use the running statistics</span></span>
 <span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>            mean <span class="op">=</span> <span class="va">self</span>.running_mean.view(<span class="dv">1</span>, <span class="va">self</span>.num_features, <span class="dv">1</span>, <span class="dv">1</span>)</span>
 <span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>            var <span class="op">=</span> <span class="va">self</span>.running_var.view(<span class="dv">1</span>, <span class="va">self</span>.num_features, <span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Normalize the input</span></span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        x_normalized <span class="op">=</span> (x <span class="op">-</span> mean) <span class="op">/</span> torch.sqrt(var <span class="op">+</span> <span class="va">self</span>.eps)</span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Apply the affine transformation (scaling and shifting)</span></span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.gamma <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="va">self</span>.beta <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>            x_normalized <span class="op">=</span> <span class="va">self</span>.gamma.view(<span class="dv">1</span>, <span class="va">self</span>.num_features, <span class="dv">1</span>, <span class="dv">1</span>) <span class="op">*</span> x_normalized <span class="op">+</span> <span class="va">self</span>.beta.view(<span class="dv">1</span>, <span class="va">self</span>.num_features, <span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x_normalized</span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>            <span class="co"># mean = self.running_mean[None, :, None, None] # Alternatively...</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>            <span class="co"># var = self.running_var[None, :, None, None]</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Normalize the input</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        x_normalized <span class="op">=</span> (x <span class="op">-</span> mean) <span class="op">/</span> torch.sqrt(var <span class="op">+</span> <span class="va">self</span>.eps)</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Apply the affine transformation (scaling and shifting)</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.gamma <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="va">self</span>.beta <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>            x_normalized <span class="op">=</span> <span class="va">self</span>.gamma.view(<span class="dv">1</span>, <span class="va">self</span>.num_features, <span class="dv">1</span>, <span class="dv">1</span>) <span class="op">*</span> x_normalized <span class="op">+</span> <span class="va">self</span>.beta.view(<span class="dv">1</span>, <span class="va">self</span>.num_features, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>            <span class="co">#x_normalized = self.gamma[None, :, None, None] * x_normalized + self.beta[None,:, None, None] # Alternatively</span></span>
 <span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Example usage</span></span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create random input with shape (batch_size, num_features, height, width)</span></span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> torch.randn(<span class="dv">32</span>, <span class="dv">64</span>, <span class="dv">28</span>, <span class="dv">28</span>)  <span class="co"># batch_size=32, num_features=64 (channels), height=28, width=28</span></span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Instantiate the BatchNorm2d layer</span></span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>    batch_norm <span class="op">=</span> BatchNorm2d(num_features<span class="op">=</span><span class="dv">64</span>)</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x_normalized</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="co"># Example usage</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create random input with shape (batch_size, num_features, height, width)</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> torch.randn(<span class="dv">32</span>, <span class="dv">64</span>, <span class="dv">28</span>, <span class="dv">28</span>)  <span class="co"># batch_size=32, num_features=64 (channels), height=28, width=28</span></span>
 <span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Forward pass through the batch norm layer</span></span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> batch_norm(x)</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Instantiate the BatchNorm2d layer</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>    batch_norm <span class="op">=</span> BatchNorm2d(num_features<span class="op">=</span><span class="dv">64</span>)</span>
 <span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Input shape: </span><span class="sc">{</span>x<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Output shape: </span><span class="sc">{</span>output<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Forward pass through the batch norm layer</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> batch_norm(x)</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Input shape: </span><span class="sc">{</span>x<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Output shape: </span><span class="sc">{</span>output<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li>Batch mean dimension: Input is of dimension (batch_size, channels, height, width). When PyTorch computes the mean over dim=(0,2,3), it keeps dim=1 (channel dimension) intact, collapses the batch dimension into 1 and height+width spacial dimensions into one. So with 64 channels, the shape of mean over dim=(0,2,3) will be (64=uncollapsed channel,1=collapsed bs,1=collapsed hxw). Will want to squeeze out the 1’s to get (64,)-shaped tensor.</li>
-<li>AK: In batch norm, examples in the batch are coupled mathematically. Activations will change depending on the given batch since mean and variance statistics would change. Interestingly, this turns out to be good due to a ‘regularizer’ effect: each individual example is ‘padded out’, making it harder for neural net to overfit on any specific example. Still, bugs can arise and other types of normalization have been proposed. Nonetheless, batch norm is often the most effective.</li>
+<li>AK: In batch norm, examples in the batch are coupled mathematically. Activations will change depending on the given batch since mean and variance statistics would change. Interestingly, this turns out to be good due to a ‘regularizer’ effect: each individual example is ‘padded out’, making it harder for neural net to overfit on any specific example. Still, bugs can arise and other types of normalization have been proposed. Nonetheless, batch norm is often the most effective.
+<ul>
+<li>For example, must be careful to always correctly place the model into training and eval mode with model.train() and model.eval().</li>
+<li>During transfer learning, will likely want to unfreeze the batch norm layers to allow them to adapt (requires_grad=True)</li>
+<li>If using distributed training, each replica computes BatchNorm statistics independently, possibly leading to discrepancies between single-device and multi-device training. Use nn.SyncBatchNorm.</li>
+</ul></li>
 </ul>
 </section>
 <section id="adam-optimizer" class="level3 page-columns page-full">
