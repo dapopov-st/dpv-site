@@ -651,22 +651,22 @@
     "text": "Dao, Tri, Daniel Y. Fu, Stefano Ermon, Atri Rudra, and Christopher Ré. “FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness.” arXiv preprint arXiv:2205.14135v2 (2022)."
   },
   {
-    "objectID": "blog/posts/linkedin/favorite_books_and_resources_2025.html",
-    "href": "blog/posts/linkedin/favorite_books_and_resources_2025.html",
+    "objectID": "blog/posts/linkedin/favorite_books_and_resources_2024.html",
+    "href": "blog/posts/linkedin/favorite_books_and_resources_2024.html",
     "title": "Favorite Books and Resources of 2024",
     "section": "",
     "text": "Favorite Books of 2024.png"
   },
   {
-    "objectID": "blog/posts/linkedin/favorite_books_and_resources_2025.html#books",
-    "href": "blog/posts/linkedin/favorite_books_and_resources_2025.html#books",
+    "objectID": "blog/posts/linkedin/favorite_books_and_resources_2024.html#books",
+    "href": "blog/posts/linkedin/favorite_books_and_resources_2024.html#books",
     "title": "Favorite Books and Resources of 2024",
     "section": "Books",
     "text": "Books\n\nLearn Docker in a Month of Lunches by Elton Stoneman\n\nThe answer to a question I’ve had over the years, namely, “How to learn Docker properly”. Not all of the chapters may be applicable to you (at least that was my case), but I think Parts I and IV of the book do a terrific job explaining the logic of Docker in just the right amount of depth, while the other parts dive deeper into various aspects that may be needed for certain projects. I’ve been feeling a lot more confident working with Docker since I’ve started spending time with this book.\n\n\n\nOfficial Google Cloud Certified Professional Machine Learning Engineer Study Guide by Mona Mona and Pratap Ramamurthy\n\nThis has been quite helpful for preparing for the exam along with lots of tinkering/projects on GCP. If you’re studying for the exam, I would suggest working through this book along with the accompanying practice exams and experimenting with whatever it covers that you don’t regularly use. The book is not updated to include LLMs (there were maybe 4 or 5 questions on these on the exam), which in my case was OK since I spend lots of time with them, but if you don’t, you’ll probably get most of what you need from Google’s official study path. Travis Webb’s post was also spot on regarding how to prepare for non-LLM topics.\n\n\n\nDesigning Machine Learning Systems by Chip Huyen\n\nA great book for all things related to ML in production as well as an enjoyable read.\n\n\n\nDeep Learning for Coders with fastai & PyTorch by Jeremy Howard and Sylvain Gugger\n\nProbably a classic on pre-transformers deep learning by now. While I’ve had this book for years, I found Part IV quite handy while working through fastai part 2 (see below). The questions at the end of each chapter are a phenomenal way to actively rehearse deep learning fundamentals.\n\n\n\nThe Joy of Clojure by Michael Fogus and Chris Houser\n\nA great diversion if you’re interested in functional programming and are looking for a fun read. Certainly haven’t had as much time to spend with this book as I wished, but got it because it’s also available on Audible, making it easier to occasionally tune in during road trips and such."
   },
   {
-    "objectID": "blog/posts/linkedin/favorite_books_and_resources_2025.html#courses",
-    "href": "blog/posts/linkedin/favorite_books_and_resources_2025.html#courses",
+    "objectID": "blog/posts/linkedin/favorite_books_and_resources_2024.html#courses",
+    "href": "blog/posts/linkedin/favorite_books_and_resources_2024.html#courses",
     "title": "Favorite Books and Resources of 2024",
     "section": "Courses",
     "text": "Courses\n\nHere are some of my favorite courses from ~2024. All of these courses/videos are now offered freely:\n\nfastai part 2 has been a great course for stable diffusion and brushing up on deep learning foundations.\n\nAndrej Karpathy’s GPT videos are phenomenal.\nParlance Labs’ course has been highly instructive for more advanced LLM topics.\n\nHarrison Chase has a great series of courses on LangChain offered freely through deeplearning.ai."
