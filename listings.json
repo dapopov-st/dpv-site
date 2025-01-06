@@ -4,8 +4,8 @@
     "items": [
       "/notes/ml-algos-numpy-torch.html",
       "/notes/Linux.html",
-      "/notes/LlmBasicsAndRecipes.html",
       "/notes/FastAPI.html",
+      "/notes/DL-and-LLMs-Basics.html",
       "/notes/Docker/Docker.html",
       "/notes/ImplementingDbscan.html",
       "/notes/AcceleratingMatrixMultiplication.html",
