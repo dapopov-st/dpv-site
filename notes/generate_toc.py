@@ -44,5 +44,5 @@ def generate_toc(notebook_path, toc_placeholder='<!-- TOC -->'):
 
 # Usage
 if __name__ == "__main__":
-    notebook_file = 'LlmBasicsAndRecipes.ipynb'  # Replace with your notebook file name
+    notebook_file = 'DL-and-LLMs-Basics.ipynb'  # Replace with your notebook file name
     generate_toc(notebook_file)

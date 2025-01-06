@@ -15,7 +15,7 @@
     "listing": "/notes.html",
     "items": [
       "/notes/ml-algos-numpy-torch.html",
-      "/notes/LlmBasicsAndRecipes.html",
+      "/notes/DL-and-LLMs-Basics.html",
       "/notes/Linux.html",
       "/notes/FastAPI.html",
       "/notes/Docker/Docker.html",
