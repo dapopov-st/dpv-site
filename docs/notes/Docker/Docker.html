@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-08-01">
+<meta name="dcterms.date" content="2024-09-01">
 <meta name="description" content="Docker notes">
 
 <title>Docker notes – Dmitriy Popov-Velasco</title>
@@ -185,7 +185,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 1, 2024</p>
+        <p class="date">September 1, 2024</p>
       </div>
     </div>
     
@@ -224,7 +224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <ul>
 <li><p>Anything below a changed line runs so it’s important to specify frequently-changing commands at the bottom of the file, non frequently used at the top. Reduces Docker runtime</p></li>
-<li><p>Each command creates a new <em>layer</em>. Keeping the number of layers as low as possible will keep image size down -&gt; Use &nbsp;as shown above for ENV and &amp;&amp; for RUN + follow install with multiple things to install</p></li>
+<li><p>Each command creates a new layer. Keeping the number of layers as low as possible will keep image size down -&gt; Use &nbsp;as shown above for ENV + double-and for RUN + follow install with multiple things to install</p></li>
 <li><p>Dockerfile definitions:</p></li>
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
@@ -286,7 +286,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>docker run <span class="op">-</span>it <span class="op">--</span>name my<span class="op">-</span>python<span class="op">-</span>app<span class="op">-</span>container <span class="op">-</span>v $(pwd):<span class="op">/</span>app my<span class="op">-</span>python<span class="op">-</span>app <span class="op">/</span><span class="bu">bin</span><span class="op">/</span>bash</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
-<li>Don’t forget to remove the container with <code>docker rm my-python-app-container</code>, or <em>better yet</em>, run with rm flag as below:</li>
+<li>Don’t forget to remove the container with <code>docker rm my-python-app-container</code>, or better yet, run with rm flag as below:</li>
 </ul>
 <div id="cell-20" class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
@@ -294,7 +294,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </section>
 <section id="following-learn-docker-in-a-month-of-lunches-by-elton-stoneman" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="following-learn-docker-in-a-month-of-lunches-by-elton-stoneman">Following <em>Learn Docker in a Month of Lunches</em> by Elton Stoneman</h2>
+<h2 class="anchored" data-anchor-id="following-learn-docker-in-a-month-of-lunches-by-elton-stoneman">Following Learn Docker in a Month of Lunches by Elton Stoneman</h2>
 <section id="ch.2-understanding-docker-and-hello-world" class="level3 page-columns page-full">
 <h3 class="anchored" data-anchor-id="ch.2-understanding-docker-and-hello-world">Ch.2: Understanding Docker and Hello World</h3>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
@@ -335,13 +335,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li>docker container run –env TARGET=google.com diamol/ch03-web-ping</li>
 </ul></li>
-<li><p>From a directory containing a <em>Dockerfile</em>, build an image with current directory as context via:</p>
+<li><p>From a directory containing a Dockerfile, build an image with current directory as context via:</p>
 <ul>
 <li><code>docker image build --tag web-ping .</code></li>
 </ul></li>
 <li><p>Process for running apps with Docker:</p>
 <ul>
-<li>Write <em>Dockerfile</em> with steps to package the app</li>
+<li>Write Dockerfile with steps to package the app</li>
 <li>Collect the resources that need to go into Docker image</li>
 <li>Decide how you want users of image to configure app behavior</li>
 </ul></li>
@@ -377,34 +377,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="multi-stage-build-explanation" class="level3">
 <h3 class="anchored" data-anchor-id="multi-stage-build-explanation">Multi-Stage Build Explanation</h3>
 <ol type="1">
-<li><p><strong>Builder Stage</strong>: ```Dockerfile FROM diamol/maven AS builder</p>
+<li><p>Builder Stage: ```Dockerfile FROM diamol/maven AS builder</p>
 <p>WORKDIR /usr/src/iotd COPY pom.xml . RUN mvn -B dependency:go-offline</p>
 <p>COPY . . RUN mvn package ```</p>
 <ul>
-<li><strong>Base Image</strong>: <code>diamol/maven</code> is used as the base image, which includes Maven and all necessary build tools.</li>
-<li><strong>Working Directory</strong>: Sets the working directory to <code>/usr/src/iotd</code>.</li>
-<li><strong>Copy <code>pom.xml</code></strong>: Copies the <code>pom.xml</code> file to the container.</li>
-<li><strong>Download Dependencies</strong>: Runs <code>mvn -B dependency:go-offline</code> to download all dependencies specified in the <code>pom.xml</code> file.</li>
-<li><strong>Copy Source Code</strong>: Copies the entire source code to the container.</li>
-<li><strong>Build the Project</strong>: Runs <code>mvn package</code> to compile the source code and package it into a JAR file.</li>
+<li>Base Image: <code>diamol/maven</code> is used as the base image, which includes Maven and all necessary build tools.</li>
+<li>Working Directory: Sets the working directory to <code>/usr/src/iotd</code>.</li>
+<li>Copy <code>pom.xml</code>: Copies the <code>pom.xml</code> file to the container.</li>
+<li>Download Dependencies: Runs <code>mvn -B dependency:go-offline</code> to download all dependencies specified in the <code>pom.xml</code> file.</li>
+<li>Copy Source Code: Copies the entire source code to the container.</li>
+<li>Build the Project: Runs <code>mvn package</code> to compile the source code and package it into a JAR file.</li>
 </ul></li>
-<li><p><strong>Application Stage</strong>: ```Dockerfile FROM diamol/openjdk</p>
+<li><p>Application Stage: ```Dockerfile FROM diamol/openjdk</p>
 <p>WORKDIR /app COPY –from=builder /usr/src/iotd/target/iotd-service-0.1.0.jar .</p>
 <p>EXPOSE 80 ENTRYPOINT [“java”, “-jar”, “/app/iotd-service-0.1.0.jar”] ```</p>
 <ul>
-<li><strong>Base Image</strong>: <code>diamol/openjdk</code> is used as the base image, which includes only the JDK runtime environment.</li>
-<li><strong>Working Directory</strong>: Sets the working directory to <code>/app</code>.</li>
-<li><strong>Copy JAR File</strong>: Copies the JAR file from the <code>builder</code> stage to the <code>/app</code> directory in the application stage using <code>COPY --from=builder</code>.</li>
-<li><strong>Expose Port</strong>: Informs Docker that the container will listen on port 80.</li>
-<li><strong>Set Entry Point</strong>: Sets the command to run the JAR file using <code>java -jar</code>.</li>
+<li>Base Image: <code>diamol/openjdk</code> is used as the base image, which includes only the JDK runtime environment.</li>
+<li>Working Directory: Sets the working directory to <code>/app</code>.</li>
+<li>Copy JAR File: Copies the JAR file from the <code>builder</code> stage to the <code>/app</code> directory in the application stage using <code>COPY --from=builder</code>.</li>
+<li>Expose Port: Informs Docker that the container will listen on port 80.</li>
+<li>Set Entry Point: Sets the command to run the JAR file using <code>java -jar</code>.</li>
 </ul></li>
 </ol>
 </section>
 <section id="how-build-tools-and-dependencies-are-excluded" class="level3">
 <h3 class="anchored" data-anchor-id="how-build-tools-and-dependencies-are-excluded">How Build Tools and Dependencies are Excluded</h3>
 <ul>
-<li><strong>Builder Stage</strong>: The <code>builder</code> stage uses the <code>diamol/maven</code> image, which includes Maven and all necessary build tools to compile the Java application. This stage performs all the build-related tasks, such as downloading dependencies and packaging the application into a JAR file.</li>
-<li><strong>Application Stage</strong>: The <code>app</code> stage uses the <code>diamol/openjdk</code> image, which only includes the JDK runtime environment. It does not include Maven or any other build tools.
+<li>Builder Stage: The <code>builder</code> stage uses the <code>diamol/maven</code> image, which includes Maven and all necessary build tools to compile the Java application. This stage performs all the build-related tasks, such as downloading dependencies and packaging the application into a JAR file.</li>
+<li>Application Stage: The <code>app</code> stage uses the <code>diamol/openjdk</code> image, which only includes the JDK runtime environment. It does not include Maven or any other build tools.
 <ul>
 <li>The <code>COPY --from=builder</code> command copies only the compiled JAR file from the <code>builder</code> stage to the <code>app</code> stage. This means that none of the build tools, source code, or dependencies downloaded during the build process are included in the final image.</li>
 <li>As a result, the final image is smaller and only contains the runtime environment and the packaged application, making it more efficient and secure.</li>
@@ -412,7 +412,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>By using multi-stage builds, you ensure that the final Docker image contains only what is necessary to run the application, excluding all build tools and intermediate files used during the build process.</p>
 <ul>
-<li><code>docker network create nat</code>: creates a Docker network, allowing any containers on the network to reach each other using the container names via a <em>bridge network</em>. Else containers can communicate via host’s networking space.</li>
+<li><code>docker network create nat</code>: creates a Docker network, allowing any containers on the network to reach each other using the container names via a bridge network. Else containers can communicate via host’s networking space.</li>
 <li>To run, use <code>docker run --name iotd -p 800:80 --network nat image-of-the-day</code>. Will run NASA’s image of the day REST API so you can make repeated calls to this application without hitting NASA’s service.</li>
 </ul>
 <section id="example-in-interpreted-application" class="level4">
@@ -442,48 +442,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="anchored" data-anchor-id="from-diamolnode">FROM diamol/node</h4>
 <div class="sourceCode" id="cb7"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> diamol/node</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
-<li><strong>Purpose</strong>: Uses the <code>diamol/node</code> image as the base image for the application stage.</li>
-<li><strong>Effect</strong>: This stage will be used to run the application.</li>
+<li>Purpose: Uses the <code>diamol/node</code> image as the base image for the application stage.</li>
+<li>Effect: This stage will be used to run the application.</li>
 </ul>
 </section>
 <section id="expose-80" class="level4">
 <h4 class="anchored" data-anchor-id="expose-80">EXPOSE 80</h4>
 <div class="sourceCode" id="cb8"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">EXPOSE</span> 80</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
-<li><strong>Purpose</strong>: Informs Docker that the container will listen on port 80 at runtime.</li>
-<li><strong>Effect</strong>: This is a documentation feature and does not actually publish the port.</li>
+<li>Purpose: Informs Docker that the container will listen on port 80 at runtime.</li>
+<li>Effect: This is a documentation feature and does not actually publish the port.</li>
 </ul>
 </section>
 <section id="cmd-node-server.js" class="level4">
 <h4 class="anchored" data-anchor-id="cmd-node-server.js">CMD [“node”, “server.js”]</h4>
 <div class="sourceCode" id="cb9"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CMD</span> [<span class="st">"node"</span>, <span class="st">"server.js"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
-<li><strong>Purpose</strong>: Sets the default command to run when the container starts.</li>
-<li><strong>Effect</strong>: The container will run <code>node server.js</code> when it starts.</li>
+<li>Purpose: Sets the default command to run when the container starts.</li>
+<li>Effect: The container will run <code>node server.js</code> when it starts.</li>
 </ul>
 </section>
 <section id="workdir-app" class="level4">
 <h4 class="anchored" data-anchor-id="workdir-app">WORKDIR /app</h4>
 <div class="sourceCode" id="cb10"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">WORKDIR</span> /app</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
-<li><strong>Purpose</strong>: Sets the working directory to <code>/app</code> for subsequent instructions in the application stage.</li>
-<li><strong>Effect</strong>: Any relative paths in subsequent commands will be relative to <code>/app</code>.</li>
+<li>Purpose: Sets the working directory to <code>/app</code> for subsequent instructions in the application stage.</li>
+<li>Effect: Any relative paths in subsequent commands will be relative to <code>/app</code>.</li>
 </ul>
 </section>
 <section id="copy-frombuilder-srcnode_modules-appnode_modules" class="level4">
 <h4 class="anchored" data-anchor-id="copy-frombuilder-srcnode_modules-appnode_modules">COPY –from=builder /src/node_modules/ /app/node_modules/</h4>
 <div class="sourceCode" id="cb11"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> <span class="op">--from=builder</span> /src/node_modules/ /app/node_modules/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
-<li><strong>Purpose</strong>: Copies the <code>node_modules</code> directory from the <code>builder</code> stage to the <code>/app</code> directory in the application stage.</li>
-<li><strong>Effect</strong>: This ensures that the application has access to the installed dependencies without including the entire build context.</li>
+<li>Purpose: Copies the <code>node_modules</code> directory from the <code>builder</code> stage to the <code>/app</code> directory in the application stage.</li>
+<li>Effect: This ensures that the application has access to the installed dependencies without including the entire build context.</li>
 </ul>
 </section>
 </section>
 <section id="summary" class="level3">
 <h3 class="anchored" data-anchor-id="summary">Summary</h3>
 <ul>
-<li><strong>WORKDIR /app</strong>: Sets the working directory to <code>/app</code> for subsequent instructions. This helps in organizing the application files within the container.</li>
-<li><strong>COPY –from=builder /src/node_modules/ /app/node_modules/</strong>: Copies the <code>node_modules</code> directory from the <code>builder</code> stage to the <code>/app</code> directory in the final image. This ensures that the final image contains the necessary runtime dependencies without including the entire build context.</li>
+<li>WORKDIR /app: Sets the working directory to <code>/app</code> for subsequent instructions. This helps in organizing the application files within the container.</li>
+<li>COPY –from=builder /src/node_modules/ /app/node_modules/: Copies the <code>node_modules</code> directory from the <code>builder</code> stage to the <code>/app</code> directory in the final image. This ensures that the final image contains the necessary runtime dependencies without including the entire build context.</li>
 </ul>
 <p>By using these commands, the Dockerfile ensures that the final image is clean and contains only the necessary files to run the application, while keeping the build process and dependencies separate.</p>
 <ul>
@@ -573,13 +573,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="understanding-namespaces-and-cgroups-in-containerd" class="level3">
 <h3 class="anchored" data-anchor-id="understanding-namespaces-and-cgroups-in-containerd">Understanding Namespaces and cgroups in <code>containerd</code></h3>
-<p><strong><code>containerd</code></strong> leverages Linux kernel features, specifically <strong>Namespaces</strong> and <strong>cgroups (control groups)</strong>, to provide container isolation and resource management. These technologies are fundamental to how containers operate securely and efficiently on a host system.</p>
+<p><code>containerd</code> leverages Linux kernel features, specifically Namespaces and cgroups (control groups), to provide container isolation and resource management. These technologies are fundamental to how containers operate securely and efficiently on a host system.</p>
 <hr>
 <section id="namespaces" class="level4">
-<h4 class="anchored" data-anchor-id="namespaces">1. <strong>Namespaces</strong></h4>
-<p><strong>Namespaces</strong> provide isolation for various system resources, ensuring that processes within a container are separated from those in other containers and the host system. Each namespace type isolates a specific resource.</p>
+<h4 class="anchored" data-anchor-id="namespaces">1. Namespaces</h4>
+<p>Namespaces provide isolation for various system resources, ensuring that processes within a container are separated from those in other containers and the host system. Each namespace type isolates a specific resource.</p>
 <section id="types-of-namespaces-used-by-containerd" class="level5">
-<h5 class="anchored" data-anchor-id="types-of-namespaces-used-by-containerd"><strong>Types of Namespaces Used by <code>containerd</code>:</strong></h5>
+<h5 class="anchored" data-anchor-id="types-of-namespaces-used-by-containerd">Types of Namespaces Used by <code>containerd</code>:</h5>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 16%">
@@ -587,49 +587,49 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </colgroup>
 <thead>
 <tr class="header">
-<th><strong>Namespace Type</strong></th>
-<th><strong>Description</strong></th>
+<th>Namespace Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>PID Namespace</strong></td>
+<td>PID Namespace</td>
 <td>Isolates the process IDs, so processes inside the container cannot see or interact with processes outside.</td>
 </tr>
 <tr class="even">
-<td><strong>NET Namespace</strong></td>
+<td>NET Namespace</td>
 <td>Isolates networking resources like network interfaces, IP addresses, and routing tables.</td>
 </tr>
 <tr class="odd">
-<td><strong>IPC Namespace</strong></td>
+<td>IPC Namespace</td>
 <td>Isolates inter-process communication resources, such as shared memory and semaphores.</td>
 </tr>
 <tr class="even">
-<td><strong>UTS Namespace</strong></td>
+<td>UTS Namespace</td>
 <td>Isolates hostname and domain name settings, allowing containers to have their own hostname.</td>
 </tr>
 <tr class="odd">
-<td><strong>MNT Namespace</strong></td>
+<td>MNT Namespace</td>
 <td>Isolates mount points, ensuring the container has its own filesystem hierarchy.</td>
 </tr>
 <tr class="even">
-<td><strong>USER Namespace</strong></td>
+<td>USER Namespace</td>
 <td>Isolates user and group IDs, allowing containers to have a different set of user privileges.</td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="how-containerd-uses-namespaces" class="level5">
-<h5 class="anchored" data-anchor-id="how-containerd-uses-namespaces"><strong>How <code>containerd</code> Uses Namespaces:</strong></h5>
+<h5 class="anchored" data-anchor-id="how-containerd-uses-namespaces">How <code>containerd</code> Uses Namespaces:</h5>
 <ul>
-<li><strong>Process Isolation</strong>: Ensures that container processes run independently without interfering with host or other container processes.</li>
-<li><strong>Network Isolation</strong>: Allows containers to have separate networking stacks, enabling features like port mapping and virtual networks.</li>
-<li><strong>Filesystem Isolation</strong>: Provides containers with their own root filesystem, preventing unauthorized access to the host filesystem.</li>
-<li><strong>Security</strong>: Enhances security by limiting the visibility and accessibility of system resources to containers.</li>
+<li>Process Isolation: Ensures that container processes run independently without interfering with host or other container processes.</li>
+<li>Network Isolation: Allows containers to have separate networking stacks, enabling features like port mapping and virtual networks.</li>
+<li>Filesystem Isolation: Provides containers with their own root filesystem, preventing unauthorized access to the host filesystem.</li>
+<li>Security: Enhances security by limiting the visibility and accessibility of system resources to containers.</li>
 </ul>
 </section>
 <section id="example-pid-namespace-isolation" class="level5">
-<h5 class="anchored" data-anchor-id="example-pid-namespace-isolation"><strong>Example: PID Namespace Isolation</strong></h5>
+<h5 class="anchored" data-anchor-id="example-pid-namespace-isolation">Example: PID Namespace Isolation</h5>
 <div class="sourceCode" id="cb14"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># On the host</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ps</span> aux</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -640,10 +640,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 </section>
 <section id="cgroups-control-groups" class="level4">
-<h4 class="anchored" data-anchor-id="cgroups-control-groups">2. <strong>cgroups (Control Groups)</strong></h4>
-<p><strong>cgroups</strong> manage and limit the resources (CPU, memory, disk I/O, network) that containers can consume. They ensure that containers operate within defined resource boundaries, preventing any single container from monopolizing system resources.</p>
+<h4 class="anchored" data-anchor-id="cgroups-control-groups">2. cgroups (Control Groups)</h4>
+<p>cgroups manage and limit the resources (CPU, memory, disk I/O, network) that containers can consume. They ensure that containers operate within defined resource boundaries, preventing any single container from monopolizing system resources.</p>
 <section id="key-features-of-cgroups" class="level5">
-<h5 class="anchored" data-anchor-id="key-features-of-cgroups"><strong>Key Features of cgroups:</strong></h5>
+<h5 class="anchored" data-anchor-id="key-features-of-cgroups">Key Features of cgroups:</h5>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 19%">
@@ -651,40 +651,40 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </colgroup>
 <thead>
 <tr class="header">
-<th><strong>Feature</strong></th>
-<th><strong>Description</strong></th>
+<th>Feature</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Resource Limiting</strong></td>
+<td>Resource Limiting</td>
 <td>Sets maximum resource usage (e.g., CPU shares, memory limits) for containers.</td>
 </tr>
 <tr class="even">
-<td><strong>Prioritization</strong></td>
+<td>Prioritization</td>
 <td>Allocates resources based on priority, ensuring critical containers receive necessary resources.</td>
 </tr>
 <tr class="odd">
-<td><strong>Accounting</strong></td>
+<td>Accounting</td>
 <td>Monitors and tracks resource usage by containers for reporting and analysis.</td>
 </tr>
 <tr class="even">
-<td><strong>Control</strong></td>
+<td>Control</td>
 <td>Provides mechanisms to freeze, resume, or modify resource allocations of running containers.</td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="how-containerd-uses-cgroups" class="level5">
-<h5 class="anchored" data-anchor-id="how-containerd-uses-cgroups"><strong>How <code>containerd</code> Uses cgroups:</strong></h5>
+<h5 class="anchored" data-anchor-id="how-containerd-uses-cgroups">How <code>containerd</code> Uses cgroups:</h5>
 <ul>
-<li><strong>Resource Allocation</strong>: Defines limits on CPU, memory, and other resources for each container to ensure fair distribution.</li>
-<li><strong>Performance Management</strong>: Prevents resource overuse by containers, maintaining overall system stability and performance.</li>
-<li><strong>Scalability</strong>: Enables efficient scaling of containers by managing resource distribution dynamically based on container demands.</li>
+<li>Resource Allocation: Defines limits on CPU, memory, and other resources for each container to ensure fair distribution.</li>
+<li>Performance Management: Prevents resource overuse by containers, maintaining overall system stability and performance.</li>
+<li>Scalability: Enables efficient scaling of containers by managing resource distribution dynamically based on container demands.</li>
 </ul>
 </section>
 <section id="example-memory-limiting-with-cgroups" class="level5">
-<h5 class="anchored" data-anchor-id="example-memory-limiting-with-cgroups"><strong>Example: Memory Limiting with cgroups</strong></h5>
+<h5 class="anchored" data-anchor-id="example-memory-limiting-with-cgroups">Example: Memory Limiting with cgroups</h5>
 <div class="sourceCode" id="cb15"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a memory limit for a container</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> limited-container <span class="at">--memory</span><span class="op">=</span><span class="st">"256m"</span> nginx</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -695,28 +695,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 </section>
 <section id="integration-of-namespaces-and-cgroups-in-containerd" class="level4">
-<h4 class="anchored" data-anchor-id="integration-of-namespaces-and-cgroups-in-containerd">3. <strong>Integration of Namespaces and cgroups in <code>containerd</code></strong></h4>
-<p><strong><code>containerd</code></strong> orchestrates the creation and management of both Namespaces and cgroups to ensure containers are isolated and resource-constrained appropriately.</p>
+<h4 class="anchored" data-anchor-id="integration-of-namespaces-and-cgroups-in-containerd">3. Integration of Namespaces and cgroups in <code>containerd</code></h4>
+<p><code>containerd</code> orchestrates the creation and management of both Namespaces and cgroups to ensure containers are isolated and resource-constrained appropriately.</p>
 <section id="workflow-overview" class="level5">
-<h5 class="anchored" data-anchor-id="workflow-overview"><strong>Workflow Overview:</strong></h5>
+<h5 class="anchored" data-anchor-id="workflow-overview">Workflow Overview:</h5>
 <ol type="1">
-<li><strong>Container Creation</strong>:
+<li>Container Creation:
 <ul>
 <li><code>containerd</code> initiates the creation of a container using the specified image.</li>
 </ul></li>
-<li><strong>Namespace Setup</strong>:
+<li>Namespace Setup:
 <ul>
 <li>Allocates and configures appropriate namespaces to isolate the container’s environment.</li>
 </ul></li>
-<li><strong>cgroups Configuration</strong>:
+<li>cgroups Configuration:
 <ul>
 <li>Assigns the container to specific cgroups with defined resource limits.</li>
 </ul></li>
-<li><strong>Process Execution</strong>:
+<li>Process Execution:
 <ul>
 <li>Launches the container’s main process within the isolated namespaces and under the resource constraints of the cgroups.</li>
 </ul></li>
-<li><strong>Monitoring and Management</strong>:
+<li>Monitoring and Management:
 <ul>
 <li>Continuously monitors resource usage and enforces cgroup limits.</li>
 <li>Manages the lifecycle of the container, including starting, stopping, and deletion.</li>
@@ -725,13 +725,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 </section>
 <section id="benefits-of-using-namespaces-and-cgroups-with-containerd" class="level4">
-<h4 class="anchored" data-anchor-id="benefits-of-using-namespaces-and-cgroups-with-containerd">4. <strong>Benefits of Using Namespaces and cgroups with <code>containerd</code></strong></h4>
+<h4 class="anchored" data-anchor-id="benefits-of-using-namespaces-and-cgroups-with-containerd">4. Benefits of Using Namespaces and cgroups with <code>containerd</code></h4>
 <ul>
-<li><strong>Isolation</strong>: Ensures containers run securely and independently without affecting each other or the host system.</li>
-<li><strong>Resource Efficiency</strong>: Optimizes resource usage by enforcing limits and preventing overconsumption.</li>
-<li><strong>Scalability</strong>: Facilitates the deployment of multiple containers on a single host by managing resource distribution effectively.</li>
-<li><strong>Security</strong>: Enhances security by restricting containers’ access to system resources and isolating their environments.</li>
-<li><strong>Performance</strong>: Maintains system stability and performance by preventing resource contention among containers.</li>
+<li>Isolation: Ensures containers run securely and independently without affecting each other or the host system.</li>
+<li>Resource Efficiency: Optimizes resource usage by enforcing limits and preventing overconsumption.</li>
+<li>Scalability: Facilitates the deployment of multiple containers on a single host by managing resource distribution effectively.</li>
+<li>Security: Enhances security by restricting containers’ access to system resources and isolating their environments.</li>
+<li>Performance: Maintains system stability and performance by preventing resource contention among containers.</li>
 </ul>
 <hr>
 </section>
@@ -739,13 +739,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="summary-1" class="level3">
 <h3 class="anchored" data-anchor-id="summary-1">Summary</h3>
 <ul>
-<li><strong>Namespaces</strong>: Provide isolation for container processes by segregating various system resources, ensuring containers operate independently and securely.</li>
-<li><strong>cgroups</strong>: Manage and limit resource usage for containers, maintaining system stability and efficient resource distribution.</li>
-<li><strong><code>containerd</code></strong>: Utilizes both Namespaces and cgroups to orchestrate container lifecycles, ensuring isolation, security, and resource management.</li>
+<li>Namespaces: Provide isolation for container processes by segregating various system resources, ensuring containers operate independently and securely.</li>
+<li>cgroups: Manage and limit resource usage for containers, maintaining system stability and efficient resource distribution.</li>
+<li><code>containerd</code>: Utilizes both Namespaces and cgroups to orchestrate container lifecycles, ensuring isolation, security, and resource management.</li>
+</ul>
+</section>
+</section>
+<section id="resolving-issues" class="level2">
+<h2 class="anchored" data-anchor-id="resolving-issues">Resolving issues</h2>
+<ul>
+<li>On docker push us-central1-docker.pkg.dev/aitutor-447020/aitutor-repo/aitutor:latest
+<ul>
+<li>Kept getting
+<ul>
+<li>unauthorized: authentication failed</li>
+</ul></li>
+</ul></li>
+<li>Solved via:
+<ul>
+<li>TOKEN=$(gcloud auth print-access-token)</li>
+<li>echo $TOKEN | docker login -u oauth2accesstoken –password-stdin https://us-central1-docker.pkg.dev</li>
+</ul></li>
 </ul>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

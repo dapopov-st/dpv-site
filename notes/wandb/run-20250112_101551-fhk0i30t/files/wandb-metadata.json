@@ -1,0 +1,171 @@
+{
+    "os": "Linux-6.8.0-51-generic-x86_64-with-glibc2.35",
+    "python": "3.11.9",
+    "heartbeatAt": "2025-01-12T15:15:51.962025",
+    "startedAt": "2025-01-12T15:15:51.600506",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "<python with no main file>",
+    "codePathLocal": null,
+    "git": {
+        "remote": "https://github.com/dapopov-st/dpv-site.git",
+        "commit": "0d024f0b564a6aa96b7f6a0060f25ebcaec3a227"
+    },
+    "email": "dpopovvelasco@gmail.com",
+    "root": "/home/mainuser/Desktop/dpv-site",
+    "host": "mainuser-MS-7D28",
+    "username": "mainuser",
+    "executable": "/home/mainuser/anaconda3/envs/mintonano/bin/python",
+    "cpu_count": 16,
+    "cpu_count_logical": 24,
+    "cpu_freq": {
+        "current": 1511.6362916666665,
+        "min": 800.0,
+        "max": 4950.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2269.773,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 2301.437,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 1725.512,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 2403.26,
+            "min": 800.0,
+            "max": 5400.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5400.0
+        },
+        {
+            "current": 2299.936,
+            "min": 800.0,
+            "max": 5400.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5400.0
+        },
+        {
+            "current": 2199.644,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 2421.772,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 5300.0
+        },
+        {
+            "current": 1888.728,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 1805.797,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 1599.786,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 1890.607,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 800.0,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 1787.921,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 1776.842,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 1799.774,
+            "min": 800.0,
+            "max": 4200.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 1832.2072448730469,
+            "used": 981.3141136169434
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "gpu_count": 2,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3090",
+            "memory_total": 25769803776
+        },
+        {
+            "name": "NVIDIA GeForce RTX 3090",
+            "memory_total": 25769803776
+        }
+    ],
+    "memory": {
+        "total": 62.6546745300293
+    }
+}
