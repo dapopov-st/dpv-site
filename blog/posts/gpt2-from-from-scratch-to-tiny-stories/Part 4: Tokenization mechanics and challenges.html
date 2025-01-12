@@ -214,7 +214,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 4: Tokenization mechanics and challenges_files/figure-html/cell-3-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 4: Tokenization mechanics and challenges_files/figure-html/cell-3-1-image.png" class="img-fluid figure-img" width="800"></p>
 <figcaption class="margin-caption">Source: https://en.wikipedia.org/wiki/UTF-8</figcaption>
 </figure>
 </div>
@@ -227,7 +227,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul></li>
 <li>A <a href="https://www.reedbeta.com/blog/programmers-intro-to-unicode/">sample</a> of Unicode text is below:</li>
 </ul>
-<div id="cell-6" class="cell" data-execution_count="1">
+<div id="cell-6" class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>text <span class="op">=</span> <span class="st">"Ｕｎｉｃｏｄｅ! 🅤🅝🅘🅒🅞🅓🅔‽ 🇺‌🇳‌🇮‌🇨‌🇴‌🇩‌🇪! 😄 The very name strikes fear and awe into the hearts of programmers worldwide. We all know we ought to “support Unicode” in our software (whatever that means—like using wchar_t for all the strings, right?). But Unicode can be abstruse, and diving into the thousand-page Unicode Standard plus its dozens of supplementary annexes, reports, and notes can be more than a little intimidating. I don’t blame programmers for still finding the whole thing mysterious, even 30 years after Unicode’s inception. A few months ago, I got interested in Unicode and decided to spend some time learning more about it in detail. In this article, I’ll give an introduction to it from a programmer’s point of view. I’m going to focus on the character set and what’s involved in working with strings and files of Unicode text. However, in this article I’m not going to talk about fonts, text layout/shaping/rendering, or localization in detail—those are separate issues, beyond my scope (and knowledge) here."</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> text.encode(<span class="st">"utf-8"</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tokens)</span>
@@ -522,7 +522,7 @@ merges: {(101, 32): 256, (44, 32): 257, (100, 32): 258, (46, 32): 259, (114, 32)
 <p>There are additional rules other than chunking and BPE that are not clear from the original OpenAI implementation. For example 4 spaces in a succession would be likely merged by a tokenizer trained on Python code, which was likely the case. However, these spaces are not merged by the default GPT-2 tokenizer:</p>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 4: Tokenization mechanics and challenges_files/figure-html/cell-34-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 4: Tokenization mechanics and challenges_files/figure-html/cell-34-1-image.png" class="img-fluid figure-img" width="800"></p>
 <figcaption class="margin-caption">Source: https://tiktokenizer.vercel.app/?model=gpt2</figcaption>
 </figure>
 </div>
@@ -874,7 +874,7 @@ Lily smiled and said, "I will, Mommy. A</code></pre>
 </ul>
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p><img src="Part 4: Tokenization mechanics and challenges_files/figure-html/cell-81-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="Part 4: Tokenization mechanics and challenges_files/figure-html/cell-81-1-image.png" class="img-fluid figure-img" width="800"></p>
 <figcaption class="margin-caption">Source: Mu, J., Li, X. L., &amp; Goodman, N. (2023).</figcaption>
 </figure>
 </div>
