@@ -5,17 +5,15 @@
 
 <div class="bio-text">
 ## About me
-I’m a data scientist and machine learning engineer with expertise in Python, Google Cloud Platform (GCP), and large language models (LLMs). My passion lies in leveraging code and LLMs to build innovative solutions.
+I’m a machine learning engineer and data scientist with expertise in Python, Google Cloud Platform (GCP), and large language models (LLMs). I specialize in building scalable, production-ready ML solutions that enhance automation and decision-making.
 
-Currently, I’m developing several projects focused on language models. From November 2022 to August 2024, I served as a Data Analyst at LS Direct, where I successfully executed data analytics and engineering tasks for major clients, resulting in significant budget increases—up to five times the original amounts. I automated both internal and client-facing processes using Python, SQL, and GCP, saving our team valuable hours each week. I have a strong preference for programmatic solutions that streamline operations and enhance efficiency.
+Currently, I’m developing and deploying LLM-powered applications. From November 2022 to August 2024, I worked as a Data Analyst at LS Direct, where I led data analytics and engineering efforts for major clients, driving budget increases of up to 5x. I automated internal and client-facing workflows with Python, SQL, and GCP, significantly improving efficiency and reducing manual workload.
 
-Prior to this role, I taught AP Computer Science at Lake Mary High School for two years, where I rebuilt the AP Computer Science A program and founded the LMHS AI Club, introducing advanced students to deep learning through PyTorch and Linux. Earlier in my career, I taught algebra to underserved communities at Vanden High School.
+Before transitioning into industry, I taught AP Computer Science at Lake Mary High School, where I rebuilt the AP CS A program and founded the LMHS AI Club, mentoring students in deep learning using PyTorch and Linux. Earlier, I taught algebra at Vanden High School, working with underserved communities.
 
-My academic background includes an undergraduate degree in mathematics and three graduate programs—one in mathematics and two in economics (applied and mathematical), the latest from UC Davis. During my graduate studies, I worked on computer vision applications and taught statistical methods, econometrics, and graduate economic theory. This experience deepened my appreciation for the transformative power of deep learning in computer vision.
+My academic background includes a mathematics degree and three graduate programs—one in mathematics and two in economics (applied and mathematical), the latest from UC Davis. My research included computer vision applications, and I taught statistical methods, econometrics, and graduate economic theory, reinforcing my expertise in ML fundamentals.
 
-I have always been fascinated by the intersection of computation and linguistics, having learned several languages and achieving fluency in around seven at one point. This linguistic curiosity drives my intrinsic interest in LLMs, particularly in creating practical projects that benefit others.
-
-I’m excited to engage with innovative projects and connect with like-minded professionals in the data science and machine learning fields.
+Beyond engineering, I have a deep-rooted interest in computation and linguistics, having achieved fluency in around seven languages. This passion fuels my enthusiasm for LLMs, where I focus on building impactful, real-world applications.
 </div>
 
 <div class="bio-image" style="text-align: center;">
