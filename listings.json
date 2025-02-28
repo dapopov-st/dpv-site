@@ -3,25 +3,13 @@
     "listing": "/notes.html",
     "items": [
       "/notes/ml-algos-numpy-torch.html",
-      "/notes/Docker/Docker.html",
       "/notes/Linux.html",
-      "/notes/FastAPI.html",
       "/notes/DL-and-LLMs-Basics.html",
-      "/notes/ImplementingDbscan.html",
+      "/notes/Docker/Docker.html",
+      "/notes/FastAPI.html",
       "/notes/AcceleratingMatrixMultiplication.html",
+      "/notes/ImplementingDbscan.html",
       "/notes/Backprop.html"
-    ]
-  },
-  {
-    "listing": "/projects.html",
-    "items": [
-      "/projects/indiv_projects/sql-finetune/sql-finetune.html",
-      "/projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html",
-      "/projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
-      "/projects/indiv_projects/project-bird/project-bird.html",
-      "/projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
-      "/projects/indiv_projects/inventory-classes/inventory-classes.html",
-      "/projects/indiv_projects/publication/bulletin-publication.html"
     ]
   },
   {
@@ -35,6 +23,18 @@
       "/blog/posts/how-to-pass-gcp-pde/how-to-pass-gcp-pde-exam.html",
       "/blog/posts/arxiv-llms-assistant/arxiv-llms-assistant.html",
       "/blog/posts/kto-optimization/kto-optimization.html"
+    ]
+  },
+  {
+    "listing": "/projects.html",
+    "items": [
+      "/projects/indiv_projects/sql-finetune/sql-finetune.html",
+      "/projects/indiv_projects/gpt2-from-scratch-to-tinystories/sql-finetune.html",
+      "/projects/indiv_projects/arxiv/arxiv-llms-assistant.html",
+      "/projects/indiv_projects/project-bird/project-bird.html",
+      "/projects/indiv_projects/detecting-anomalies/detecting-anomalies.html",
+      "/projects/indiv_projects/inventory-classes/inventory-classes.html",
+      "/projects/indiv_projects/publication/bulletin-publication.html"
     ]
   }
 ]
